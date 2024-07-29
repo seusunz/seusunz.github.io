@@ -264,7 +264,72 @@
 <p>注意deploy时可能要你输入username和password。得到下图就说明部署成功了，过一会儿就可以在<code>http://yourname.github.io</code> 这个网站看到你的博客了！！</p>
 </li>
 </ul>
-<h1 id="二、Hexo博客配置"><a href="#二、Hexo博客配置" class="headerlink" title="二、Hexo博客配置"></a>二、Hexo博客配置</h1><h1 id="三、云服务器配置"><a href="#三、云服务器配置" class="headerlink" title="三、云服务器配置"></a>三、云服务器配置</h1><h1 id="四、Hexo常用命令"><a href="#四、Hexo常用命令" class="headerlink" title="四、Hexo常用命令"></a>四、Hexo常用命令</h1><h1 id="五、问题记录"><a href="#五、问题记录" class="headerlink" title="五、问题记录"></a>五、问题记录</h1>
+<h1 id="二、Hexo博客配置"><a href="#二、Hexo博客配置" class="headerlink" title="二、Hexo博客配置"></a>二、Hexo博客配置</h1><p>hexo的基本配置，更换主题，实现多终端工作，以及在coding page部署实现国内外分流。</p>
+<h2 id="2-1-hexo-基本配置"><a href="#2-1-hexo-基本配置" class="headerlink" title="2.1 hexo 基本配置"></a>2.1 hexo 基本配置</h2><table>
+<thead>
+<tr>
+<th align="center">参数</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><code>title</code></td>
+<td align="center">网站标题</td>
+</tr>
+<tr>
+<td align="center"><code>subtitle</code></td>
+<td align="center">网站副标题</td>
+</tr>
+<tr>
+<td align="center"><code>description</code></td>
+<td align="center">网站描述</td>
+</tr>
+<tr>
+<td align="center"><code>author</code></td>
+<td align="center">您的名字</td>
+</tr>
+<tr>
+<td align="center"><code>language</code></td>
+<td align="center">网站使用的语言</td>
+</tr>
+<tr>
+<td align="center"><code>timezone</code></td>
+<td align="center">网站时区。Hexo 默认使用您电脑的时区。<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones">时区列表</a>。比如说：<code>America/New_York</code>, <code>Japan</code>, 和 <code>UTC</code> 。</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th align="center">参数</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><code>url</code></td>
+<td align="center">网址</td>
+</tr>
+<tr>
+<td align="center"><code>root</code></td>
+<td align="center">网站根目录</td>
+</tr>
+<tr>
+<td align="center"><code>permalink</code></td>
+<td align="center">文章的 <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/permalinks">永久链接</a> 格式</td>
+</tr>
+<tr>
+<td align="center"><code>permalink_defaults</code></td>
+<td align="center">永久链接中各部分的默认值</td>
+</tr>
+</tbody></table>
+<p>在这里，你需要把url改成你的网站域名。</p>
+<p>permalink，也就是你生成某个文章时的那个链接格式。</p>
+<p>比如我新建一个文章叫temp.md，那么这个时候他自动生成的地址就是<a target="_blank" rel="noopener" href="http://yoursite.com/2024/07/26/temp%E3%80%82">http://yoursite.com/2024/07/26/temp。</a></p>
+<p>以下是官方给出的示例，关于链接的变量还有很多，需要的可以去官网上查找 <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/permalinks">永久链接 </a>。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp">theme: landscape<br><br># Deployment<br>## Docs: https:<span class="hljs-comment">//hexo.io/docs/deployment.html</span><br>deploy:<br>  type: git<br>  repo: &lt;repository url&gt;<br>  branch: [branch]<br></code></pre></td></tr></table></figure>
+
+<p>theme就是选择什么主题，也就是在theme这个文件夹下，在官网上有很多个主题，默认给你安装的是lanscape这个主题。当你需要更换主题时，在官网上下载，把主题的文件放在theme文件夹下，再修改这个参数就可以了。接下来这个deploy就是网站的部署的，repo就是仓库(Repository)的简写。branch选择仓库的哪个分支。这个在之前进行github page部署的时候已经修改过了，不再赘述。而这个在后面进行双平台部署的时候会再次用到。</p>
+<p>Front-matter 是文件最上方以 <code>---</code> 分隔的区域，用于指定个别文件的变量，举例来说：</p>
+<h2 id="2-2-更换主题"><a href="#2-2-更换主题" class="headerlink" title="2.2  更换主题"></a>2.2  更换主题</h2><h2 id="2-3-git分支进行多终端工作"><a href="#2-3-git分支进行多终端工作" class="headerlink" title="2.3 git分支进行多终端工作"></a>2.3 git分支进行多终端工作</h2><h2 id="2-4-coding-page上部署实现国内外分流"><a href="#2-4-coding-page上部署实现国内外分流" class="headerlink" title="2.4 coding page上部署实现国内外分流"></a>2.4 coding page上部署实现国内外分流</h2><h1 id="三、云服务器配置"><a href="#三、云服务器配置" class="headerlink" title="三、云服务器配置"></a>三、云服务器配置</h1><h1 id="四、Hexo常用命令"><a href="#四、Hexo常用命令" class="headerlink" title="四、Hexo常用命令"></a>四、Hexo常用命令</h1><h1 id="五、问题记录"><a href="#五、问题记录" class="headerlink" title="五、问题记录"></a>五、问题记录</h1>
       </div>
     </div>
     
@@ -323,7 +388,7 @@
   
   <div class="vhr"></div>
   
-    <a class="post-nav-item-right" href="/2024/07/21/%E4%B8%AA%E4%BA%BA%E7%AE%80%E5%8E%86/">
+    <a class="post-nav-item-right" href="/2024/07/21/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81/">
       <div class="text-align">
         <span class="text-small">下一篇</span>
         <svg t="1670570876164"
@@ -335,7 +400,7 @@
           <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
         </svg>
       </div>
-      个人简历
+      深度解析H.266/VVC帧间编码
     </a>
   
 </div>
