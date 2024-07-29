@@ -658,13 +658,13 @@ svg:not(:root).svg-inline--fa, svg:not(:host).svg-inline--fa {
                   <div class="section-title">ISP设计</div>
                   <div class="section-title-des">LTM算法是基于直方图的色调映射算子。 通过直方图均衡化，调整图像亮度对比度。</div>
                 </a>
-                <p>1. 模块性能4K@120fps, 工作在800MHz下，支持10bit 一拍两点， 4种不同的工作模式和2分窗和4分窗的功能。</p><p>2. 优化LTM算法方案，降低硬件硬化成本。 首先在GAMMA变换后的RGB值合成Y分量，统计得到整图mesh下每个blk的512bit</p><p>3. HIST和 16bit的mean值。 其次， 对统计得到直方图做预处理，金字塔降采样和插值，以及7x7窗的空滤滤波和基于统计分布的亮度补偿，并通过GAMMA变换后的pixz做rgb2y，得到gamma变换后的Y值。 然后对计算后的LUT做3D插值，并结合AI mask后的conf和label信息做像素的色彩保护。最后输出YLTM变换后的值</p><p>4. 完成yltm模块的IP设计和UT验证，输出了详细设计文档， lint检查报告，覆盖率报告,以及RTL代码。 并完成基于vcs的编译， verdi 的UT验证， spyglass的lint检查和PowerArtis功耗优化，以及基于DC 工具的前仿综合和时序优化，</p><p>5. 通过RTL级的时钟门控， 优化计算算子复杂度， 以及优化时序pipeline， sram的空时复用， 面积和功耗优化达到xx%。</p><p>6. 本模块通过AXI与DDR做读写交互， DDR回灌的pixi像素数据实现当帧LTM，提升LTM的映射后的图像画质</p>
+                <p>1. 模块性能4K@120fps, 工作在800MHz下，支持10bit 一拍两点， 4种不同的工作模式和2分窗和4分窗的功能。</p><p>2. 优化LTM算法方案，降低硬件硬化成本。 首先在GAMMA变换后的RGB值合成Y分量，统计得到整图mesh下每个blk的512bitHIST和mean值。</p><p>3. 其次， 对统计得到直方图做预处理，金字塔降采样和插值，以及7x7窗的空滤滤波和基于统计分布的亮度补偿，并通过GAMMA变换后的pixz做rgb2y，得到gamma变换后的Y值。</p><p>4. 然后对计算后的LUT做3D插值，并结合AI mask后的conf和label信息做像素的色彩保护。最后输出YLTM变换后的值</p><p>5. 完成yltm模块的IP设计和UT验证，输出了详细设计文档， lint检查报告，覆盖率报告,以及RTL代码。</p><p>6. 完成基于vcs的编译， verdi 的UT验证, spyglass的lint检查和PowerArtis功耗优化，以及基于DC 工具的前仿综合和时序优化，</p><p>7. 通过RTL级的时钟门控， 优化计算算子复杂度， 以及优化时序pipeline， sram的空时复用， 面积和功耗优化达到xx%。</p><p>8. 本模块通过AXI与DDR做读写交互， DDR回灌的pixi像素数据实现当帧LTM，提升LTM的映射后的图像画质</p>
               
                 <a href="#" class="section__head">
                   <div class="section-title">Codec设计</div>
                   <div class="section-title-des">Codec支持8K@60fps, 工作在700MHz，支持8/10bit。</div>
                 </a>
-                <p>1. FME模块的详细方案设计和UT初步验证，和直接用例验证，输出了详细设计文档， lint检查，以及覆盖率报告。</p><p>2. 主要负责帧间预测模块的优化升级。通过优化1/2插值中X方向和Y反向的冗余插值，以及对于参考像素的大位宽寄存器MUX</p><p>3. 做移位寄存器的优化，以及预测数据在sram的乒乓读写。FME整体模块的面积优化比例达到xx% ，功耗优化率达到x%</p>
+                <p>1. FME模块的详细方案设计和UT初步验证，和直接用例验证，输出了详细设计文档， lint检查，以及覆盖率报告。</p><p>2. 主要负责帧间预测模块的优化升级。通过优化1/2插值中X方向和Y反向的冗余插值，以及对于参考像素的大位宽寄存器MUX</p><p>3. 做移位寄存器的优化，以及预测数据在sram的乒乓读写。FME整体模块的面积优化比例达到xx%,功耗优化率达到x%</p>
               
             
           </div>
@@ -682,7 +682,7 @@ svg:not(:root).svg-inline--fa, svg:not(:host).svg-inline--fa {
             
               
                 <ul class="section">
-                  <li>2020年东南大学二等奖学金</li><li>2020年东南大学柔性射频实验室优秀硕士</li><li>2018年美国大学生数学建模竞赛 Honorable Mention</li><li>2018年Robocup 机器人世界杯中国赛一等奖(季军)</li><li>2017年Robocup 机器人世界杯中国赛一等奖(亚军)</li><li>2016年中国大学生数学竞赛浙江省二等奖</li><li>2016年-2019年浙江省省政府奖学金</li><li>2017年 宁波大学特等奖学金</li><li>2017年 宁波大学一等奖学金</li><li>2016年 宁波大学三好学生</li><li>2017年 宁波大学优秀大学生</li><li>2018年 宁波大学优秀学生干部</li><li>2019年 宁波大学优秀毕业生</li>
+                  <li>2020年 东南大学二等奖学金</li><li>2020年 东南大学柔性射频实验室优秀硕士</li><li>2018年 美国大学生数学建模竞赛 Honorable Mention</li><li>2018年 Robocup 机器人世界杯中国赛一等奖(季军)</li><li>2017年 Robocup 机器人世界杯中国赛一等奖(亚军)</li><li>2016年 中国大学生数学竞赛浙江省二等奖</li><li>2016年~2019年浙江省省政府奖学金</li><li>2017年 宁波大学特等奖学金</li><li>2017年 宁波大学一等奖学金</li><li>2016年 宁波大学三好学生</li><li>2017年 宁波大学优秀大学生</li><li>2018年 宁波大学优秀学生干部</li><li>2019年 宁波大学优秀毕业生</li>
                 </ul>
               
             
@@ -701,7 +701,7 @@ svg:not(:root).svg-inline--fa, svg:not(:host).svg-inline--fa {
             
               
                 <div class="section">
-                  <p>1. 熟悉C/C++,Verilog HDL, SystemVerilog ,Python等常用编程语言</p><p>2. 掌握git.svn版本管理工具以及 makefile等工具脚本</p><p>3. 熟悉APB,AHB,以及AXI的AMBA协议</p><p>4. 掌握vcs， verdi ， spyglass， PowerArtist， Degin Compile 等EDA工具</p><p>5. 熟悉芯片时钟/复位，低功耗设计的方法学</p><p>6. 了解图像去雾， Gamma变换等图像处理算法</p><p>7. 基于混合编码结构的H.264、 H.265 、 H.266 视频编码协议</p><p>8. 了解AI芯片架构， cache 缓存一致性等基础的计算体系结构</p><p>9. 性格开朗，积极主动，勤学好问，具有较好的快速学习能力和独立解决问题的能力</p>
+                  <p>1. 熟悉C/C++,Verilog HDL,SystemVerilog,Python等常用编程语言</p><p>2. 掌握git.svn版本管理工具以及 makefile等工具脚本</p><p>3. 掌握APB,AHB,以及AXI的AMBA协议</p><p>4. 掌握vcs,verdi,spyglass,PowerArtist,DeginCompile等EDA工具</p><p>5. 熟悉基于混合编码结构的H.264、H.265、H.266视频编码协议</p><p>6. 了解图像去雾,Gamma变换等图像处理算法</p><p>7. 了解AI芯片架构,cache缓存一致性等基础的计算体系结构</p><p>8. 了解芯片时钟/复位,低功耗设计的方法学</p><p>9. 性格开朗,积极主动,勤学好问,具有较好的快速学习能力和独立解决问题的能力</p>
                 </div>
               
             
