@@ -174,8 +174,7 @@
 .radio-skin,
 .radio-skin--article,
 .radio-skin--app,
-.radio-skin--event,
-.radio-skin--me {
+.radio-skin--event {
   height: 100%;
   width: 2px;
   border-radius: 1px;
@@ -185,8 +184,7 @@
 .radio-skin::after,
 .radio-skin--article::after,
 .radio-skin--app::after,
-.radio-skin--event::after,
-.radio-skin--me::after {
+.radio-skin--event::after {
   transition: all 0.4s ease;
   display: block;
   height: 20px;
@@ -263,29 +261,6 @@
 }
 .timeline-item-event .line-date-tag,
 .timeline-item-event--hidden .line-date-tag {
-  background-color: #568dc4;
-}
-/*
-  .timeline-item-app, .timeline-item-event {
-    font-weight: bold;
-  }
-  */
-.radio-skin--me::after {
-  border-color: #568dc4;
-}
-#radio-me:checked+.radio-skin--me {
-  background-color: #568dc4;
-}
-#radio-me:checked+.radio-skin--me::after {
-  background-color: #568dc4;
-  top: -2px;
-}
-.timeline-item-me .line-anchor::after,
-.timeline-item-me--hidden .line-anchor::after {
-  background-color: #568dc4;
-}
-.timeline-item-me .line-date-tag,
-.timeline-item-me--hidden .line-date-tag {
   background-color: #568dc4;
 }
 /*
