@@ -164,7 +164,30 @@
             
           </div>
         
-        <h1 id="熵编码"><a href="#熵编码" class="headerlink" title="熵编码"></a>熵编码</h1>
+        <h1 id="1-熵编码"><a href="#1-熵编码" class="headerlink" title="1.熵编码"></a>1.熵编码</h1><h2 id="1-1-研究背景"><a href="#1-1-研究背景" class="headerlink" title="1.1 研究背景"></a>1.1 研究背景</h2><p>数据压缩技术的理论基础就是<strong>信息论</strong>。信息论中的信源编码理论解决的主要问题：<br>（1）数据压缩的理论极限；<br>（2）数据压缩的基本途径。<br>根据信息论的原理，可以找到最佳数据压缩编码的方法。数据压缩的理论极限是<strong>信息熵</strong>。信息熵为信源的平均信息量（不确定性的度量）。</p>
+<p>如果要求编码过程中不丢失信息量，即要求保存信息熵，这种信息保持编码叫<strong>熵编码</strong>，是根据消息出现概率的分布特性而进行的，是无损数据压缩编码。因此，熵编码即编码过程中按熵原理不丢失任何信息的编码。</p>
+<h2 id="1-2-常见的熵编码"><a href="#1-2-常见的熵编码" class="headerlink" title="1.2 常见的熵编码"></a>1.2 常见的熵编码</h2><p>在视频编码中，熵编码把一系列用来<strong>表示视频序列的元素符号</strong>转变为一个用来<strong>传输或是存储的压缩码流</strong>。输入的符号可能包括量化后的变换系数，运动向量，头信息（宏块头，图象头，序列的头等）以及附加信息（对于正确解码来说重要的标记位信息）。</p>
+<p>常见的熵编码有：</p>
+<ol>
+<li><p>香农(Shannon)编码</p>
+</li>
+<li><p>哈夫曼(Huffman)编码 </p>
+</li>
+<li><p>算术编码(arithmetic coding)</p>
+</li>
+<li><p>行程编码 （RLE） </p>
+</li>
+<li><p>基于上下文的自适应变长编码（CAVLC） </p>
+</li>
+<li><p>基于上下文的自适应二进制算术编码（CABAC）</p>
+</li>
+</ol>
+<p>熵编码一个很重要的应用领域就是图像压缩。<br>下面是JPEG的编码流程。蓝色框中的编码就是用了熵编码。</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/16d8e98e5d1aa56f2122a86ba4792490.png" alt="在这里插入图片描述"></p>
+<p>至于其他的视频标准，如MPEG2，H264, H265，编码流程都是大同小异，过程无非都是采样-DCT-量化-编码。它们都会用到<strong>熵编码</strong>，例如<strong>JPEG用的是Huffman编码和算术编码，H264用的是CAVLC和CABAC</strong>。</p>
+<h1 id="2-熵编码类型"><a href="#2-熵编码类型" class="headerlink" title="2.熵编码类型"></a>2.熵编码类型</h1><h2 id="2-1-整数位元法"><a href="#2-1-整数位元法" class="headerlink" title="2.1 整数位元法"></a>2.1 整数位元法</h2><h2 id="2-2-CABAC"><a href="#2-2-CABAC" class="headerlink" title="2.2 CABAC"></a>2.2 CABAC</h2><p>基于上下文的二进制算术编码（Context-Based Adaptive Binary Arithmetic Coding,CABAC）将自适应二进制算术编码和上下文模型相结合，是H.265&#x2F;HEVC的主要熵编码方案。主要包括三个步骤：<br>1.二进制化；<br>2.上下文建模；<br>3.二进制算术编码；<br>其流程如下：</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/b84aa1b83f8a041a057e3de70f00195b.png" alt="在这里插入图片描述"></p>
+
       </div>
     </div>
     
@@ -236,7 +259,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波" rel="bookmark">深度解析H.266/VVC环路滤波</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波" rel="bookmark">深度解析H.266/VVC环路滤波</a></div></div></div>
     
   </div>
 </div>
