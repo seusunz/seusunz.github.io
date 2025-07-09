@@ -634,25 +634,25 @@ svg:not(:root).svg-inline--fa, svg:not(:host).svg-inline--fa {
             
               
                 <a href="#" class="section__head">
-                  <div class="section-title">腾讯沧海V2-CABAC</div>
+                  <div class="section-title">2024.12-2025.6 腾讯沧海V2-CABAC</div>
                   <div class="section-title-des">负责VVC标准熵编码核心IP设计（5nm工艺 | 1.2GHz）</div>
                 </a>
                 <p>1.架构创新：设计三级流水熵编码引擎，实现32bins/cycle吞吐量，较参考设计提升3.2倍</p><p>2.关键技术： - 512-entry CAM上下文管理：支持128种QP-Context组合零周期切换 - Range-LPS计算单元：采用LUT压缩技术减少78%存储开销 - 32×32bit移位寄存器矩阵：消除比特流对齐气泡，带宽利用率99.2%</p><p>3.PPA优化：模块面积0.32mm²（优化22%），动态功耗降低31%（时钟门控覆盖率92%）</p><p>4.验证交付：建立UVM验证环境，功能覆盖率100%，时序收敛余量>0.25ns@1.2GHz</p>
               
                 <a href="#" class="section__head">
-                  <div class="section-title">腾讯沧海V2-ALF</div>
+                  <div class="section-title">2024.8-2024.12 腾讯沧海V2-ALF</div>
                   <div class="section-title-des">主导VVC标准环路滤波IP设计（4K@120fps | 10bit HDR）</div>
                 </a>
                 <p>1.架构设计：实现16抽头可重构滤波阵列，支持4类边界强度实时分类（延迟<8cycle）</p><p>2.算法硬化： - 混合精度计算：12bit Booth II乘法器+24bit CSA加法树 - 零系数跳过机制：基于ML预测模型（准确率98.7%）减少43%无效计算</p><p>3.数据流优化：跨CTU数据复用架构降低DDR带宽35%（12.8GB/s→8.3GB/s）</p><p>4.PPA成果：关键路径时序优化至0.71ns，功耗密度优化至0.38mW/MHz</p>
               
                 <a href="#" class="section__head">
-                  <div class="section-title">大疆创新E4芯片-ISP-YLTM</div>
+                  <div class="section-title">2023.5-2024.4 大疆创新E4芯片-ISP-YLTM</div>
                   <div class="section-title-des">负责ISP图像增强核心IP设计（4K@120fps | 800MHz）</div>
                 </a>
                 <p>1.架构创新： - 实时直方图统计：512-bin HDR流水线，窗处理延迟<120ns - AI-Mask融合架构：支持8类物体语义分割（精度95.4%），关键区域PSNR提升4.2dB</p><p>2.PPA优化： - SRAM空时复用技术：存储资源复用率提升60% - 计算单元重构：7×7高斯滤波窗分解为1D垂直+水平流水，复杂度从O(n²)降至O(2n)</p><p>3.系统集成：AXI突发传输效率88%，DDR回灌架构提升映射画质PSNR 2.1dB</p><p>4.交付成果：模块面积0.41mm²@6nm，功耗优化28%</p>
               
                 <a href="#" class="section__head">
-                  <div class="section-title">大疆创新-E4芯片-Codec-FME</div>
+                  <div class="section-title">2022.7-2023.4 大疆创新-E4芯片-Codec-FME</div>
                   <div class="section-title-des">主导H.265帧间预测模块优化（8K@60fps | 700MHz）</div>
                 </a>
                 <p>1.算法硬化： - 插值架构重构：消除XY方向冗余计算，处理周期从5减至3 - 参考像素压缩：12bit→8bit有损压缩（PSNR损失<0.1dB）</p><p>2.存储优化： - 移位寄存器链：SRAM访问频次降低37% - 32KB SRAM乒乓架构：读写带宽利用率95%</p><p>3.PPA成果：模块面积0.28mm²（优化15%），功耗122mW@700MHz（动态功耗降23%）</p>
