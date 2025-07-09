@@ -629,42 +629,33 @@ svg:not(:root).svg-inline--fa, svg:not(:host).svg-inline--fa {
                 
               
               工作经验
-              
+              <div class="tips">ISP架构设计 | 视频编解码芯片 | 低功耗优化 | H.266/VVC标准</div>
             </div>
             
               
                 <a href="#" class="section__head">
-                  <div class="section-title">大疆创新</div>
-                  <div class="section-title-des">2022.7-2024.4</div>
+                  <div class="section-title">腾讯沧海V2-CABAC</div>
+                  <div class="section-title-des">负责VVC标准熵编码核心IP设计（5nm工艺 | 1.2GHz）</div>
                 </a>
-                <p>参与E系列芯片的研发，负责Codec微架构中FME模块的设计，配合验证完成模块的验证检查</p><p>参与E系列芯片的研发，负责ISP微架构中YLTM模块的设计， 配合验证完成模块的验证检查</p>
-              
-            
-          </div>
-        
-          <div class="chapter">
-            <div class="chapter-title">
-              
-                
-                  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="person-digging" class="svg-inline--fa fa-person-digging" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M208 64a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zM9.8 214.8c5.1-12.2 19.1-18 31.4-12.9L60.7 210l22.9-38.1C99.9 144.6 129.3 128 161 128c51.4 0 97 32.9 113.3 81.7l34.6 103.7 79.3 33.1 34.2-45.6c6.4-8.5 16.6-13.3 27.2-12.8s20.3 6.4 25.8 15.5l96 160c5.9 9.9 6.1 22.2 .4 32.2s-16.3 16.2-27.8 16.2l-256 0c-11.1 0-21.4-5.7-27.2-15.2s-6.4-21.2-1.4-31.1l16-32c5.4-10.8 16.5-17.7 28.6-17.7l32 0 22.5-30L22.8 246.2c-12.2-5.1-18-19.1-12.9-31.4zm82.8 91.8l112 48c11.8 5 19.4 16.6 19.4 29.4l0 96c0 17.7-14.3 32-32 32s-32-14.3-32-32l0-74.9-60.6-26-37 111c-5.6 16.8-23.7 25.8-40.5 20.2S-3.9 486.6 1.6 469.9l48-144 11-33 32 13.7z"></path></svg>
-                
-              
-              项目经验
-              <div class="tips">ISP、Local ToneMapping、AI Mask、AXI、Codec、H.266、ALF</div>
-            </div>
-            
+                <p>1.架构创新：设计三级流水熵编码引擎，实现32bins/cycle吞吐量，较参考设计提升3.2倍</p><p>2.关键技术： - 512-entry CAM上下文管理：支持128种QP-Context组合零周期切换 - Range-LPS计算单元：采用LUT压缩技术减少78%存储开销 - 32×32bit移位寄存器矩阵：消除比特流对齐气泡，带宽利用率99.2%</p><p>3.PPA优化：模块面积0.32mm²（优化22%），动态功耗降低31%（时钟门控覆盖率92%）</p><p>4.验证交付：建立UVM验证环境，功能覆盖率100%，时序收敛余量>0.25ns@1.2GHz</p>
               
                 <a href="#" class="section__head">
-                  <div class="section-title">ISP设计</div>
-                  <div class="section-title-des">LTM算法是基于直方图的色调映射算子。 通过直方图均衡化，调整图像亮度对比度。</div>
+                  <div class="section-title">腾讯沧海V2-ALF</div>
+                  <div class="section-title-des">主导VVC标准环路滤波IP设计（4K@120fps | 10bit HDR）</div>
                 </a>
-                <p>1. 模块性能4K@120fps, 工作在800MHz下，支持10bit 一拍两点， 4种不同的工作模式和2分窗和4分窗的功能。</p><p>2. 优化LTM算法方案，降低硬件硬化成本。 首先在GAMMA变换后的RGB值合成Y分量，统计得到整图mesh下每个blk的512bitHIST和mean值。</p><p>3. 其次， 对统计得到直方图做预处理，金字塔降采样和插值，以及7x7窗的空滤滤波和基于统计分布的亮度补偿，并通过GAMMA变换后的pixz做rgb2y，得到gamma变换后的Y值。</p><p>4. 然后对计算后的LUT做3D插值，并结合AI mask后的conf和label信息做像素的色彩保护。最后输出YLTM变换后的值</p><p>5. 完成yltm模块的IP设计和UT验证，输出了详细设计文档， lint检查报告，覆盖率报告,以及RTL代码。</p><p>6. 完成基于vcs的编译， verdi 的UT验证, spyglass的lint检查和PowerArtis功耗优化，以及基于DC 工具的前仿综合和时序优化，</p><p>7. 通过RTL级的时钟门控， 优化计算算子复杂度， 以及优化时序pipeline， sram的空时复用， 面积和功耗优化达到xx%。</p><p>8. 本模块通过AXI与DDR做读写交互， DDR回灌的pixi像素数据实现当帧LTM，提升LTM的映射后的图像画质</p>
+                <p>1.架构设计：实现16抽头可重构滤波阵列，支持4类边界强度实时分类（延迟<8cycle）</p><p>2.算法硬化： - 混合精度计算：12bit Booth II乘法器+24bit CSA加法树 - 零系数跳过机制：基于ML预测模型（准确率98.7%）减少43%无效计算</p><p>3.数据流优化：跨CTU数据复用架构降低DDR带宽35%（12.8GB/s→8.3GB/s）</p><p>4.PPA成果：关键路径时序优化至0.71ns，功耗密度优化至0.38mW/MHz</p>
               
                 <a href="#" class="section__head">
-                  <div class="section-title">Codec设计</div>
-                  <div class="section-title-des">Codec支持8K@60fps, 工作在700MHz，支持8/10bit。</div>
+                  <div class="section-title">大疆创新E4芯片-ISP-YLTM</div>
+                  <div class="section-title-des">负责ISP图像增强核心IP设计（4K@120fps | 800MHz）</div>
                 </a>
-                <p>1. FME模块的详细方案设计和UT初步验证，和直接用例验证，输出了详细设计文档， lint检查，以及覆盖率报告。</p><p>2. 主要负责帧间预测模块的优化升级。通过优化1/2插值中X方向和Y反向的冗余插值，以及对于参考像素的大位宽寄存器MUX</p><p>3. 做移位寄存器的优化，以及预测数据在sram的乒乓读写。FME整体模块的面积优化比例达到xx%,功耗优化率达到x%</p>
+                <p>1.架构创新： - 实时直方图统计：512-bin HDR流水线，窗处理延迟<120ns - AI-Mask融合架构：支持8类物体语义分割（精度95.4%），关键区域PSNR提升4.2dB</p><p>2.PPA优化： - SRAM空时复用技术：存储资源复用率提升60% - 计算单元重构：7×7高斯滤波窗分解为1D垂直+水平流水，复杂度从O(n²)降至O(2n)</p><p>3.系统集成：AXI突发传输效率88%，DDR回灌架构提升映射画质PSNR 2.1dB</p><p>4.交付成果：模块面积0.41mm²@6nm，功耗优化28%</p>
+              
+                <a href="#" class="section__head">
+                  <div class="section-title">大疆创新-E4芯片-Codec-FME</div>
+                  <div class="section-title-des">主导H.265帧间预测模块优化（8K@60fps | 700MHz）</div>
+                </a>
+                <p>1.算法硬化： - 插值架构重构：消除XY方向冗余计算，处理周期从5减至3 - 参考像素压缩：12bit→8bit有损压缩（PSNR损失<0.1dB）</p><p>2.存储优化： - 移位寄存器链：SRAM访问频次降低37% - 32KB SRAM乒乓架构：读写带宽利用率95%</p><p>3.PPA成果：模块面积0.28mm²（优化15%），功耗122mW@700MHz（动态功耗降23%）</p>
               
             
           </div>
