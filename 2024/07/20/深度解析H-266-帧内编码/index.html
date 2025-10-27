@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        深度解析H.266/VVC帧内编码 | 九天之遥
+      
+    </title>
+    <meta name="description" content="书到用时方恨少，事非经过不知难" />
+    <meta name="keywords" content="" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner">
+      <div class="post-content__head">
+        <div class="post-title">深度解析H.266/VVC帧内编码</div>
+        <div class="post-info">
+          
+  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+
+
+          <span class="post-date">2024-07-20</span>
+        </div>
+      </div>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <p>预测编码（Prediction Coding）是指利用已编码的一个或多个样本值，根据某种模型或方法，对当前的样本值进行预测，对样本真实值和预测值之间的差值编码。视频中的每个像素看成一个信源符号，它通常与空域上或时域上邻近的像素具有较强的相关性，因此视频是一种有记忆信源。预测编码技术通过预测模型消除像素间的相关性，得到的差值信号可以认为没有相关性，或者相关性很小，因此可以作为无记忆信源进行编码。</p>
+<p>视频预测编码的主要思想是通过预测来消除像素间的相关性；主要分为帧内预测和帧间预测。<br><strong>帧内预测</strong>：利用当前图像内已编码像素生成预测值。<br><strong>帧间预测</strong>：利用当前图像之前已编码图像的重建像素生成预测值。</p>
+<h1 id="VVC-帧内预测编码过程"><a href="#VVC-帧内预测编码过程" class="headerlink" title="VVC 帧内预测编码过程"></a>VVC 帧内预测编码过程</h1><p>帧内预测技术是利用同一帧中相邻像素的相关性，利用当前块相邻区域的重建像素预测当前块中像素的技术，如下图所示，当前CU可以利用相邻A、B、C、D和E位置处的重建像素来预测当前CU中的像素。通过帧内预测之后，再将预测残差通过变换、量化等，可以有效地去除视频的空间冗余。<br><img src="https://i-blog.csdnimg.cn/direct/ab92afa4bd3d41a494f4523f146e666f.png" alt="在这里插入图片描述"><br>帧内预测是利用的视频的空间相关性，利用当前图像已经编码的像素预测当前像素，VVC的帧内预测方法主要分为两种方式：</p>
+<ul>
+<li>利用相邻（左边和上方）已经编码的像素预测当前像素（如角度预测模式）</li>
+<li>利用已经编码的颜色分量预测当前颜色分量的像素（如CCLM模式，用Y分量的像素预测色度分量的像素）</li>
+</ul>
+<p>为了提高帧内预测模式的性能，VVC中的帧内预测模式改进主要有以下几点：<br>引入了更大尺寸的预测块</p>
+<ul>
+<li>为了提高预测的精度，引入了更多的参考像素（MRL多参考行模式），针对参考像素的处理，使用了新的滤波技术（MDIS）</li>
+<li>引入了更多的方向性（65种角度预测模式）</li>
+<li>引入了跨分量预测（CCLM模式）</li>
+<li>引入了神经网络的思想（MIP技术）</li>
+<li>对预测后的像素进一步改进（PDPC技术）</li>
+<li>更小预测和变换块（ISP技术）</li>
+</ul>
+<h1 id="一、角度预测模式"><a href="#一、角度预测模式" class="headerlink" title="一、角度预测模式"></a>一、角度预测模式</h1><p>为了捕捉自然视频中呈现的更多的边缘方向，VVC在HEVC的33个角度预测模式的基础上，将角度预测模式扩展到了65个，再加上Planar模式和DC模式，共67个传统角度模式。</p>
+<p>角度预测模式的步骤为：</p>
+<h2 id="1-1-参考像素获取"><a href="#1-1-参考像素获取" class="headerlink" title="1.1 参考像素获取"></a>1.1 参考像素获取</h2><p>参考像素值获取模块是对当前CU相邻参考像素是否可用进行判断。</p>
+<p>H266沿用大范围边界像素作为当前CU的参考，当参考像素不可用或不存在时使用默认值填充的方式得等到参考像素值。<br>H266引用多参考行内预测（Multiple Reference Line Intra Prediction， MRLP）技术，领域像素可选范围扩展到当前CU上侧三行和左侧三列。得到邻域像素后，进行平滑滤波或差值滤波，引入依赖模式的帧内平滑（Mode Dependent Smoothing，MDIS）技术，根据预测模式和CU尺寸进行不同的滤波处理。</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/3fc97b3215d740c8889d6800f95c7f6b.png" alt="VVC帧内预测模板"></p>
+<h2 id="1-2-参考像素范围"><a href="#1-2-参考像素范围" class="headerlink" title="1.2 参考像素范围"></a>1.2 参考像素范围</h2><ol>
+<li><p><strong>单参考行像素</strong></p>
+<ul>
+<li>当参考像素不存在或者不可用时（比如图像边界、Slice边界、Tile边界或尚未编码块），H266使用最邻近的像素进行填充，比如下图A的参考像素不存在，则A所有像素都用B的最下方的像素进行填充。</li>
+<li>如果所有区域参考像素都不可用，则用固定值填充；Mid&#x3D;1&lt;&lt;(bitdepth-1)；</li>
+<li>如果像素比特深度是8，则固定值是128，如果是10，则固定值是512；例如第一个CU的参考像素就是用固定值填充。<br> <img src="https://i-blog.csdnimg.cn/direct/6a485539a7ec4bcbaf2efc46d89ade90.png" alt="在这里插入图片描述"></li>
+</ul>
+</li>
+<li><p>多参考行像素（MRLP）<br>MRLP技术允许使用邻近的3行（列）参考像素，选择其中的1行（列）生成预测值，对于不存在或者不可用的像素，采用于单行相同的填充方式。为了平衡性能，仅允许MPM列表中的模式使用MRLP技术。<br><img src="https://i-blog.csdnimg.cn/direct/4a385793825f4e17835b2e4bdb06b4a9.png" alt="在这里插入图片描述"></p>
+</li>
+</ol>
+<h2 id="1-3-参考像素平滑滤波（MDIS）"><a href="#1-3-参考像素平滑滤波（MDIS）" class="headerlink" title="1.3 参考像素平滑滤波（MDIS）"></a>1.3 参考像素平滑滤波（MDIS）</h2><p>在HEVC中，对角度预测模式（不包括Planar和DC）使用两抽头线性插值滤波器进行滤波。<br>在VVC中，采用四抽头高斯插值滤波器来进行滤波，从而提高帧内角度预测精度。</p>
+<p>VVC协议中MDIS 帧内参考像素滤波总共存在三种滤波器，即满足条件下的整数平滑滤波、非整像素下的三次插值滤波器、非整像素的高斯插值滤波器。</p>
+<ul>
+<li>一种是对满足一定条件下的参考像素进行平滑滤波 ([1 2 1]&#x2F;4 滤波器)；</li>
+<li>另外两种是对预测时非整数像素位置的插值滤波器，VVC共使用两组四抽头的插值滤波器：三次插值滤波器和高斯插值滤波器，其中三次插值滤波器能保留更多细节纹理，高斯插值滤波器的滤波效果更为平滑。</li>
+</ul>
+<ol>
+<li><strong>整数平滑滤波</strong><br>是否对参考像素进行滤波由当前CU的大小、预测模式等条件，需要同时满足如下表格中的五个条件才能使用平滑滤波。<br>滤波方法为3抽头滤波器，抽头系数为[0.25， 0.5， 0.25]。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="center">序号</th>
+<th align="left">条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="left">参考行限制：预测过程使用单参考行像素</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="left">大小限制：预测过程使用单参考行像素</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="left">仅对亮度分量使用</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="left">不适用ISP模式</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="left">模式限制：当前CU选择的模式属于Planar模式或者对角模式</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li><p><strong>三次插值滤波器</strong><br>在非整像素可以保留更多的细节纹理，满如条件中（使用了MRLP技术或ISP技术、使用了Planar模式或对角模式、 Distmin &lt;&#x3D;Thr[n] ）其中一个即可使用。</p>
+</li>
+<li><p><strong>高斯插值滤波器</strong><br>滤波效果更加平滑，应用更加广泛，不满足三次插值滤波器时使用。</p>
+</li>
+</ol>
+<h1 id="二、预测值计算"><a href="#二、预测值计算" class="headerlink" title="二、预测值计算"></a>二、预测值计算</h1><p>根据参考像素值，采用特定的预测模式计算待编码CU每个像素的预测值。</p>
+<ul>
+<li>H266将角度预测模式扩展到了65种，加上DC模式和Planar模式一共67种模式称为传统预测模式。</li>
+<li>针对宽高不等的方形CU，宽角度帧内预测（Wide Angle Intra Prediction，WAIP）技术表达了更多的预测方向，模式编码扩展[-14, 80]。</li>
+<li>H266还引入了基于矩阵的帧内预测（Matrix-based Intra Prediction，MIP）技术，借助神经网络离线训练得到的多个权重矩阵生成预测值，对传统预测模式有效补充。</li>
+</ul>
+<p><img src="https://i-blog.csdnimg.cn/direct/aa92ce184d86484fb9b31f5fe71cd3b1.png" alt="在这里插入图片描述"></p>
+<h2 id="2-1-Planar模式"><a href="#2-1-Planar模式" class="headerlink" title="2.1 Planar模式"></a>2.1 Planar模式</h2><p>编号0，适用于像素值缓慢变化的区域，其预测像素可以看成是水平、垂直两个方向预测值的平均值。</p>
+<h2 id="2-2-DC-模式"><a href="#2-2-DC-模式" class="headerlink" title="2.2 DC 模式"></a>2.2 DC 模式</h2><p>编号1，适用于大面积平坦区域，DC模式需要计算出当前CU左侧及上方参考像素的平均值。</p>
+<h2 id="2-3-传统角度预测模式"><a href="#2-3-传统角度预测模式" class="headerlink" title="2.3 传统角度预测模式"></a>2.3 传统角度预测模式</h2><p>位于-135°~45°内，水平类模式编号为2 ~ 33，垂直类编号34 ~ 66；每种角度预测模式都相当于在水平或垂直方向做了角度偏移，如下表。<br><img src="https://i-blog.csdnimg.cn/direct/8db351609af64f9ab18cabefdc68ba87.png" alt="在这里插入图片描述"><br>为了捕捉自然视频中呈现的任意边缘方向，VVC中的帧内传统角度预测模式数从HEVC中使用的33个扩展到65个。<br>在下图中，VVC中的新的角度预测模式被描绘成红色虚线箭头，并且planar和DC模式保持不变。<br><img src="https://i-blog.csdnimg.cn/direct/aed2cd308243473c83b9298cf2ab3918.png" alt="在这里插入图片描述"><br>在HEVC中，每个帧内编码块都是正方形的且每边的长度是2的幂，因此，使用DC模式进行帧内预测时不需要除法运算。<br>在VVC中，帧内编码块可以是矩形，为了避免用DC模式进行帧内预测时需要进行除法运算，VVC只计算较长一边的均值作为预测值。<br><img src="https://i-blog.csdnimg.cn/direct/7ca7a4328935475b85a069b15dd68415.png" alt="在这里插入图片描述"></p>
+<h2 id="2-4-宽角度预测模式"><a href="#2-4-宽角度预测模式" class="headerlink" title="2.4 宽角度预测模式"></a>2.4 宽角度预测模式</h2><p>在HEVC中，由于帧内预测块都是正方形的，所以各个角度预测模式使用的概率是相等的。<br>在VVC中，帧内预测块可能是矩形块，对于水平类的块（宽大于高）上边的参考像素使用概率大于左边参考像素的使用概率，对于垂直类的块（高大于宽）上边的参考像素使用概率小于左边参考像素的使用概率。</p>
+<p>因此，VVC引入了宽角度预测模式，在对矩形块预测时，将传统的角度预测模式转换为宽角度预测模式。<br>如图，模式2 ~ 66表示传统的帧内预测模式，模式 -1 ~ -14以及模式67 ~ 80表示宽角度预测模式。<br><img src="https://i-blog.csdnimg.cn/direct/37ec2ce82df64e90a2847468dc52322c.png" alt="在这里插入图片描述"><br>宽角度预测模式仍然使用传统角度模式索引发出信号，在解码端在将传统角度模式再转换为宽角度预测模式，这样的话帧内预测模式的总数和帧内模式编码方法保持不变, 并且帧内模式编码方法不变。</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/63926bc7c2a9418286c2c8b41d60d716.png" alt="在这里插入图片描述"><br>在H266中，二叉树划分和三叉树划分都会导致非方形CU的出现，传统的角度模式范围可能会限制非方形CU对参考像素的选择。<br>相应的角度偏移如下表。针对非方形CU，增加宽角度预测模式后，仍使用65重候选角度预测模式，即增加的宽角度预测模式替换了部分传统角度预测模式；一般会根据宽高比来替换不同的传统角度编号。<br><img src="https://i-blog.csdnimg.cn/direct/b03d6705715f4251bb3cf12cb4e19442.png" alt="在这里插入图片描述"></p>
+<p>宽角度帧内预测模式的替换取决于块的宽高比。<br>具体如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th align="center">宽高比</th>
+<th align="center">被替换的角度模式</th>
+<th align="center">替换后的角度模式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 16</td>
+<td align="center">Modes 2,3,4,5,6,7,8,9,10,11,12, 13,14,15</td>
+<td align="center">Modes 67，68，69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80</td>
+</tr>
+<tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 8</td>
+<td align="center">Modes 2,3,4,5,6,7,8,9,10,11,12, 13</td>
+<td align="center">Modes 67，68，69, 70, 71, 72, 73, 74, 75, 76, 77, 78</td>
+</tr>
+<tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 4</td>
+<td align="center">Modes 2,3,4,5,6,7,8,9,10,11</td>
+<td align="center">Modes 67，68，69, 70, 71, 72, 73, 74, 75, 76</td>
+</tr>
+<tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 2</td>
+<td align="center">Modes 2,3,4,5,6,7,8,9</td>
+<td align="center">Modes 67，68，69, 70, 71, 72</td>
+</tr>
+<tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 1</td>
+<td align="center">None</td>
+<td align="center">None</td>
+</tr>
+<tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 1&#x2F;2</td>
+<td align="center">Modes 59,60,61,62,63,64,65,66</td>
+<td align="center">Modes -6，-5，-4，-3，-2，-1</td>
+</tr>
+<tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 1&#x2F;4</td>
+<td align="center">Mode 57,58,59,60,61,62,63,64,65,66</td>
+<td align="center">-10，-9，-8，-7，-6，-5，-4，-3，-2，-1</td>
+</tr>
+<tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 1&#x2F;8</td>
+<td align="center">Modes 55, 56,57,58,59,60,61,62,63,64,65,66</td>
+<td align="center">-12，-11，-10，-9，-8，-7，-6，-5，-4，-3，-2，-1</td>
+</tr>
+<tr>
+<td align="center">W &#x2F; H &#x3D;&#x3D; 1&#x2F;16</td>
+<td align="center">Modes 53, 54, 55, 56,57,58,59,60,61,62,63,64,65,66</td>
+<td align="center">Modes	-14，-13，-12，-11，-10，-9，-8，-7，-6，-5，-4，-3，-2，-1</td>
+</tr>
+</tbody></table>
+<p><img src="https://i-blog.csdnimg.cn/direct/3cb5191642ce499c80cdb9698bd1a8f9.png" alt="在这里插入图片描述"><br>如上图所示，当对矩形块使用宽角度预测时，垂直相邻的两个预测像素可能使用两个不相邻的参考像素。<br>为了减少参考像素间距∆pα带来的负面影响，需要对参考像素进行低通滤波和平滑处理。<br>当预测模式是[-14, -12, -10, -6, 72, 76, 78, 80]时，参考像素可以不经处理直接使用。</p>
+<p>角度模式向宽角度模式的转换代码如下所示：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">PU::getWideAngle</span><span class="hljs-params">( <span class="hljs-type">const</span> TransformUnit &amp;tu, <span class="hljs-type">const</span> <span class="hljs-type">uint32_t</span> dirMode, <span class="hljs-type">const</span> ComponentID compID )</span></span>&#123;<br>  <span class="hljs-comment">//This function returns a wide angle index taking into account that the values 0 and 1 are reserved </span><br>  <span class="hljs-comment">//for Planar and DC respectively, as defined in the Spec. Text.</span><br>  <span class="hljs-keyword">if</span>( dirMode &lt; <span class="hljs-number">2</span> )<br>  &#123;<br>    <span class="hljs-keyword">return</span> ( <span class="hljs-type">int</span> ) dirMode;<br>  &#125;<br> <br>  <span class="hljs-type">const</span> CompArea&amp;  area         = tu.cu-&gt;ispMode &amp;&amp; <span class="hljs-built_in">isLuma</span>(compID) ? tu.cu-&gt;blocks[compID] : tu.blocks[ compID ];<br>  <span class="hljs-type">int</span>              width        = area.width;<br>  <span class="hljs-type">int</span>              height       = area.height;<br>  <span class="hljs-type">int</span>              modeShift[ ] = &#123; <span class="hljs-number">0</span>, <span class="hljs-number">6</span>, <span class="hljs-number">10</span>, <span class="hljs-number">12</span>, <span class="hljs-number">14</span>, <span class="hljs-number">15</span> &#125;;<br>  <span class="hljs-type">int</span>              deltaSize    = <span class="hljs-built_in">abs</span>( <span class="hljs-built_in">floorLog2</span>( width ) - <span class="hljs-built_in">floorLog2</span>( height ) );<br>  <span class="hljs-type">int</span>              predMode     = dirMode;<br> <br>  <span class="hljs-keyword">if</span>( width &gt; height &amp;&amp; dirMode &lt; <span class="hljs-number">2</span> + modeShift[ deltaSize ] )<br>  &#123;<br>    predMode += ( VDIA_IDX - <span class="hljs-number">1</span> );<br>  &#125;<br>  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>( height &gt; width &amp;&amp; predMode &gt; VDIA_IDX - modeShift[ deltaSize ] )<br>  &#123;<br>    predMode -= ( VDIA_IDX + <span class="hljs-number">1</span> );<br>  &#125;<br> <br>  <span class="hljs-keyword">return</span> predMode;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+<h2 id="2-5-基于矩阵的预测模式-MIP"><a href="#2-5-基于矩阵的预测模式-MIP" class="headerlink" title="2.5 基于矩阵的预测模式(MIP)"></a>2.5 基于矩阵的预测模式(MIP)</h2><p>传统预测模式及宽角度预测模式都是以像素映射或线性渐变方式计算预测值，无法对不规则纹理做出有效的预测。<br>H266标准使用了MIP技术，采用离线训练神经网络的方法，得到多个固定的权重矩阵，进而利用权重矩阵计算预测值。<br>参考像素经过处理后得到输入向量，输入向量与权重矩阵相乘得到输出向量，经过进一步排列和上采样得到待编码CU的预测值。<br><img src="https://i-blog.csdnimg.cn/direct/85a03502c0c248c8877f0ed078c57a21.png" alt="在这里插入图片描述"></p>
+<h1 id="三、-预测值修正"><a href="#三、-预测值修正" class="headerlink" title="三、 预测值修正"></a>三、 预测值修正</h1><h2 id="3-1-位置决定的帧内预测组合-PDPC"><a href="#3-1-位置决定的帧内预测组合-PDPC" class="headerlink" title="3.1 位置决定的帧内预测组合(PDPC)"></a>3.1 位置决定的帧内预测组合(PDPC)</h2><h2 id="3-2-帧内子区域划分-ISP"><a href="#3-2-帧内子区域划分-ISP" class="headerlink" title="3.2 帧内子区域划分(ISP)"></a>3.2 帧内子区域划分(ISP)</h2><p>ISP技术旨在充分利用与待预测像素距离相近的参考像素进行预测。<br>根据编码块得到大小，将亮度帧内预测块垂直划分或水平划分为若干个子区域，并按照从左到右、从上到下的额顺序依次进行编码及重建。<br>ISP技术使帧内预测编码基于CU子区域进行，前一子区域编码之后的重建像素为下一子区域提供参考，各子区域共用一种帧内预测模式。<br><img src="https://i-blog.csdnimg.cn/direct/e878ac1aa0a04d1d8de9db1c8fe660f3.png" alt="在这里插入图片描述"></p>
+<h2 id="3-3-跨分支线性模型预测-CCLM）"><a href="#3-3-跨分支线性模型预测-CCLM）" class="headerlink" title="3.3  跨分支线性模型预测(CCLM）"></a>3.3  跨分支线性模型预测(CCLM）</h2><p>在H266中，CU色度分量进行预测编码前，亮度分量已经完成编码获得亮度重建值，因此亮度分量可以作为色度分量预测的参考信息。CCLM技术通过参考像素的亮度重建值和色度重建值建立分量间线性关系，根据待预测像素的亮度重建值计算色度预测值，过程如下图。<br><img src="https://i-blog.csdnimg.cn/direct/abd32af3615a46b8ba2242b1d60c1260.png" alt="在这里插入图片描述"></p>
+<h2 id="3-4-亮度分量的最可能模式（Most-Probable-Mode，MPM）技术"><a href="#3-4-亮度分量的最可能模式（Most-Probable-Mode，MPM）技术" class="headerlink" title="3.4 亮度分量的最可能模式（Most Probable Mode，MPM）技术"></a>3.4 亮度分量的最可能模式（Most Probable Mode，MPM）技术</h2><p>MPM技术充分利用相邻块预测模式之间的相关性，来进行亮度预测模式的编码。<br>如果直接对预测块的模式进行编码，那么对于67种模式需要7bit来编码，数据量很大。</p>
+<p>VVC采取和HEVC一样的方法，先构建最可能模式列表（most probable mode ，MPM）<br>在VVC内MPM list里有6个预测模式（无论是否应用MRL和ISP），</p>
+<ul>
+<li><p>如果该块的预测模式在MPM中只需要编码其索引号（只需要3bit），</p>
+</li>
+<li><p>如果该块的预测模式不在MPM中而是在61个non-MPM模式中，熵编码时使用截断二元码（TBC)编码其模式。<br><img src="https://i-blog.csdnimg.cn/direct/a5a793e0a31840f0959ff79459a2e7cc.png" alt="在这里插入图片描述"><br>MPM列表是基于左边相邻块和上方相邻块的帧内模式构造的，如上图所示，构造方法如下：</p>
+</li>
+<li><p>当左边块和上边块不可参考时，其帧内模式默认设置为Planar模式</p>
+</li>
+<li><p>如果左边块和上边块都是非角度模式时， MPM list -&gt; {Planar，DC，V，H，V–4，V+4}</p>
+</li>
+<li><p>如果左边块和上边块其中一个是角度模式，另一个不是角度模式时<br>  设Max是左边块和上边块较大的模式 , MPM list -&gt;{Planar, Max, Max − 1, Max + 1, Max − 2, Max + 2}</p>
+</li>
+<li><p>如果左边块和上边块都是角度模式且它们不同时<br>  设Max是左边块和上边块较大的模式<br>  设Min是左边块和上边块较小的模式</p>
+<ul>
+<li>如果Max - Min 的等于 1,  则 MPM list -&gt; {Planar, Left, Above, Min – 1, Max + 1, Min – 2}</li>
+<li>如果Max - Min 的大于等于62, 则MPM list -&gt;{Planar, Left, Above, Min + 1, Max – 1, Min + 2}</li>
+<li>如果Max - Min 的等于2 则MPM list -&gt; {Planar, Left, Above, Min + 1, Min – 1, Max + 1}<br>                              否则MPM list -&gt; {Planar, Left, Above, Min – 1, –Min + 1, Max – 1}</li>
+</ul>
+</li>
+<li><p>如果左边块和上边块时相同的角度模式时，<br>                                 MPM list –&gt;{Planar, Left, Left − 1, Left + 1, Left − 2, Left + 2}}</p>
+</li>
+</ul>
+<p>MPM索引码字的第一个bin是CABAC上下文编码的。<br>总共使用三个上下文，分别对应于当前帧内块是启用了MRL、启用了ISP还是正常的帧内块。<br>生成MPM列表时候，需要删除重复的模式，以便包含在MPM列表的模式唯一。</p>
+<p>具体建立过程：</p>
+<ol>
+<li>获得左下和右上相邻像素，分别记为A和B<br><img src="https://i-blog.csdnimg.cn/direct/912b8e5586904b008e10c1e136e93d66.png" alt="在这里插入图片描述"></li>
+<li>获取相邻像素A和B所在PU的帧内预测模式，获取方法如下：</li>
+</ol>
+<ul>
+<li>如果以下条件之一成立，则相邻PU的帧内预测模式设置为Planar模式 </li>
+<li>其相邻PU不可用</li>
+<li>相邻PU的编码模式不是帧内编码模式</li>
+<li>相邻PU是MIP模式</li>
+<li>相邻PU和当前PU不是位于同一个CTU</li>
+<li>否则，获取其相邻PU的帧内预测模式</li>
+</ul>
+<ol start="3">
+<li>将相邻像素A、B所处PU的预测模式分别记为A、B，则MPM列表构建如下：<br>(1) A &#x3D;B 且 A &gt; B</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[0]</th>
+<th align="center">Planar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[1]</td>
+<td align="center">A</td>
+</tr>
+<tr>
+<td align="center">MPM[2]</td>
+<td align="center">2 + ( ( A +61 ) % 64 )</td>
+</tr>
+<tr>
+<td align="center">MPM[2]</td>
+<td align="center">2 + ( ( A -1 ) % 64 )</td>
+</tr>
+<tr>
+<td align="center">MPM[3]</td>
+<td align="center">2 + ( ( A +60 ) % 64 )</td>
+</tr>
+<tr>
+<td align="center">MPM[4]</td>
+<td align="center">2 + ( A  % 64 )</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">VER+4</td>
+</tr>
+</tbody></table>
+<p>(2) A ≠ B，A &gt; DC且B &gt; DC<br>记MinAB &#x3D; Min(A,B), MaxAB &#x3D; max(A,B)</p>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[0]</th>
+<th align="center">Planar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[4]</td>
+<td align="center">A</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">B</td>
+</tr>
+</tbody></table>
+<ul>
+<li>若maxAB - minAB &#x3D; 1，则</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[3]</th>
+<th align="center">2+((minAB+61))%64</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[4]</td>
+<td align="center">2+((maxAB-1))%64</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">2+(minAB)%64</td>
+</tr>
+</tbody></table>
+<ul>
+<li>若maxAB - minAB &gt;&#x3D; 62，则</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[3]</th>
+<th align="center">2+((minAB+61))%64</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[4]</td>
+<td align="center">2+((maxAB-1))%64</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">2+(minAB+60)%64</td>
+</tr>
+</tbody></table>
+<ul>
+<li>若maxAB - minAB &gt;&#x3D;62，则</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[3]</th>
+<th align="center">2+((minAB-1))%64</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[4]</td>
+<td align="center">2+((maxAB+61))%64</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">2+(minAB)%64</td>
+</tr>
+</tbody></table>
+<ul>
+<li>若maxAB - minAB &#x3D; 2，则</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[3]</th>
+<th align="center">2+((minAB-1))%64</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[4]</td>
+<td align="center">2+((minAB+61))%64</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">2+(maxAB)%64</td>
+</tr>
+</tbody></table>
+<ul>
+<li>否则</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[3]</th>
+<th align="center">2+((minAB+61))%64</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[4]</td>
+<td align="center">2+((minAB-1))%64</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">2+(maxAB+61)%64</td>
+</tr>
+</tbody></table>
+<p>(3) A ≠ B，A &gt; DC 或 B &gt; DC</p>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[0]</th>
+<th align="center">Planar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[1]</td>
+<td align="center">maxAB</td>
+</tr>
+<tr>
+<td align="center">MPM[2]</td>
+<td align="center">2 + ( ( maxAB + 61 ) % 64 )</td>
+</tr>
+<tr>
+<td align="center">MPM[3]</td>
+<td align="center">2 + ( ( maxAB − 1 ) % 64 )</td>
+</tr>
+<tr>
+<td align="center">MPM[4]</td>
+<td align="center">2 + ( ( maxAB + 60 ) % 64 )</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">2 + ( maxAB % 64 )</td>
+</tr>
+</tbody></table>
+<p>(4) 否则</p>
+<table>
+<thead>
+<tr>
+<th align="center">MPM[0]</th>
+<th align="center">Planar</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MPM[1]</td>
+<td align="center">DC</td>
+</tr>
+<tr>
+<td align="center">MPM[2]</td>
+<td align="center">DC</td>
+</tr>
+<tr>
+<td align="center">MPM[2]</td>
+<td align="center">VER</td>
+</tr>
+<tr>
+<td align="center">MPM[3]</td>
+<td align="center">HOR</td>
+</tr>
+<tr>
+<td align="center">MPM[4]</td>
+<td align="center">VER-4</td>
+</tr>
+<tr>
+<td align="center">MPM[5]</td>
+<td align="center">VER+4</td>
+</tr>
+</tbody></table>
+<p>具体代码:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">PU::getIntraMPMs</span><span class="hljs-params">( <span class="hljs-type">const</span> PredictionUnit &amp;pu, <span class="hljs-type">unsigned</span>* mpm, <span class="hljs-type">const</span> ChannelType &amp;channelType <span class="hljs-comment">/*= CHANNEL_TYPE_LUMA*/</span> )</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-type">const</span> <span class="hljs-type">int</span> numMPMs = NUM_MOST_PROBABLE_MODES;<br>  &#123;<br>    <span class="hljs-built_in">CHECK</span>(channelType != CHANNEL_TYPE_LUMA, <span class="hljs-string">&quot;Not harmonized yet&quot;</span>);<br>    <span class="hljs-type">int</span> numCand      = <span class="hljs-number">-1</span>;<br>    <span class="hljs-type">int</span> leftIntraDir = PLANAR_IDX, aboveIntraDir = PLANAR_IDX;<span class="hljs-comment">//将左相邻块和上相邻块预测模式设置为Planar模式</span><br> <br>    <span class="hljs-type">const</span> CompArea &amp;area = pu.<span class="hljs-built_in">block</span>(<span class="hljs-built_in">getFirstComponentOfChannel</span>(channelType));<br>    <span class="hljs-type">const</span> Position posRT = area.<span class="hljs-built_in">topRight</span>();<span class="hljs-comment">//当前块的左上角</span><br>    <span class="hljs-type">const</span> Position posLB = area.<span class="hljs-built_in">bottomLeft</span>();<span class="hljs-comment">//当前块的右下角</span><br> <br>    <span class="hljs-comment">// Get intra direction of left PU</span><br>    <span class="hljs-comment">// 获得左相邻PU</span><br>    <span class="hljs-type">const</span> PredictionUnit *puLeft = pu.cs-&gt;<span class="hljs-built_in">getPURestricted</span>(posLB.<span class="hljs-built_in">offset</span>(<span class="hljs-number">-1</span>, <span class="hljs-number">0</span>), pu, channelType);<br>    <span class="hljs-keyword">if</span> (puLeft &amp;&amp; CU::<span class="hljs-built_in">isIntra</span>(*puLeft-&gt;cu))<br>    &#123;<br>      leftIntraDir = PU::<span class="hljs-built_in">getIntraDirLuma</span>( *puLeft );<span class="hljs-comment">//获得左相邻PU的预测模式</span><br>    &#125;<br> <br>    <span class="hljs-comment">// Get intra direction of above PU</span><br>    <span class="hljs-comment">// 获得上相邻PU</span><br>    <span class="hljs-type">const</span> PredictionUnit *puAbove = pu.cs-&gt;<span class="hljs-built_in">getPURestricted</span>(posRT.<span class="hljs-built_in">offset</span>(<span class="hljs-number">0</span>, <span class="hljs-number">-1</span>), pu, channelType);<br>    <span class="hljs-keyword">if</span> (puAbove &amp;&amp; CU::<span class="hljs-built_in">isIntra</span>(*puAbove-&gt;cu) &amp;&amp; CU::<span class="hljs-built_in">isSameCtu</span>(*pu.cu, *puAbove-&gt;cu))<br>    &#123;<br>      aboveIntraDir = PU::<span class="hljs-built_in">getIntraDirLuma</span>( *puAbove );<span class="hljs-comment">//获得左相邻PU的预测模式</span><br>    &#125;<br> <br>    <span class="hljs-built_in">CHECK</span>(<span class="hljs-number">2</span> &gt;= numMPMs, <span class="hljs-string">&quot;Invalid number of most probable modes&quot;</span>);<br> <br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> offset = (<span class="hljs-type">int</span>)NUM_LUMA_MODE - <span class="hljs-number">6</span>;<span class="hljs-comment">//61</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> mod = offset + <span class="hljs-number">3</span>;<span class="hljs-comment">//64</span><br> <br>    &#123;<br>      mpm[<span class="hljs-number">0</span>] = PLANAR_IDX;<span class="hljs-comment">//Planar</span><br>      mpm[<span class="hljs-number">1</span>] = DC_IDX;<span class="hljs-comment">//DC</span><br>      mpm[<span class="hljs-number">2</span>] = VER_IDX;<span class="hljs-comment">//50</span><br>      mpm[<span class="hljs-number">3</span>] = HOR_IDX;<span class="hljs-comment">//18</span><br>      mpm[<span class="hljs-number">4</span>] = VER_IDX - <span class="hljs-number">4</span>;<span class="hljs-comment">//46</span><br>      mpm[<span class="hljs-number">5</span>] = VER_IDX + <span class="hljs-number">4</span>;<span class="hljs-comment">//54</span><br> <br>      <span class="hljs-keyword">if</span> (leftIntraDir == aboveIntraDir)<br>      &#123;<br>        numCand = <span class="hljs-number">1</span>;<br>        <span class="hljs-keyword">if</span> (leftIntraDir &gt; DC_IDX)<br>        &#123;<br>          mpm[<span class="hljs-number">0</span>] = PLANAR_IDX;<br>          mpm[<span class="hljs-number">1</span>] = leftIntraDir;<br>          mpm[<span class="hljs-number">2</span>] = ((leftIntraDir + offset) % mod) + <span class="hljs-number">2</span>;<br>          mpm[<span class="hljs-number">3</span>] = ((leftIntraDir - <span class="hljs-number">1</span>) % mod) + <span class="hljs-number">2</span>;<br>          mpm[<span class="hljs-number">4</span>] = ((leftIntraDir + offset - <span class="hljs-number">1</span>) % mod) + <span class="hljs-number">2</span>;<br>          mpm[<span class="hljs-number">5</span>] = ( leftIntraDir               % mod) + <span class="hljs-number">2</span>;<br>        &#125;<br>      &#125;<br>      <span class="hljs-keyword">else</span> <span class="hljs-comment">//L!=A</span><br>      &#123;<br>        numCand = <span class="hljs-number">2</span>;<br>        <span class="hljs-type">int</span>  maxCandModeIdx = mpm[<span class="hljs-number">0</span>] &gt; mpm[<span class="hljs-number">1</span>] ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>;<br> <br>        <span class="hljs-keyword">if</span> ((leftIntraDir &gt; DC_IDX) &amp;&amp; (aboveIntraDir &gt; DC_IDX))<br>        &#123;<br>          mpm[<span class="hljs-number">0</span>] = PLANAR_IDX;<br>          mpm[<span class="hljs-number">1</span>] = leftIntraDir;<br>          mpm[<span class="hljs-number">2</span>] = aboveIntraDir;<br>          maxCandModeIdx = mpm[<span class="hljs-number">1</span>] &gt; mpm[<span class="hljs-number">2</span>] ? <span class="hljs-number">1</span> : <span class="hljs-number">2</span>;<br>          <span class="hljs-type">int</span> minCandModeIdx = mpm[<span class="hljs-number">1</span>] &gt; mpm[<span class="hljs-number">2</span>] ? <span class="hljs-number">2</span> : <span class="hljs-number">1</span>;<br>          <span class="hljs-keyword">if</span> (mpm[maxCandModeIdx] - mpm[minCandModeIdx] == <span class="hljs-number">1</span>)<br>          &#123;<br>            mpm[<span class="hljs-number">3</span>] = ((mpm[minCandModeIdx] + offset)     % mod) + <span class="hljs-number">2</span>;<br>            mpm[<span class="hljs-number">4</span>] = ((mpm[maxCandModeIdx] - <span class="hljs-number">1</span>)          % mod) + <span class="hljs-number">2</span>;<br>            mpm[<span class="hljs-number">5</span>] = ((mpm[minCandModeIdx] + offset - <span class="hljs-number">1</span>) % mod) + <span class="hljs-number">2</span>;<br>          &#125;<br>          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (mpm[maxCandModeIdx] - mpm[minCandModeIdx] &gt;= <span class="hljs-number">62</span>)<br>          &#123;<br>            mpm[<span class="hljs-number">3</span>] = ((mpm[minCandModeIdx] - <span class="hljs-number">1</span>)      % mod) + <span class="hljs-number">2</span>;<br>            mpm[<span class="hljs-number">4</span>] = ((mpm[maxCandModeIdx] + offset) % mod) + <span class="hljs-number">2</span>;<br>            mpm[<span class="hljs-number">5</span>] = ( mpm[minCandModeIdx]           % mod) + <span class="hljs-number">2</span>;<br>          &#125;<br>          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (mpm[maxCandModeIdx] - mpm[minCandModeIdx] == <span class="hljs-number">2</span>)<br>          &#123;<br>            mpm[<span class="hljs-number">3</span>] = ((mpm[minCandModeIdx] - <span class="hljs-number">1</span>)      % mod) + <span class="hljs-number">2</span>;<br>            mpm[<span class="hljs-number">4</span>] = ((mpm[minCandModeIdx] + offset) % mod) + <span class="hljs-number">2</span>;<br>            mpm[<span class="hljs-number">5</span>] = ((mpm[maxCandModeIdx] - <span class="hljs-number">1</span>)      % mod) + <span class="hljs-number">2</span>;<br>          &#125;<br>          <span class="hljs-keyword">else</span><br>          &#123;<br>            mpm[<span class="hljs-number">3</span>] = ((mpm[minCandModeIdx] + offset) % mod) + <span class="hljs-number">2</span>;<br>            mpm[<span class="hljs-number">4</span>] = ((mpm[minCandModeIdx] - <span class="hljs-number">1</span>)      % mod) + <span class="hljs-number">2</span>;<br>            mpm[<span class="hljs-number">5</span>] = ((mpm[maxCandModeIdx] + offset) % mod) + <span class="hljs-number">2</span>;<br>          &#125;<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (leftIntraDir + aboveIntraDir &gt;= <span class="hljs-number">2</span>)<br>        &#123;<br>          mpm[<span class="hljs-number">0</span>] = PLANAR_IDX;<br>          mpm[<span class="hljs-number">1</span>] = (leftIntraDir &lt; aboveIntraDir) ? aboveIntraDir : leftIntraDir;<br>          maxCandModeIdx = <span class="hljs-number">1</span>;<br>          mpm[<span class="hljs-number">2</span>] = ((mpm[maxCandModeIdx] + offset)     % mod) + <span class="hljs-number">2</span>;<br>          mpm[<span class="hljs-number">3</span>] = ((mpm[maxCandModeIdx] - <span class="hljs-number">1</span>)          % mod) + <span class="hljs-number">2</span>;<br>          mpm[<span class="hljs-number">4</span>] = ((mpm[maxCandModeIdx] + offset - <span class="hljs-number">1</span>) % mod) + <span class="hljs-number">2</span>;<br>          mpm[<span class="hljs-number">5</span>] = ( mpm[maxCandModeIdx]               % mod) + <span class="hljs-number">2</span>;<br>        &#125;<br>      &#125;<br>    &#125;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; numMPMs; i++)<br>    &#123;<br>      <span class="hljs-built_in">CHECK</span>(mpm[i] &gt;= NUM_LUMA_MODE, <span class="hljs-string">&quot;Invalid MPM&quot;</span>);<br>    &#125;<br>    <span class="hljs-built_in">CHECK</span>(numCand == <span class="hljs-number">0</span>, <span class="hljs-string">&quot;No candidates found&quot;</span>);<br>    <span class="hljs-keyword">return</span> numCand;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>getPURestricted函数主要是根据位置获取PU</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><br><span class="hljs-function"><span class="hljs-type">const</span> PredictionUnit* <span class="hljs-title">CodingStructure::getPURestricted</span><span class="hljs-params">( <span class="hljs-type">const</span> Position &amp;pos, <span class="hljs-type">const</span> PredictionUnit&amp; curPu, <span class="hljs-type">const</span> ChannelType _chType )</span> <span class="hljs-type">const</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-type">const</span> PredictionUnit* pu = <span class="hljs-built_in">getPU</span>( pos, _chType );<br>  <span class="hljs-comment">// exists       same slice and tile                  pu precedes curPu in encoding order</span><br>  <span class="hljs-comment">//                                                  (thus, is either from parent CS in RD-search or its index is lower)</span><br>  <span class="hljs-comment">//存在 相同slice和Tile    PU在编码顺序中先于当前PU</span><br>  <span class="hljs-comment">//（因此，在RD搜索中是来自父CS的，或者其索引较低）</span><br>  <span class="hljs-type">const</span> <span class="hljs-type">bool</span> wavefrontsEnabled = curPu.cu-&gt;slice-&gt;<span class="hljs-built_in">getSPS</span>()-&gt;<span class="hljs-built_in">getEntropyCodingSyncEnabledFlag</span>();<br>  <span class="hljs-type">int</span> ctuSizeBit = <span class="hljs-built_in">floorLog2</span>(curPu.cs-&gt;sps-&gt;<span class="hljs-built_in">getMaxCUWidth</span>());<br>  <span class="hljs-type">int</span> xNbY  = pos.x &lt;&lt; <span class="hljs-built_in">getChannelTypeScaleX</span>( _chType, curPu.chromaFormat );<span class="hljs-comment">//相邻PU的左上角位置x</span><br>  <span class="hljs-type">int</span> xCurr = curPu.blocks[_chType].x &lt;&lt; <span class="hljs-built_in">getChannelTypeScaleX</span>( _chType, curPu.chromaFormat );<span class="hljs-comment">//当前PU的左上角位置x</span><br>  <span class="hljs-comment">//判断相邻PU和当前PU是否在同一CTU中</span><br>  <span class="hljs-type">bool</span> addCheck = (wavefrontsEnabled &amp;&amp; (xNbY &gt;&gt; ctuSizeBit) &gt;= (xCurr &gt;&gt; ctuSizeBit) + <span class="hljs-number">1</span> ) ? <span class="hljs-literal">false</span> : <span class="hljs-literal">true</span>;<br>  <span class="hljs-keyword">if</span>( pu &amp;&amp; CU::<span class="hljs-built_in">isSameSliceAndTile</span>( *pu-&gt;cu, *curPu.cu ) &amp;&amp; ( pu-&gt;cs != curPu.cs || pu-&gt;idx &lt;= curPu.idx ) &amp;&amp; addCheck )<br>  &#123;<br>    <span class="hljs-keyword">return</span> pu;<br>  &#125;<br>  <span class="hljs-keyword">else</span><br>  &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">nullptr</span>;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="3-5-色度分量亮度派生模式（Derived-Mode，DM）技术"><a href="#3-5-色度分量亮度派生模式（Derived-Mode，DM）技术" class="headerlink" title="3.5 色度分量亮度派生模式（Derived Mode，DM）技术"></a>3.5 色度分量亮度派生模式（Derived Mode，DM）技术</h2><p>针对色度预测模式编码，H266使用了DM模式，即直接使用对应位置的亮度预测查模式信息。</p>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2024/07/21/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>深度解析H.266/VVC帧间编码</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <div class="post-nav-item-right"></div>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC" rel="bookmark">深度解析H.266/VVC 熵编码CABAC</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波" rel="bookmark">深度解析H.266/VVC环路滤波</a></div></div></div>
+    
+  </div>
+</div>
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

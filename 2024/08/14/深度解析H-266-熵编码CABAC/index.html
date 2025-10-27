@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        深度解析H.266/VVC 熵编码CABAC | 九天之遥
+      
+    </title>
+    <meta name="description" content="书到用时方恨少，事非经过不知难" />
+    <meta name="keywords" content="" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner">
+      <div class="post-content__head">
+        <div class="post-title">深度解析H.266/VVC 熵编码CABAC</div>
+        <div class="post-info">
+          
+  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+
+
+          <span class="post-date">2024-08-14</span>
+        </div>
+      </div>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <h1 id="1-熵编码"><a href="#1-熵编码" class="headerlink" title="1.熵编码"></a>1.熵编码</h1><h2 id="1-1-研究背景"><a href="#1-1-研究背景" class="headerlink" title="1.1 研究背景"></a>1.1 研究背景</h2><p>数据压缩技术的理论基础就是<strong>信息论</strong>。信息论中的信源编码理论解决的主要问题：<br>（1）数据压缩的理论极限；<br>（2）数据压缩的基本途径。<br>根据信息论的原理，可以找到最佳数据压缩编码的方法。数据压缩的理论极限是<strong>信息熵</strong>。信息熵为信源的平均信息量（不确定性的度量）。</p>
+<p>如果要求编码过程中不丢失信息量，即要求保存信息熵，这种信息保持编码叫<strong>熵编码</strong>，是根据消息出现概率的分布特性而进行的，是无损数据压缩编码。因此，熵编码即编码过程中按熵原理不丢失任何信息的编码。</p>
+<h2 id="1-2-常见的熵编码"><a href="#1-2-常见的熵编码" class="headerlink" title="1.2 常见的熵编码"></a>1.2 常见的熵编码</h2><p>在视频编码中，熵编码把一系列用来<strong>表示视频序列的元素符号</strong>转变为一个用来<strong>传输或是存储的压缩码流</strong>。输入的符号可能包括量化后的变换系数，运动向量，头信息（宏块头，图象头，序列的头等）以及附加信息（对于正确解码来说重要的标记位信息）。</p>
+<p>常见的熵编码有：</p>
+<ol>
+<li><p>香农(Shannon)编码</p>
+</li>
+<li><p>哈夫曼(Huffman)编码 </p>
+</li>
+<li><p>算术编码(arithmetic coding)</p>
+</li>
+<li><p>行程编码 （RLE） </p>
+</li>
+<li><p>基于上下文的自适应变长编码（CAVLC） </p>
+</li>
+<li><p>基于上下文的自适应二进制算术编码（CABAC）</p>
+</li>
+</ol>
+<p>熵编码一个很重要的应用领域就是图像压缩。<br>下面是JPEG的编码流程。蓝色框中的编码就是用了熵编码。</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/16d8e98e5d1aa56f2122a86ba4792490.png" alt="在这里插入图片描述"></p>
+<p>至于其他的视频标准，如MPEG2，H264, H265，编码流程都是大同小异，过程无非都是采样-DCT-量化-编码。它们都会用到<strong>熵编码</strong>，例如<strong>JPEG用的是Huffman编码和算术编码，H264用的是CAVLC和CABAC</strong>。</p>
+<h1 id="2-熵编码类型"><a href="#2-熵编码类型" class="headerlink" title="2.熵编码类型"></a>2.熵编码类型</h1><h2 id="2-1-CABAC"><a href="#2-1-CABAC" class="headerlink" title="2.1 CABAC"></a>2.1 CABAC</h2><p><strong>CABAC编码的目的是从概率的角度再做一次压缩，编码的过程主要分为二值化，上下文建模，二进制算术编码。</strong></p>
+<p>基于上下文的二进制算术编码（Context-Based Adaptive Binary Arithmetic Coding,CABAC）将自适应二进制算术编码和上下文模型相结合，是H.265&#x2F;HEVC的主要熵编码方案。主要包括三个步骤：<br>1.二进制化；<br>2.上下文建模；<br>3.二进制算术编码；<br>其流程如下：</p>
+<p><img src="https://i-blog.csdnimg.cn/blog_migrate/b84aa1b83f8a041a057e3de70f00195b.png" alt="在这里插入图片描述"></p>
+<p><strong>1.二值化</strong></p>
+<p>​	    在图像处理世界中，所谓二值化就是将像素点的值根据一定的算法，将像素分别修改为0，或255，即获取图像的灰度图，或者通俗些讲就是图像的黑白图。而此处的“二值化”可以暂且理解为，将数值二进制化的一个过程，当然不是简单的将十进制转换为二进制。CABAC中二值化的方式主要有“一元码”，“截断一元码”，“K阶指数哥伦布编码”，“定长编码”，详细的就不展开了，不过小编决定了后续专门搞篇说这个的，嫑着急。这里简单以“一元码”简单举例说明下：</p>
+<p>​       “一元码”的编码方式是，对于一个非二进制的无符号整数x &gt;&#x3D; 0，在CABAC中的一元码码字用x个“1”位外再加一个“0”组成。For example，   对“8”编码，则二值化后的结果为“111111110”。辣么，如果是6呢，你可以尝试一下的哦。</p>
+<p>​       经过二值化之后，CABAC就已经把待编码的语法元素按照一定的规则转换为只用“0”和“1”的二进制流，称为比特流。</p>
+<p><strong>2.上下文编码</strong></p>
+<p>​        待编码数据具有上下文相关性，利用已编码数据提供的上下文信息，为待编码的数据选择合适的概率模型，这就是上下文建模。通过对上下文模型的构建，基本概率模型能够适应随视频图像而改变的统计特性，降低数据之间的冗余度，并减少运算开支。</p>
+<p>​        H.264&#x2F;AVC标准将一个Slice可能出现的数据划分为399个上下文模型，每个模型均有自己的上下文序号，命名为CtxIdx，每个不同的字符依据对应的上下文模型，来索引自身的概率查找表。即收到字符后，先找到字符对应的上下文模型的序号CtxIdx，然后根据CtxIdx找到其对应的概率查找表。 详细的步骤如下：</p>
+<p>​       确定当前的字符对应的上下文模型的区间，H264标准中的表9-1描述了相应的对应关系。</p>
+<p><img src="C:\Users\sun\AppData\Roaming\Typora\typora-user-images\image-20241204225148211.png" alt="image-20241204225148211"></p>
+<p>​	 按照不同的法则，在（1）步中得到的区间中最终确定的上下文模型个的CtxIdx。具体的法则同样需要去查找标准里对应的一些表，在此就不再赘述。</p>
+<p><strong>3.二进制算术编码</strong></p>
+<p>​	  第三步通过上下文建模找到的概率模型的概率估计方法构成了一个自适应二进制算术编码器。概率估计是在前一次上下文建模阶段更新后的概率估计。在对每个二进制数值编码过后，概率估计的值相应的也会根据刚刚编码的二进制符号进行调整。</p>
+<p>​      二进制算术编码是算术编码的特殊情况，其原理与一般算术编码一样（关于算术编码，大家可自行查阅，当然，小编也准备单开一篇缕缕喽）。不同的是，二进制算术编码序列只有“0”和“1”两种符号，所涉及的概率也只有P(0)和P(1)。</p>
+<p>​      经过上述的步骤，同样也就经历了一次熵编码的完整过程，即CABAC的大概流程，由于细节部分涉及的内容相对较多，后续慢慢研究喽。希望对大家有所帮助哦。</p>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2025/10/27/hello-world/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>Hello World</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      深度解析H.266/VVC环路滤波
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波" rel="bookmark">深度解析H.266/VVC环路滤波</a></div></div></div>
+    
+  </div>
+</div>
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

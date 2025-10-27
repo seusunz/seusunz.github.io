@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        深度解析H.266/VVC帧间编码 | 九天之遥
+      
+    </title>
+    <meta name="description" content="书到用时方恨少，事非经过不知难" />
+    <meta name="keywords" content="" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner">
+      <div class="post-content__head">
+        <div class="post-title">深度解析H.266/VVC帧间编码</div>
+        <div class="post-info">
+          
+  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+
+
+          <span class="post-date">2024-07-21</span>
+        </div>
+      </div>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <h1 id=""><a href="#" class="headerlink" title=""></a></h1><p>帧间预测是利用视频帧与帧之间的相关性，去除视频帧间的时间冗余信息。统计表明，帧间差绝对值超过3的像素平均不到一帧像素的4%，因此，采用高效的帧间编码方式，可以很大程度上提高视频压缩效率。</p>
+<p>目前，主流视频编码标准中采用的基于块的帧间编码方式，基本原理是通过运动估计（Motion Estimate）从相邻参考重建帧中寻找和当前块差别最小的参考块，将其重建值作为当前块的预测块。其中参考块到当前块的位移称为运动矢量（Motion Vector），将重建值作为预测值的过程称为运动补偿（Motion Compensation）<img src="https://i-blog.csdnimg.cn/direct/4ba7aa8369fb48b2b22f6172b85a0a68.png" alt="在这里插入图片描述"></p>
+ <span id="more"></span> 
+
+
+<h1 id="VVC帧间预测编码概述"><a href="#VVC帧间预测编码概述" class="headerlink" title="VVC帧间预测编码概述"></a>VVC帧间预测编码概述</h1><h1 id="MV的预测和获取"><a href="#MV的预测和获取" class="headerlink" title="MV的预测和获取"></a>MV的预测和获取</h1><p>MV预测技术继承和发展了H.265的merge和AMVP技术，拓展了MV预测选择范围，提高MV的表示精度。</p>
+<p>（1）<strong>Merge模式</strong></p>
+<p>在MVP候选列表的构造上，保留了空域和时域候选，去除了组合MVP候选，增加了基于历史的MV预测（HMVP）和成对平均MVP候选，并且改变了空域候选的检查顺序。</p>
+<ul>
+<li>联合帧内帧间预测技术(CIIP)</li>
+<li>带有运动矢量差的Merge技术(MMVD)</li>
+<li>几何划分帧间预测技术(GPM)</li>
+</ul>
+<p>（2）<strong>AMVP模式</strong></p>
+<p>保留原AMVP列表构造方式的同时，引入了HMVP候选的构造。<br>在双向AMVP模式的选择上，增加对称运动矢量差分编码AMVD技术。<br>引入了CU级的<strong>自适应运动矢量精度（AMVR）</strong>技术，允许多种不同亚像素精度来编码MVD。</p>
+<p>（3）<strong>基于子块的MV表示</strong></p>
+<p>新增了基于子块的帧间预测技术，可以一次性表示一个编码块中多个子块不同MV的信息。</p>
+<p>基于子块的时域MV预测（SbTMVP），每个子块使用同位图像中对应位置块的运动信息来预测MV。<br>仿射运动补偿预测（AMCP）技术，针对缩放、旋转等运动场景。</p>
+<p>（4）<strong>解码端MV细化</strong></p>
+<p>为提升双向MV预测的准确性，VVC采用了一种双向MV修正技术，解码端运动会矢量细化（DMVR），在解码端通过基于双边匹配的局部小区域运动搜索，将MV微调后再用于运动补偿。</p>
+<blockquote>
+<ol>
+<li>Merge模式</li>
+</ol>
+</blockquote>
+<h1 id="一、Merge模式"><a href="#一、Merge模式" class="headerlink" title="一、Merge模式"></a>一、Merge模式</h1><p>Merge模式是HEVC中提出的新技术，直接利用一个或者一组MVP，推断得到当前编码块的MV信息，通常是利用空域和时域相邻块的MV对当前块的MV进行预测直接得到，不存在MVD。因此不需要传输MVD和参考帧索引，是一种高效的MV编码方法。</p>
+<p>编解码端会使用相同的方式构建<strong>MV候选列表</strong>，在编码端通过<strong>率失真准则</strong>选出最优的MV索引，只需将该索引传给解码端即可。在VVC中，对于Merge模式下的每个CU的最佳候选索引使用<strong>截断一元二值化</strong>进行编码即可，最佳索引的第一个bin使用<strong>上下文编码</strong>，其他bin使用<strong>旁路编码</strong>。进行运动补偿获取帧间预测块，然后对预测残差进行编码。</p>
+<p>HEVC中Merge模式利用时域或空域相邻块构建MV候选列表，且列表中只有5个候选MV。<br>VVC在HEVC的基础上进行了扩展，MV候选列表中最多可以有6个候选MV，候选MV有5种类型，顺序如下：</p>
+<ul>
+<li>基于相邻块的空域MVP</li>
+<li>基于同位块的时域MVP</li>
+<li>基于历史信息构建的FIFO表的MVP</li>
+<li>成对的平均MVP</li>
+<li>零MV</li>
+</ul>
+<h2 id="Merge估计区域"><a href="#Merge估计区域" class="headerlink" title="Merge估计区域"></a>Merge估计区域</h2><p>Merge估计区域（MER）允许为同一Merge估计区域中的CU独立推导Merge候选列表。对于当前CU的Merge候选列表推导过程中，不包括与当前CU在同一MER内的候选块，即判断相邻块可用时，仅使用不同MER内的相邻块。在编码器侧选择MER大小，并在序列参数集中以log2_parallel_merge_level_minus2表示。另外，仅当( xCb + cbWidth ) &gt;&gt; Log2ParMrgLevel 大于 xCb &gt;&gt; Log2ParMrgLevel 且 ( yCb + cbHeight ) &gt;&gt; Log2ParMrgLevel 大于 ( yCb &gt;&gt; Log2ParMrgLevel )时更新HMVP候选列表。</p>
+<h2 id="Merge列表构建过程"><a href="#Merge列表构建过程" class="headerlink" title="Merge列表构建过程"></a>Merge列表构建过程</h2><p>Merge list的列表长度为6，首选寻找空域候选项（最多选择4个），然后寻找时域候选项（最多选择1个），然后选择基于历史信息的候选项，最后是平均候选项（最多选择1个），如果Merge list通过以上几个步骤，还未被填满，则使用零向量进行填充。在上面这些步骤当中，如果在中途某个步骤当中merge list被填满则提前终止，不进行后面的步骤。</p>
+<p>VVC中的Merge list构建与HEVC中Merge list构建最大的不同在于，HEVC中的Merge list只包括空域候选项和时域候选项<br>当前CU的merge list构建完毕后，遍历它的6个候选项进行率失真代价计算，选择率失真代价最小的候选项直接作为当前CU的MV<br>注意：对于B slice，由于是双向预测，因此每个候选项包括两个MV（一个前向MV一个后向MV）。在候选列表中，每个候选项包括MV信息和参考帧索引信息。</p>
+<p>构建Merge列表的代码及注释如下（基于VTM10.0）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">PU::getInterMergeCandidates</span><span class="hljs-params">( <span class="hljs-type">const</span> PredictionUnit &amp;pu, MergeCtx&amp; mrgCtx,</span></span><br><span class="hljs-params"><span class="hljs-function">                                 <span class="hljs-type">int</span> mmvdList,</span></span><br><span class="hljs-params"><span class="hljs-function">                                 <span class="hljs-type">const</span> <span class="hljs-type">int</span>&amp; mrgCandIdx )</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-type">const</span> <span class="hljs-type">unsigned</span> plevel = pu.cs-&gt;sps-&gt;<span class="hljs-built_in">getLog2ParallelMergeLevelMinus2</span>() + <span class="hljs-number">2</span>;<br>  <span class="hljs-type">const</span> CodingStructure &amp;cs  = *pu.cs;<br>  <span class="hljs-type">const</span> Slice &amp;slice         = *pu.cs-&gt;slice;<br>  <span class="hljs-type">const</span> <span class="hljs-type">uint32_t</span> maxNumMergeCand = pu.cs-&gt;sps-&gt;<span class="hljs-built_in">getMaxNumMergeCand</span>();<span class="hljs-comment">//该变量表示Merge候选列表的最大长度</span><br>  <span class="hljs-built_in">CHECK</span> (maxNumMergeCand &gt; MRG_MAX_NUM_CANDS, <span class="hljs-string">&quot;selected maximum number of merge candidate exceeds global limit&quot;</span>);<br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">uint32_t</span> ui = <span class="hljs-number">0</span>; ui &lt; maxNumMergeCand; ++ui)<br>  &#123;<br>    mrgCtx.BcwIdx[ui] = BCW_DEFAULT;<br>    mrgCtx.interDirNeighbours[ui] = <span class="hljs-number">0</span>;<br>    mrgCtx.mrgTypeNeighbours [ui] = MRG_TYPE_DEFAULT_N;<br>    mrgCtx.mvFieldNeighbours[(ui &lt;&lt; <span class="hljs-number">1</span>)    ].refIdx = NOT_VALID;<br>    mrgCtx.mvFieldNeighbours[(ui &lt;&lt; <span class="hljs-number">1</span>) + <span class="hljs-number">1</span>].refIdx = NOT_VALID;<br>    mrgCtx.useAltHpelIf[ui] = <span class="hljs-literal">false</span>;<br>  &#125;<br> <br>  mrgCtx.numValidMergeCand = maxNumMergeCand;<br>  <span class="hljs-comment">// compute the location of the current PU 计算当前PU的位置</span><br> <br>  <span class="hljs-type">int</span> cnt = <span class="hljs-number">0</span>;<br> <br>  <span class="hljs-type">const</span> Position posLT = pu.<span class="hljs-built_in">Y</span>().<span class="hljs-built_in">topLeft</span>();<span class="hljs-comment">//当前PU左上方的位置</span><br>  <span class="hljs-type">const</span> Position posRT = pu.<span class="hljs-built_in">Y</span>().<span class="hljs-built_in">topRight</span>();<span class="hljs-comment">//当前PU右上方的位置</span><br>  <span class="hljs-type">const</span> Position posLB = pu.<span class="hljs-built_in">Y</span>().<span class="hljs-built_in">bottomLeft</span>();<span class="hljs-comment">//当前PU左下方的位置</span><br>  MotionInfo miAbove, miLeft, miAboveLeft, miAboveRight, miBelowLeft; <span class="hljs-comment">//记录当前PU5个相邻块的运动信息</span><br> <br>  <span class="hljs-comment">// above</span><br>  <span class="hljs-type">const</span> PredictionUnit *puAbove = cs.<span class="hljs-built_in">getPURestricted</span>(posRT.<span class="hljs-built_in">offset</span>(<span class="hljs-number">0</span>, <span class="hljs-number">-1</span>), pu, pu.chType);<br>  <span class="hljs-comment">// ===========================空域MV候选列表的构建=======================</span><br>  <span class="hljs-type">bool</span> isAvailableB1 = puAbove &amp;&amp; <span class="hljs-built_in">isDiffMER</span>(pu.<span class="hljs-built_in">lumaPos</span>(), posRT.<span class="hljs-built_in">offset</span>(<span class="hljs-number">0</span>, <span class="hljs-number">-1</span>), plevel) &amp;&amp; pu.cu != puAbove-&gt;cu &amp;&amp; CU::<span class="hljs-built_in">isInter</span>(*puAbove-&gt;cu);<br>  <span class="hljs-comment">// 右上方B1块可用</span><br>  <span class="hljs-keyword">if</span> (isAvailableB1)<br>  &#123;<br>    miAbove = puAbove-&gt;<span class="hljs-built_in">getMotionInfo</span>(posRT.<span class="hljs-built_in">offset</span>(<span class="hljs-number">0</span>, <span class="hljs-number">-1</span>)); <span class="hljs-comment">//获取B1块的运动信息</span><br> <br>    <span class="hljs-comment">// get Inter Dir</span><br>    mrgCtx.interDirNeighbours[cnt] = miAbove.interDir; <span class="hljs-comment">//该变量表示merge list中已候选项的数目</span><br>    mrgCtx.useAltHpelIf[cnt] = miAbove.useAltHpelIf;<br>    <span class="hljs-comment">// get Mv from Above 从上方块获得运动矢量</span><br>    <span class="hljs-comment">// puAbove-&gt;cu-&gt;BcwIdx表示当前PU所属的CU维护的HMVP表中候选数目</span><br>    mrgCtx.BcwIdx[cnt] = (mrgCtx.interDirNeighbours[cnt] == <span class="hljs-number">3</span>) ? puAbove-&gt;cu-&gt;BcwIdx : BCW_DEFAULT;<br>    mrgCtx.mvFieldNeighbours[cnt &lt;&lt; <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(miAbove.mv[<span class="hljs-number">0</span>], miAbove.refIdx[<span class="hljs-number">0</span>]); <span class="hljs-comment">//使用前向参考帧的MV</span><br> <br>    <span class="hljs-keyword">if</span> (slice.<span class="hljs-built_in">isInterB</span>())<br>    &#123; <span class="hljs-comment">//如果是B帧，则还需要获得相邻块后向参考帧的MV</span><br>      mrgCtx.mvFieldNeighbours[(cnt &lt;&lt; <span class="hljs-number">1</span>) + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(miAbove.mv[<span class="hljs-number">1</span>], miAbove.refIdx[<span class="hljs-number">1</span>]);<br>    &#125;<br>    <span class="hljs-keyword">if</span> (mrgCandIdx == cnt)<br>    &#123;<br>      <span class="hljs-keyword">return</span>;<br>    &#125;<br> <br>    cnt++;<br>  &#125;<br> <br>  <span class="hljs-comment">// early termination 如果当前merge list中候选的数目已经达到了最大值，则停止merge list列表的构建</span><br>  <span class="hljs-keyword">if</span> (cnt == maxNumMergeCand)<br>  &#123;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br> <br>  <span class="hljs-comment">//left 检查左侧块A1运动信息是否可用</span><br>  <span class="hljs-type">const</span> PredictionUnit* puLeft = cs.<span class="hljs-built_in">getPURestricted</span>(posLB.<span class="hljs-built_in">offset</span>(<span class="hljs-number">-1</span>, <span class="hljs-number">0</span>), pu, pu.chType);<br> <br>  <span class="hljs-type">const</span> <span class="hljs-type">bool</span> isAvailableA1 = puLeft &amp;&amp; <span class="hljs-built_in">isDiffMER</span>(pu.<span class="hljs-built_in">lumaPos</span>(), posLB.<span class="hljs-built_in">offset</span>(<span class="hljs-number">-1</span>, <span class="hljs-number">0</span>), plevel) &amp;&amp; pu.cu != puLeft-&gt;cu &amp;&amp; CU::<span class="hljs-built_in">isInter</span>(*puLeft-&gt;cu);<br> <br>  <span class="hljs-keyword">if</span> (isAvailableA1)<br>  &#123;<br>    miLeft = puLeft-&gt;<span class="hljs-built_in">getMotionInfo</span>(posLB.<span class="hljs-built_in">offset</span>(<span class="hljs-number">-1</span>, <span class="hljs-number">0</span>));<br> <br>    <span class="hljs-keyword">if</span> (!isAvailableB1 || (miAbove != miLeft))<span class="hljs-comment">// 冗余性检查</span><br>    &#123;<br>      <span class="hljs-comment">// get Inter Dir</span><br>      mrgCtx.interDirNeighbours[cnt] = miLeft.interDir;<br>      mrgCtx.useAltHpelIf[cnt] = miLeft.useAltHpelIf;<br>      mrgCtx.BcwIdx[cnt] = (mrgCtx.interDirNeighbours[cnt] == <span class="hljs-number">3</span>) ? puLeft-&gt;cu-&gt;BcwIdx : BCW_DEFAULT;<br>      <span class="hljs-comment">// get Mv from Left</span><br>      mrgCtx.mvFieldNeighbours[cnt &lt;&lt; <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(miLeft.mv[<span class="hljs-number">0</span>], miLeft.refIdx[<span class="hljs-number">0</span>]);<br> <br>      <span class="hljs-keyword">if</span> (slice.<span class="hljs-built_in">isInterB</span>())<br>      &#123;<br>        mrgCtx.mvFieldNeighbours[(cnt &lt;&lt; <span class="hljs-number">1</span>) + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(miLeft.mv[<span class="hljs-number">1</span>], miLeft.refIdx[<span class="hljs-number">1</span>]);<br>      &#125;<br>      <span class="hljs-keyword">if</span> (mrgCandIdx == cnt)<br>      &#123;<br>        <span class="hljs-keyword">return</span>;<br>      &#125;<br> <br>      cnt++;<br>    &#125;<br>  &#125;<br> <br>  <span class="hljs-comment">// early termination</span><br>  <span class="hljs-keyword">if</span>( cnt == maxNumMergeCand )<br>  &#123;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br> <br>  <span class="hljs-comment">// above right 检查右上相邻块B0运动信息是否可用</span><br>  <span class="hljs-type">const</span> PredictionUnit *puAboveRight = cs.<span class="hljs-built_in">getPURestricted</span>( posRT.<span class="hljs-built_in">offset</span>( <span class="hljs-number">1</span>, <span class="hljs-number">-1</span> ), pu, pu.chType );<br> <br>  <span class="hljs-type">bool</span> isAvailableB0 = puAboveRight &amp;&amp; <span class="hljs-built_in">isDiffMER</span>( pu.<span class="hljs-built_in">lumaPos</span>(), posRT.<span class="hljs-built_in">offset</span>(<span class="hljs-number">1</span>, <span class="hljs-number">-1</span>), plevel) &amp;&amp; CU::<span class="hljs-built_in">isInter</span>( *puAboveRight-&gt;cu );<br> <br>  <span class="hljs-keyword">if</span>( isAvailableB0 )<br>  &#123;<br>    miAboveRight = puAboveRight-&gt;<span class="hljs-built_in">getMotionInfo</span>( posRT.<span class="hljs-built_in">offset</span>( <span class="hljs-number">1</span>, <span class="hljs-number">-1</span> ) );<br> <br>    <span class="hljs-keyword">if</span>( !isAvailableB1 || ( miAbove != miAboveRight ) )<span class="hljs-comment">// 冗余性检查</span><br>    &#123;<br>      <span class="hljs-comment">// get Inter Dir</span><br>      mrgCtx.interDirNeighbours[cnt] = miAboveRight.interDir;<br>      mrgCtx.useAltHpelIf[cnt] = miAboveRight.useAltHpelIf;<br>      <span class="hljs-comment">// get Mv from Above-right</span><br>      mrgCtx.BcwIdx[cnt] = (mrgCtx.interDirNeighbours[cnt] == <span class="hljs-number">3</span>) ? puAboveRight-&gt;cu-&gt;BcwIdx : BCW_DEFAULT;<br>      mrgCtx.mvFieldNeighbours[cnt &lt;&lt; <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>( miAboveRight.mv[<span class="hljs-number">0</span>], miAboveRight.refIdx[<span class="hljs-number">0</span>] );<br> <br>      <span class="hljs-keyword">if</span>( slice.<span class="hljs-built_in">isInterB</span>() )<br>      &#123;<br>        mrgCtx.mvFieldNeighbours[( cnt &lt;&lt; <span class="hljs-number">1</span> ) + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>( miAboveRight.mv[<span class="hljs-number">1</span>], miAboveRight.refIdx[<span class="hljs-number">1</span>] );<br>      &#125;<br> <br>      <span class="hljs-keyword">if</span> (mrgCandIdx == cnt)<br>      &#123;<br>        <span class="hljs-keyword">return</span>;<br>      &#125;<br> <br>      cnt++;<br>    &#125;<br>  &#125;<br>  <span class="hljs-comment">// early termination</span><br>  <span class="hljs-keyword">if</span>( cnt == maxNumMergeCand )<br>  &#123;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br> <br>  <span class="hljs-comment">//left bottom 检查左下相邻块A0运动信息是否可用</span><br>  <span class="hljs-type">const</span> PredictionUnit *puLeftBottom = cs.<span class="hljs-built_in">getPURestricted</span>( posLB.<span class="hljs-built_in">offset</span>( <span class="hljs-number">-1</span>, <span class="hljs-number">1</span> ), pu, pu.chType );<br> <br>  <span class="hljs-type">bool</span> isAvailableA0 = puLeftBottom &amp;&amp; <span class="hljs-built_in">isDiffMER</span>( pu.<span class="hljs-built_in">lumaPos</span>(), posLB.<span class="hljs-built_in">offset</span>(<span class="hljs-number">-1</span>, <span class="hljs-number">1</span>), plevel) &amp;&amp; CU::<span class="hljs-built_in">isInter</span>( *puLeftBottom-&gt;cu );<br> <br>  <span class="hljs-keyword">if</span>( isAvailableA0 )<br>  &#123;<br>    miBelowLeft = puLeftBottom-&gt;<span class="hljs-built_in">getMotionInfo</span>( posLB.<span class="hljs-built_in">offset</span>( <span class="hljs-number">-1</span>, <span class="hljs-number">1</span> ) );<br>    <br>    <span class="hljs-keyword">if</span>( !isAvailableA1 || ( miBelowLeft != miLeft ) )<span class="hljs-comment">// 冗余性检查</span><br>    &#123;<br>      <span class="hljs-comment">// get Inter Dir</span><br>      mrgCtx.interDirNeighbours[cnt] = miBelowLeft.interDir;<br>      mrgCtx.useAltHpelIf[cnt] = miBelowLeft.useAltHpelIf;<br>      mrgCtx.BcwIdx[cnt] = (mrgCtx.interDirNeighbours[cnt] == <span class="hljs-number">3</span>) ? puLeftBottom-&gt;cu-&gt;BcwIdx : BCW_DEFAULT;<br>      <span class="hljs-comment">// get Mv from Bottom-Left</span><br>      mrgCtx.mvFieldNeighbours[cnt &lt;&lt; <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>( miBelowLeft.mv[<span class="hljs-number">0</span>], miBelowLeft.refIdx[<span class="hljs-number">0</span>] );<br> <br>      <span class="hljs-keyword">if</span>( slice.<span class="hljs-built_in">isInterB</span>() )<br>      &#123;<br>        mrgCtx.mvFieldNeighbours[( cnt &lt;&lt; <span class="hljs-number">1</span> ) + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>( miBelowLeft.mv[<span class="hljs-number">1</span>], miBelowLeft.refIdx[<span class="hljs-number">1</span>] );<br>      &#125;<br> <br>      <span class="hljs-keyword">if</span> (mrgCandIdx == cnt)<br>      &#123;<br>        <span class="hljs-keyword">return</span>;<br>      &#125;<br> <br>      cnt++;<br>    &#125;<br>  &#125;<br>  <span class="hljs-comment">// early termination</span><br>  <span class="hljs-keyword">if</span>( cnt == maxNumMergeCand )<br>  &#123;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br> <br>  <span class="hljs-comment">// above left 如果前四个相邻块由一个不可用， 则继续检查左上角的B2块是否可用</span><br>  <span class="hljs-keyword">if</span> ( cnt &lt; <span class="hljs-number">4</span> )<br>  &#123;<br>    <span class="hljs-type">const</span> PredictionUnit *puAboveLeft = cs.<span class="hljs-built_in">getPURestricted</span>( posLT.<span class="hljs-built_in">offset</span>( <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span> ), pu, pu.chType );<br> <br>    <span class="hljs-type">bool</span> isAvailableB2 = puAboveLeft &amp;&amp; <span class="hljs-built_in">isDiffMER</span>( pu.<span class="hljs-built_in">lumaPos</span>(), posLT.<span class="hljs-built_in">offset</span>(<span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>), plevel ) &amp;&amp; CU::<span class="hljs-built_in">isInter</span>( *puAboveLeft-&gt;cu );<br> <br>    <span class="hljs-keyword">if</span>( isAvailableB2 )<br>    &#123;<br>      miAboveLeft = puAboveLeft-&gt;<span class="hljs-built_in">getMotionInfo</span>( posLT.<span class="hljs-built_in">offset</span>( <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span> ) );<br>      <span class="hljs-comment">// 冗余性检查</span><br>      <span class="hljs-keyword">if</span>( ( !isAvailableA1 || ( miLeft != miAboveLeft ) ) &amp;&amp; ( !isAvailableB1 || ( miAbove != miAboveLeft ) ) )<br>      &#123;<br>        <span class="hljs-comment">// get Inter Dir</span><br>        mrgCtx.interDirNeighbours[cnt] = miAboveLeft.interDir;<br>        mrgCtx.useAltHpelIf[cnt] = miAboveLeft.useAltHpelIf;<br>        mrgCtx.BcwIdx[cnt] = (mrgCtx.interDirNeighbours[cnt] == <span class="hljs-number">3</span>) ? puAboveLeft-&gt;cu-&gt;BcwIdx : BCW_DEFAULT;<br>        <span class="hljs-comment">// get Mv from Above-Left</span><br>        mrgCtx.mvFieldNeighbours[cnt &lt;&lt; <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>( miAboveLeft.mv[<span class="hljs-number">0</span>], miAboveLeft.refIdx[<span class="hljs-number">0</span>] );<br> <br>        <span class="hljs-keyword">if</span>( slice.<span class="hljs-built_in">isInterB</span>() )<br>        &#123;<br>          mrgCtx.mvFieldNeighbours[( cnt &lt;&lt; <span class="hljs-number">1</span> ) + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>( miAboveLeft.mv[<span class="hljs-number">1</span>], miAboveLeft.refIdx[<span class="hljs-number">1</span>] );<br>        &#125;<br> <br>        <span class="hljs-keyword">if</span> (mrgCandIdx == cnt)<br>        &#123;<br>          <span class="hljs-keyword">return</span>;<br>        &#125;<br> <br>        cnt++;<br>      &#125;<br>    &#125;<br>  &#125;<br>  <span class="hljs-comment">// early termination</span><br>  <span class="hljs-keyword">if</span> (cnt == maxNumMergeCand)<br>  &#123;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br> <br>  <span class="hljs-comment">// =======================时域MVP候选列表的构建==============================</span><br>  <span class="hljs-keyword">if</span> (slice.<span class="hljs-built_in">getPicHeader</span>()-&gt;<span class="hljs-built_in">getEnableTMVPFlag</span>() &amp;&amp; (pu.<span class="hljs-built_in">lumaSize</span>().width + pu.<span class="hljs-built_in">lumaSize</span>().height &gt; <span class="hljs-number">12</span>))<br>  &#123;<br>    <span class="hljs-comment">//&gt;&gt; MTK colocated-RightBottom</span><br>    <span class="hljs-comment">// offset the pos to be sure to &quot;point&quot; to the same position the uiAbsPartIdx would&#x27;ve pointed to</span><br>    <span class="hljs-comment">// 偏移pos，确保“指向”uiAbsPartIdx将指向的相同位置</span><br>    Position posRB = pu.<span class="hljs-built_in">Y</span>().<span class="hljs-built_in">bottomRight</span>().<span class="hljs-built_in">offset</span>( <span class="hljs-number">-3</span>, <span class="hljs-number">-3</span> );<br>    <span class="hljs-type">const</span> PreCalcValues&amp; pcv = *cs.pcv;<br> <br>    Position posC0;<span class="hljs-comment">//C0位当前PU的右下方再移位(1,1)</span><br>    Position posC1 = pu.<span class="hljs-built_in">Y</span>().<span class="hljs-built_in">center</span>(); <span class="hljs-comment">//C1为当前PU的中心位置</span><br>    <span class="hljs-type">bool</span> C0Avail = <span class="hljs-literal">false</span>;<br>    <span class="hljs-type">bool</span> boundaryCond = ((posRB.x + pcv.minCUWidth) &lt; pcv.lumaWidth) &amp;&amp; ((posRB.y + pcv.minCUHeight) &lt; pcv.lumaHeight);<br>    <span class="hljs-type">const</span> SubPic&amp; curSubPic = pu.cs-&gt;slice-&gt;<span class="hljs-built_in">getPPS</span>()-&gt;<span class="hljs-built_in">getSubPicFromPos</span>(pu.<span class="hljs-built_in">lumaPos</span>()); <span class="hljs-comment">//获得当前PU所在的子图</span><br>    <span class="hljs-keyword">if</span> (curSubPic.<span class="hljs-built_in">getTreatedAsPicFlag</span>())<br>    &#123;<br>      <span class="hljs-comment">// 在不包括环路内滤波操作的解码处理中，是否将子图视为图</span><br>      boundaryCond = ((posRB.x + pcv.minCUWidth) &lt;= curSubPic.<span class="hljs-built_in">getSubPicRight</span>() &amp;&amp;<br>                      (posRB.y + pcv.minCUHeight) &lt;= curSubPic.<span class="hljs-built_in">getSubPicBottom</span>()); <br>    &#125;<br>    <span class="hljs-keyword">if</span> (boundaryCond)<br>    &#123;<br>      <span class="hljs-type">int</span> posYInCtu = posRB.y &amp; pcv.maxCUHeightMask;<br>      <span class="hljs-keyword">if</span> (posYInCtu + <span class="hljs-number">4</span> &lt; pcv.maxCUHeight)<br>      &#123;<br>        posC0 = posRB.<span class="hljs-built_in">offset</span>(<span class="hljs-number">4</span>, <span class="hljs-number">4</span>);<br>        C0Avail = <span class="hljs-literal">true</span>; <span class="hljs-comment">//C0位置处的像素可用</span><br>      &#125;<br>    &#125;<br>    Mv        cColMv;<br>    <span class="hljs-type">int</span>       iRefIdx     = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">int</span>       dir         = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">unsigned</span>  uiArrayAddr = cnt;<br>    <span class="hljs-comment">//检查是否存在同位MV，若存在则获取相应的MV到cColMv</span><br>    <span class="hljs-type">bool</span>      bExistMV    = ( C0Avail &amp;&amp; <span class="hljs-built_in">getColocatedMVP</span>(pu, REF_PIC_LIST_0, posC0, cColMv, iRefIdx, <span class="hljs-literal">false</span> ) )<br>                              || <span class="hljs-built_in">getColocatedMVP</span>( pu, REF_PIC_LIST_0, posC1, cColMv, iRefIdx, <span class="hljs-literal">false</span> ); <br>    <span class="hljs-keyword">if</span> (bExistMV)<br>    &#123;<br>      dir     |= <span class="hljs-number">1</span>;<br>      mrgCtx.mvFieldNeighbours[<span class="hljs-number">2</span> * uiArrayAddr].<span class="hljs-built_in">setMvField</span>(cColMv, iRefIdx);<br>    &#125;<br> <br>    <span class="hljs-keyword">if</span> (slice.<span class="hljs-built_in">isInterB</span>())<br>    &#123; <span class="hljs-comment">//对于B帧，相应的获取两个MV</span><br>      bExistMV = ( C0Avail &amp;&amp; <span class="hljs-built_in">getColocatedMVP</span>(pu, REF_PIC_LIST_1, posC0, cColMv, iRefIdx, <span class="hljs-literal">false</span> ) )<br>                   || <span class="hljs-built_in">getColocatedMVP</span>( pu, REF_PIC_LIST_1, posC1, cColMv, iRefIdx, <span class="hljs-literal">false</span> );<br>      <span class="hljs-keyword">if</span> (bExistMV)<br>      &#123;<br>        dir     |= <span class="hljs-number">2</span>;<br>        mrgCtx.mvFieldNeighbours[<span class="hljs-number">2</span> * uiArrayAddr + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(cColMv, iRefIdx);<br>      &#125;<br>    &#125;<br> <br>    <span class="hljs-keyword">if</span>( dir != <span class="hljs-number">0</span> )<br>    &#123;<br>      <span class="hljs-type">bool</span> addTMvp = <span class="hljs-literal">true</span>;<br>      <span class="hljs-keyword">if</span>( addTMvp )<br>      &#123;<br>        mrgCtx.interDirNeighbours[uiArrayAddr] = dir;<br>        mrgCtx.BcwIdx[uiArrayAddr] = BCW_DEFAULT;<br>        mrgCtx.useAltHpelIf[uiArrayAddr] = <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">if</span> (mrgCandIdx == cnt)<br>        &#123;<br>          <span class="hljs-keyword">return</span>;<br>        &#125;<br>        cnt++;<br>      &#125;<br>    &#125;<br>  &#125;<br> <br>  <span class="hljs-comment">// early termination 提前终止</span><br>  <span class="hljs-keyword">if</span> (cnt == maxNumMergeCand)<br>  &#123;<br>    <span class="hljs-keyword">return</span>;<br>  &#125;<br> <br>  <span class="hljs-comment">//=================================基于历史信息构建MV列表===========================</span><br>  <span class="hljs-type">int</span> maxNumMergeCandMin1 = maxNumMergeCand - <span class="hljs-number">1</span>;<br>  <span class="hljs-keyword">if</span> (cnt != maxNumMergeCandMin1) <span class="hljs-comment">//检查Merge列表是否到达最大数目减1，如果到达则不需要进行HMV候选</span><br>  &#123;<br>    <span class="hljs-type">bool</span> isGt4x4 = <span class="hljs-literal">true</span>;<br>    <span class="hljs-type">bool</span> bFound  = <span class="hljs-built_in">addMergeHMVPCand</span>(cs, mrgCtx, mrgCandIdx, maxNumMergeCandMin1, cnt, isAvailableA1, miLeft,<br>                                   isAvailableB1, miAbove, CU::<span class="hljs-built_in">isIBC</span>(*pu.cu), isGt4x4);<br> <br>    <span class="hljs-keyword">if</span> (bFound)<br>    &#123;<br>      <span class="hljs-keyword">return</span>;<br>    &#125;<br>  &#125;<br>  <span class="hljs-comment">// ================================成对平均候选MV==================================</span><br>  <span class="hljs-comment">// pairwise-average candidates</span><br>  &#123;<br>    <span class="hljs-keyword">if</span> (cnt &gt; <span class="hljs-number">1</span> &amp;&amp; cnt &lt; maxNumMergeCand)<br>    &#123;<br>      mrgCtx.mvFieldNeighbours[cnt * <span class="hljs-number">2</span>].<span class="hljs-built_in">setMvField</span>( <span class="hljs-built_in">Mv</span>( <span class="hljs-number">0</span>, <span class="hljs-number">0</span> ), NOT_VALID );<br>      mrgCtx.mvFieldNeighbours[cnt * <span class="hljs-number">2</span> + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>( <span class="hljs-built_in">Mv</span>( <span class="hljs-number">0</span>, <span class="hljs-number">0</span> ), NOT_VALID );<br>      <span class="hljs-comment">// calculate average MV for L0 and L1 seperately 分别计算L0和L1的平均MV</span><br>      <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> interDir = <span class="hljs-number">0</span>;<br>      <span class="hljs-comment">// 设置滤波器指数</span><br>      mrgCtx.useAltHpelIf[cnt] = (mrgCtx.useAltHpelIf[<span class="hljs-number">0</span>] == mrgCtx.useAltHpelIf[<span class="hljs-number">1</span>]) ? mrgCtx.useAltHpelIf[<span class="hljs-number">0</span>] : <span class="hljs-literal">false</span>;<br>      <span class="hljs-keyword">for</span>( <span class="hljs-type">int</span> refListId = <span class="hljs-number">0</span>; refListId &lt; (slice.<span class="hljs-built_in">isInterB</span>() ? <span class="hljs-number">2</span> : <span class="hljs-number">1</span>); refListId++ )<br>      &#123;<br>        <span class="hljs-comment">// 使用列表中最前面的两个MV</span><br>        <span class="hljs-type">const</span> <span class="hljs-type">short</span> refIdxI = mrgCtx.mvFieldNeighbours[<span class="hljs-number">0</span> * <span class="hljs-number">2</span> + refListId].refIdx;<br>        <span class="hljs-type">const</span> <span class="hljs-type">short</span> refIdxJ = mrgCtx.mvFieldNeighbours[<span class="hljs-number">1</span> * <span class="hljs-number">2</span> + refListId].refIdx;<br> <br>        <span class="hljs-comment">// both MVs are invalid, skip 两个MVs都无效，跳过</span><br>        <span class="hljs-keyword">if</span>( (refIdxI == NOT_VALID) &amp;&amp; (refIdxJ == NOT_VALID) )<br>        &#123;<br>          <span class="hljs-keyword">continue</span>;<br>        &#125;<br> <br>        interDir += <span class="hljs-number">1</span> &lt;&lt; refListId;<br>        <span class="hljs-comment">// both MVs are valid, average these two MVs 两个MVs都有效，平均这两个MVs</span><br>        <span class="hljs-keyword">if</span>( (refIdxI != NOT_VALID) &amp;&amp; (refIdxJ != NOT_VALID) )<br>        &#123;<br>          <span class="hljs-type">const</span> Mv&amp; MvI = mrgCtx.mvFieldNeighbours[<span class="hljs-number">0</span> * <span class="hljs-number">2</span> + refListId].mv;<br>          <span class="hljs-type">const</span> Mv&amp; MvJ = mrgCtx.mvFieldNeighbours[<span class="hljs-number">1</span> * <span class="hljs-number">2</span> + refListId].mv;<br> <br>          <span class="hljs-comment">// average two MVs</span><br>          Mv avgMv = MvI;<br>          avgMv += MvJ;<br>          <span class="hljs-built_in">roundAffineMv</span>(avgMv.hor, avgMv.ver, <span class="hljs-number">1</span>);<br>          mrgCtx.mvFieldNeighbours[cnt * <span class="hljs-number">2</span> + refListId].<span class="hljs-built_in">setMvField</span>( avgMv, refIdxI );<br>        &#125;<br>        <span class="hljs-comment">// only one MV is valid, take the only one MV 只有一个MV有效，只取一个MV</span><br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>( refIdxI != NOT_VALID )<br>        &#123;<br>          Mv singleMv = mrgCtx.mvFieldNeighbours[<span class="hljs-number">0</span> * <span class="hljs-number">2</span> + refListId].mv;<br>          mrgCtx.mvFieldNeighbours[cnt * <span class="hljs-number">2</span> + refListId].<span class="hljs-built_in">setMvField</span>( singleMv, refIdxI );<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>( refIdxJ != NOT_VALID )<br>        &#123;<br>          Mv singleMv = mrgCtx.mvFieldNeighbours[<span class="hljs-number">1</span> * <span class="hljs-number">2</span> + refListId].mv;<br>          mrgCtx.mvFieldNeighbours[cnt * <span class="hljs-number">2</span> + refListId].<span class="hljs-built_in">setMvField</span>( singleMv, refIdxJ );<br>        &#125;<br>      &#125;<br> <br>      mrgCtx.interDirNeighbours[cnt] = interDir;<br>      <span class="hljs-keyword">if</span>( interDir &gt; <span class="hljs-number">0</span> )<br>      &#123;<br>        cnt++;<br>      &#125;<br>    &#125;<br> <br>    <span class="hljs-comment">// early termination 提前终止</span><br>    <span class="hljs-keyword">if</span>( cnt == maxNumMergeCand )<br>    &#123;<br>      <span class="hljs-keyword">return</span>;<br>    &#125;<br>  &#125;<br> <br>  <span class="hljs-type">uint32_t</span> uiArrayAddr = cnt;<br> <br>  <span class="hljs-type">int</span> iNumRefIdx = slice.<span class="hljs-built_in">isInterB</span>() ? std::<span class="hljs-built_in">min</span>(slice.<span class="hljs-built_in">getNumRefIdx</span>(REF_PIC_LIST_0), slice.<span class="hljs-built_in">getNumRefIdx</span>(REF_PIC_LIST_1)) : slice.<span class="hljs-built_in">getNumRefIdx</span>(REF_PIC_LIST_0);<br> <br>  <span class="hljs-type">int</span> r = <span class="hljs-number">0</span>;<br>  <span class="hljs-type">int</span> refcnt = <span class="hljs-number">0</span>;<br>  <span class="hljs-comment">// =================================零MV============================</span><br>  <span class="hljs-keyword">while</span> (uiArrayAddr &lt; maxNumMergeCand)<br>  &#123;<br>    mrgCtx.interDirNeighbours [uiArrayAddr     ] = <span class="hljs-number">1</span>;<br>    mrgCtx.BcwIdx             [uiArrayAddr     ] = BCW_DEFAULT;<br>    mrgCtx.mvFieldNeighbours  [uiArrayAddr &lt;&lt; <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(<span class="hljs-built_in">Mv</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>), r);<br>    mrgCtx.useAltHpelIf[uiArrayAddr] = <span class="hljs-literal">false</span>;<br> <br>    <span class="hljs-keyword">if</span> (slice.<span class="hljs-built_in">isInterB</span>())<br>    &#123;<br>      mrgCtx.interDirNeighbours [ uiArrayAddr          ] = <span class="hljs-number">3</span>;<br>      mrgCtx.mvFieldNeighbours  [(uiArrayAddr &lt;&lt; <span class="hljs-number">1</span>) + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(<span class="hljs-built_in">Mv</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>), r);<br>    &#125;<br> <br>    <span class="hljs-keyword">if</span> ( mrgCtx.interDirNeighbours[uiArrayAddr] == <span class="hljs-number">1</span> &amp;&amp; pu.cs-&gt;slice-&gt;<span class="hljs-built_in">getRefPic</span>(REF_PIC_LIST_0,            mrgCtx.mvFieldNeighbours[uiArrayAddr &lt;&lt; <span class="hljs-number">1</span>].refIdx)-&gt;<span class="hljs-built_in">getPOC</span>() == pu.cs-&gt;slice-&gt;<span class="hljs-built_in">getPOC</span>())<br>    &#123;<br>      mrgCtx.mrgTypeNeighbours[uiArrayAddr] = MRG_TYPE_IBC;<br>    &#125;<br> <br>    uiArrayAddr++;<br> <br>    <span class="hljs-keyword">if</span> (refcnt == iNumRefIdx - <span class="hljs-number">1</span>)<br>    &#123;<br>      r = <span class="hljs-number">0</span>;<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>    &#123;<br>      ++r;<br>      ++refcnt;<br>    &#125;<br>  &#125;<br>  mrgCtx.numValidMergeCand = uiArrayAddr;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>从HMVP列表获得Merge候选列表的代码如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">PU::addMergeHMVPCand</span><span class="hljs-params">(<span class="hljs-type">const</span> CodingStructure &amp;cs, MergeCtx &amp;mrgCtx, <span class="hljs-type">const</span> <span class="hljs-type">int</span> &amp;mrgCandIdx,</span></span><br><span class="hljs-params"><span class="hljs-function">                          <span class="hljs-type">const</span> <span class="hljs-type">uint32_t</span> maxNumMergeCandMin1, <span class="hljs-type">int</span> &amp;cnt, <span class="hljs-type">const</span> <span class="hljs-type">bool</span> isAvailableA1,</span></span><br><span class="hljs-params"><span class="hljs-function">                          <span class="hljs-type">const</span> MotionInfo miLeft, <span class="hljs-type">const</span> <span class="hljs-type">bool</span> isAvailableB1, <span class="hljs-type">const</span> MotionInfo miAbove,</span></span><br><span class="hljs-params"><span class="hljs-function">                          <span class="hljs-type">const</span> <span class="hljs-type">bool</span> ibcFlag, <span class="hljs-type">const</span> <span class="hljs-type">bool</span> isGt4x4)</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-type">const</span> Slice&amp; slice = *cs.slice;<br>  MotionInfo miNeighbor;<br> <br>  <span class="hljs-keyword">auto</span> &amp;lut = ibcFlag ? cs.motionLut.lutIbc : cs.motionLut.lut; <span class="hljs-comment">//HMVP列表</span><br>  <span class="hljs-type">int</span> num_avai_candInLUT = (<span class="hljs-type">int</span>)lut.<span class="hljs-built_in">size</span>();<span class="hljs-comment">//HMVP列表的长度</span><br> <br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> mrgIdx = <span class="hljs-number">1</span>; mrgIdx &lt;= num_avai_candInLUT; mrgIdx++) <span class="hljs-comment">//遍历HMVP列表</span><br>  &#123;<br>    miNeighbor = lut[num_avai_candInLUT - mrgIdx]; <span class="hljs-comment">//先取HMVP列表中的后面几项</span><br> <br>    <span class="hljs-comment">// 冗余性检查</span><br>    <span class="hljs-keyword">if</span> ( mrgIdx &gt; <span class="hljs-number">2</span> || ((mrgIdx &gt; <span class="hljs-number">1</span> || !isGt4x4) &amp;&amp; ibcFlag)<br>      || ((!isAvailableA1 || (miLeft != miNeighbor)) &amp;&amp; (!isAvailableB1 || (miAbove != miNeighbor))) )<br>    &#123;<br>      mrgCtx.interDirNeighbours[cnt] = miNeighbor.interDir;<br>      mrgCtx.useAltHpelIf      [cnt] = !ibcFlag &amp;&amp; miNeighbor.useAltHpelIf;<br>      mrgCtx.BcwIdx            [cnt] = (miNeighbor.interDir == <span class="hljs-number">3</span>) ? miNeighbor.BcwIdx : BCW_DEFAULT;<br> <br>      mrgCtx.mvFieldNeighbours[cnt &lt;&lt; <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(miNeighbor.mv[<span class="hljs-number">0</span>], miNeighbor.refIdx[<span class="hljs-number">0</span>]);<br>      <span class="hljs-keyword">if</span> (slice.<span class="hljs-built_in">isInterB</span>())<br>      &#123;<br>        mrgCtx.mvFieldNeighbours[(cnt &lt;&lt; <span class="hljs-number">1</span>) + <span class="hljs-number">1</span>].<span class="hljs-built_in">setMvField</span>(miNeighbor.mv[<span class="hljs-number">1</span>], miNeighbor.refIdx[<span class="hljs-number">1</span>]);<br>      &#125;<br> <br>      <span class="hljs-keyword">if</span> (mrgCandIdx == cnt)<br>      &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>      &#125;<br>      cnt ++;<br> <br>      <span class="hljs-keyword">if</span> (cnt  == maxNumMergeCandMin1) <span class="hljs-comment">//如果Merge列表长度到达maxNumMergeCandMin1，则停止加入列表</span><br>      &#123;<br>        <span class="hljs-keyword">break</span>;<br>      &#125;<br>    &#125;<br>  &#125;<br> <br>  <span class="hljs-keyword">if</span> (cnt &lt; maxNumMergeCandMin1)<br>  &#123;<br>    mrgCtx.useAltHpelIf[cnt] = <span class="hljs-literal">false</span>;<br>  &#125;<br> <br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+
+
+<h2 id="1-1-常规Merge模式"><a href="#1-1-常规Merge模式" class="headerlink" title="1.1 常规Merge模式"></a>1.1 常规Merge模式</h2><p>直接将MVP运动矢量信息（参考图像索引、运动矢量）作为当前CU运动矢量信息的帧间模式编码。需要建立一个MVP候选列表（MergeMVP），选择一个MVP作为当前CU的MV，就可以得到当前CU的像素预测值，进一步编码预测残差。</p>
+<p><strong>MergeMVP列表</strong>构造较为复杂，是Merge模式最关键的环节，候选最多为6个。依次包含<br>VVC在HEVC的基础上，扩展了Merge模式构造Merge List的方法，Merge List最多可以包含6个候选MV，构造方法如下：</p>
+<ul>
+<li>基于空间相邻块的空域MVP（最多提供4个候选MV）</li>
+<li>基于同位块的时域MVP（最多提供1个候选MV）</li>
+<li>基于历史信息的MVP（不限个数，直到填充到Merge List包含5个候选MV）</li>
+<li>成对平均MVP（由Merge List中前两个候选MV平均得到）</li>
+<li>零MV</li>
+</ul>
+<h3 id="1-1-1-空域候选MVP："><a href="#1-1-1-空域候选MVP：" class="headerlink" title="1.1.1 空域候选MVP："></a>1.1.1 空域候选MVP：</h3><p>空域候选列表建立方式和HEVC一样。如下图所示，A1为当前CU左下处的相邻CU,B1为当前CU右上处的相邻CU，B2为当前CU的左上相邻CU，A0和B0分别为距离A1和B1处最近的CU。VVC中空域最多提供4个候选MV，即最多使用这5个候选块中的4个候选块的运动信息，候选列表按照B1-&gt;A1-&gt;B0-&gt;A0-&gt;(B2)的顺序建立，其中B2是替补，只有前4个有一个或多个不存在时（例如不再同一个slice或tile或使用帧内编码）才将B2加入候选列表。</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/edf3ce1d6872450ebbb28a3dcaff83f5.png" alt="在这里插入图片描述"></p>
+<p>当候选列表加入B1后，后面新加入候选项时要进行冗余性检查以免新加入的候选项的运动信息和已有项的相同。为了减少计算复杂度，冗余性检查时不会和已有的每一项进行比较，只比下图中较箭头连接的项。<br><img src="https://i-blog.csdnimg.cn/direct/34e8c460656740c291919673327a7ebe.png" alt="冗余检查"><br>这里的图和代码中并不完全一致，实际上，因为先进入列表的是B1，所以对于B1项，不需要进行冗余性检查，对于A1项，检查是否和B1冗余。其余项的检查和图中一致，注意对于B2项，要同时检查和B1、A1项是否冗余。<br>检查冗余性时，所检查的是运动信息，包括MV、参考帧索引等运动信息，如下代码所示：在代码重载了&#x3D;&#x3D;和!&#x3D;运算符，通过调用!&#x3D;，进行冗余性检查<br><img src="https://i-blog.csdnimg.cn/direct/d0d129df6c134d1d91dd2172f74e1f94.png" alt="在这里插入图片描述"></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">MotionInfo</span><br>&#123;<br>  <span class="hljs-type">bool</span>     isInter;<br>  <span class="hljs-type">bool</span>     isIBCmot;<br>  <span class="hljs-type">char</span>     interDir;<br>  <span class="hljs-type">bool</span>     useAltHpelIf;<br>  <span class="hljs-type">uint16_t</span>   sliceIdx;<br>  Mv      mv     [ NUM_REF_PIC_LIST_01 ];<br>  <span class="hljs-type">int16_t</span>   refIdx [ NUM_REF_PIC_LIST_01 ];<br>  <span class="hljs-type">uint8_t</span>         BcwIdx;<br>  Mv      bv;<br>  <span class="hljs-built_in">MotionInfo</span>() : <span class="hljs-built_in">isInter</span>(<span class="hljs-literal">false</span>), <span class="hljs-built_in">isIBCmot</span>(<span class="hljs-literal">false</span>), <span class="hljs-built_in">interDir</span>(<span class="hljs-number">0</span>), <span class="hljs-built_in">useAltHpelIf</span>(<span class="hljs-literal">false</span>), <span class="hljs-built_in">sliceIdx</span>(<span class="hljs-number">0</span>), refIdx&#123; NOT_VALID, NOT_VALID &#125;,   <span class="hljs-built_in">BcwIdx</span>(<span class="hljs-number">0</span>) &#123; &#125;<br> <br>  <span class="hljs-built_in">MotionInfo</span>(<span class="hljs-type">int</span> i) : <span class="hljs-built_in">isInter</span>(i != <span class="hljs-number">0</span>), <span class="hljs-built_in">isIBCmot</span>(<span class="hljs-literal">false</span>), <span class="hljs-built_in">interDir</span>(<span class="hljs-number">0</span>), <span class="hljs-built_in">useAltHpelIf</span>(<span class="hljs-literal">false</span>), <span class="hljs-built_in">sliceIdx</span>(<span class="hljs-number">0</span>), refIdx&#123; <span class="hljs-number">0</span>,         <span class="hljs-number">0</span> &#125;, <span class="hljs-built_in">BcwIdx</span>(<span class="hljs-number">0</span>) &#123; <span class="hljs-built_in">CHECKD</span>(i != <span class="hljs-number">0</span>, <span class="hljs-string">&quot;The argument for this constructor has to be &#x27;0&#x27;&quot;</span>); &#125;<br> <br>  <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span>==( <span class="hljs-type">const</span> MotionInfo&amp; mi ) <span class="hljs-type">const</span><br>  &#123;<br>    <span class="hljs-keyword">if</span>( isInter != mi.isInter  ) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    <span class="hljs-keyword">if</span> (isIBCmot != mi.isIBCmot) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    <span class="hljs-keyword">if</span>( isInter )<br>    &#123;<br>      <span class="hljs-keyword">if</span>( sliceIdx != mi.sliceIdx ) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      <span class="hljs-keyword">if</span>( interDir != mi.interDir ) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br> <br>      <span class="hljs-keyword">if</span>( interDir != <span class="hljs-number">2</span> )<br>      &#123;<br>        <span class="hljs-keyword">if</span>( refIdx[<span class="hljs-number">0</span>] != mi.refIdx[<span class="hljs-number">0</span>] ) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">if</span>( mv[<span class="hljs-number">0</span>]     != mi.mv[<span class="hljs-number">0</span>]     ) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      &#125;<br> <br>      <span class="hljs-keyword">if</span>( interDir != <span class="hljs-number">1</span> )<br>      &#123;<br>        <span class="hljs-keyword">if</span>( refIdx[<span class="hljs-number">1</span>] != mi.refIdx[<span class="hljs-number">1</span>] ) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">if</span>( mv[<span class="hljs-number">1</span>]     != mi.mv[<span class="hljs-number">1</span>]     ) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>      &#125;<br>    &#125;<br> <br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>  &#125;<br> <br>  <span class="hljs-type">bool</span> <span class="hljs-keyword">operator</span>!=( <span class="hljs-type">const</span> MotionInfo&amp; mi ) <span class="hljs-type">const</span><br>  &#123;<br>    <span class="hljs-keyword">return</span> !( *<span class="hljs-keyword">this</span> == mi );<br>  &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+
+<h3 id="1-1-2-时域候选MVP："><a href="#1-1-2-时域候选MVP：" class="headerlink" title="1.1.2 时域候选MVP："></a>1.1.2 时域候选MVP：</h3><p>利用当前CU在时域邻近已编码图像中对应位置CU来确定，叫做同位图像（ColPic），但是需要按照位置关系进行比例伸缩调整。参考时域距离（图片顺序技术POC）。最多提供一个时域MVP。</p>
+<p>时域最多提供1个候选MV，时域候选列表的构建方式和HEVC一样，与空域的构建方式不同，时域候选列表不能直接使用候选块的运动信息，需要根据位置关系进行相应比例地伸缩。如下图所示<br><img src="https://i-blog.csdnimg.cn/direct/c410527e554148edb85a6382d3d70acb.png" alt="时域列表"><br>其中tb表示当前图像和参考图像之间的距离（用POC度量），td是同位图像和其参考图像之间的距离。时域最多提供一个MV，计算方法如下所示：<br><img src="https://i-blog.csdnimg.cn/direct/70b6df30258a409eba97ae44e9146026.png" alt="在这里插入图片描述"></p>
+<h3 id="1-1-3-基于历史的候选MVP"><a href="#1-1-3-基于历史的候选MVP" class="headerlink" title="1.1.3 基于历史的候选MVP"></a>1.1.3 基于历史的候选MVP</h3><p>将先前已编码块的运动信息存储在一个最大长度为5的HMVP列表中，随着编码过程不断更新，按照先进先出的原则保持列表控制冗余，每个CTU行重新置0。如果MergeMVP列表还有空域位置，就按照HMVP列表顺序添加不同的选项。在空域候选和时域候选推导完成之后，将HMVP的Merge候选项加入Merge候选列表。</p>
+<p>HMVP候选项来自于一个先进先出的表，表的长度为6，这个表通过已经编码块的运动信息构建，每到新的一行CTU时，这个表就要重置，即清空操作。每遇到一个帧间编码的CU（非子块）时，它相关的运动信息就会加到这个表的最后一项成为一个新的HMVP候选项。每当插入一个新的候选项时，首先要进行冗余性检查即检查待插入的项的运动信息和表中已有项的运动信息是否相同，如果不相同，则按照先进先出的规则进行插入操作；如果相同，则将相同的HMVP从维护的FIFO（先进先出）表中移除，其后所有的项都向前移动一位，将待插入的候选项插入到HMVP的表的末端。</p>
+<p>在使用HMVP候选项构建Merge候选列表时，按顺序检查HMVP列表中最新的HMVP候选（从后向前检查），在和Merge列表中现存的候选检查完冗余之后将不重复的HMVP候选添加到Merge列表中去。直到候选列表的长度达到5个。<br><img src="https://i-blog.csdnimg.cn/direct/4f4ebb77860d4f16bcf55a10dcfa1cc2.png" alt="在这里插入图片描述"><br>为了减少冗余性检查操作，进行了以下的简化操作：</p>
+<p>用于构建Merge list的HMVP候选项数量设为 （N&lt;&#x3D;4)?M:(8-N)，其中N表示Merge list中已有项的数目，M表示HMVP表中候选项数目。一旦Merge list中候选项的数目达到了最大允许候选项数目减一（即6-1&#x3D;5），则停止从HMVP生成merge候选项的过程<br>HMVP列表由cs控制</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">LutMotionCand</span><br>&#123;<br>  static_vector&lt;MotionInfo, MAX_NUM_HMVP_CANDS&gt; lut;<br>  static_vector&lt;MotionInfo, MAX_NUM_HMVP_CANDS&gt; lutIbc;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CodingStructure::addMiToLut</span><span class="hljs-params">(static_vector&lt;MotionInfo, MAX_NUM_HMVP_CANDS&gt; &amp;lut, <span class="hljs-type">const</span> MotionInfo &amp;mi)</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-type">size_t</span> currCnt = lut.<span class="hljs-built_in">size</span>();<br> <br>  <span class="hljs-type">bool</span> pruned      = <span class="hljs-literal">false</span>;<br>  <span class="hljs-type">int</span>  sameCandIdx = <span class="hljs-number">0</span>;<br> <br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> idx = <span class="hljs-number">0</span>; idx &lt; currCnt; idx++) <span class="hljs-comment">//判断HMVP列表中是否存在当前模式信息</span><br>  &#123;<br>    <span class="hljs-keyword">if</span> (lut[idx] == mi)<br>    &#123;<br>      sameCandIdx = idx;<br>      pruned      = <span class="hljs-literal">true</span>;<span class="hljs-comment">// 如果存在，则将其从列表删除</span><br>      <span class="hljs-keyword">break</span>;<br>    &#125;<br>  &#125;<br>  <span class="hljs-comment">// 如果当前模式信息已经在模式列表中，则删除</span><br>  <span class="hljs-comment">// 或者当前模式列表已满，则删除最前面的模式</span><br>  <span class="hljs-keyword">if</span> (pruned || currCnt == lut.<span class="hljs-built_in">capacity</span>()) <br>  &#123;<br>    lut.<span class="hljs-built_in">erase</span>(lut.<span class="hljs-built_in">begin</span>() + sameCandIdx);<br>  &#125;<br> <br>  lut.<span class="hljs-built_in">push_back</span>(mi); <span class="hljs-comment">//将模式信息加入到HMVP列表中</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="1-1-4-成对平均候选MVP"><a href="#1-1-4-成对平均候选MVP" class="headerlink" title="1.1.4 成对平均候选MVP"></a>1.1.4 成对平均候选MVP</h3><p> 如果还有位置，就使用平均候选AvgCnd来补充列表<br>使用Merge候选列表中前两个候选项对来生成<strong>成对平均候选mvp</strong>。Merge列表中的第一项和第二项分别定义为p0Cand和p1Cand。对于每个参考帧列表，分别<strong>根据p0Cand和p1Cand的MV是否可用</strong>来计算平均MV。即：</p>
+<p>– 如果两个MV在一个列表中可用，则即使这两个MV指向不同的参考帧，也对它们进行平均，并且其参考帧被设置为p0Cand对应的参考帧；<br>– 如果只有一个MV可用，直接使用那一个；<br>– 如果没有可用的运动矢量，则保持此列表无效。<br>– 如果p0Cand和p1Cand的半像素插值滤波器指数不同，则将其滤波器指数设置为0。</p>
+<h3 id="1-1-5-零值MVP："><a href="#1-1-5-零值MVP：" class="headerlink" title="1.1.5 零值MVP："></a>1.1.5 零值MVP：</h3><p>还剩下就将单向、双向、值为（0，0）的MV补充道MergeMVP列表的末端<br>如果计算完平均候选项后Merge还未填满，则用0MV填充候选列表，直到候选列表达到最大长度。</p>
+<h2 id="1-2-SKIP模式"><a href="#1-2-SKIP模式" class="headerlink" title="1.2 SKIP模式"></a>1.2 SKIP模式</h2><p>Skip由cu_skip_flag标记,是一种特殊的Merge模式。直接用MVP信息作为当前CU的运动矢量，除了不编码MVD信息，也不编码预测残差信息。只需要MVP信息索引，编码比特数很少。相应的在解码器只需要解析出该索引下的运动信息，然后通过运动补偿得到的预测像素值直接作为重建像素值。Skip模式可以大大减少传输比特数。Skip模式也可以是MMVD\GPM\SbTMVP和仿射Merge等的拓展模式。<br><img src="https://i-blog.csdnimg.cn/direct/bb22aac777a848a8b848be9b3f54b51a.png" alt="Skip模式"></p>
+<h2 id="1-3-带有运动矢量差的Merge模式（MMVD）"><a href="#1-3-带有运动矢量差的Merge模式（MMVD）" class="headerlink" title="1.3 带有运动矢量差的Merge模式（MMVD）"></a>1.3 带有运动矢量差的Merge模式（MMVD）</h2><p>因为视频相邻区域CU往往有不同的运动特性，常规merge降低了MV编码比特数，但也因为不准确的MV产生大的预测误差。AMVP技术编码运动矢量的预测残差MVD，与MVP一起表示运动矢量。</p>
+<p>但是AMVP模式下的MVD通常需要较多的比特表达，所以VVC引入了一种带有运动矢量差的merge技术MMVD，设定了包含多个固定值的M_MVd集合，选取集合中的一个值作为当前CU的MVD。MVD和MVP都是通过索引获得，MVP必须为mergeMVD列表前2项候选项。M_MVd对应4种方向上8种偏移步长，共2<em>8</em>4&#x3D;64个新的运动矢量候选项。具体单项预测和双向预测，需要根据时间信息进行缩放。</p>
+<p>为了进一步提高Merge&#x2F;Skip模式下预测MV的准确性，VVC在常规Merge模式基础上，增加了“运动矢量差的”Merge模式。该模式是将常规Merge模式构建得到的Merge列表中的前两个候选MV作为初始MV，在上下左右四个方向上，进行8种步长的搜索，即在初始MV基础上加上一定的偏移MVD得到2x4x8&#x3D;64个MV，并从中选出率失真代价最小的MV作为最终的细化MV。在编码端，将初始MV在Merge List中的索引、搜索方向索引和搜素步长索引传给解码端。</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/64c853afcb814351a392b97f0b877c75.png" alt="在这里插入图片描述"><br><img src="https://i-blog.csdnimg.cn/direct/d1946ccdff4c4eb5a4b27a1b27608b22.png" alt="在这里插入图片描述"><br>具体细节和代码参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/BigDream123/article/details/116976112">带有运动矢量差的Merge技术(Merge mode with MVD)</a></p>
+<h2 id="1-4-联合帧内帧间预测模式（CIIP）"><a href="#1-4-联合帧内帧间预测模式（CIIP）" class="headerlink" title="1.4 联合帧内帧间预测模式（CIIP）"></a>1.4 联合帧内帧间预测模式（CIIP）</h2><p>利用帧内预测值和帧间预测值的加权平均得到当前CU预测值的技术。限定帧内预测只采用planar模式，帧间预测只采用常规merge模式，CU的尺寸和形状有限定。VVC对于Merge模式编码的CU，加入了帧内和帧间联合预测技术，即使用常规Merge模式通过运动补偿得到帧间预测信号Pinter ； 通过planar模式得到帧内预测信号Pintra 。 然后，使用加权平均对帧内和帧间预测信号进行组合，计算公式如下所示：<br><img src="https://i-blog.csdnimg.cn/direct/d076e82066cd446d9f6298be0e8f5885.png" alt="在这里插入图片描述"><br>其中权重取决于上相邻块和左相邻块的编码模式。</p>
+<p>CIIP使用条件：<br>Merge模式编码的CU<br>CU包含至少64个亮度像素（即CU宽度乘以CU高度等于或大于64），并且CU宽度和CU高度均小于128，<br>具体细节和代码参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/BigDream123/article/details/117171786">帧间和帧内联合预测(Combined inter and intra prediction, CIIP)</a></p>
+<h2 id="1-5-几何划分预测模式（GPM）"><a href="#1-5-几何划分预测模式（GPM）" class="headerlink" title="1.5 几何划分预测模式（GPM）"></a>1.5 几何划分预测模式（GPM）</h2><p>VVC中，CTU可以经过二叉、三叉、四叉树划分，但是实际视频内容和多样，当物体运动具有非水平或垂直边缘的时候，不能有效匹配，所以引入几何帧间预测模式，允许使用非水平或垂直直线对矩形CU进行划分，每个子区域可以使用不同的运动信息进行运动补偿。从而提升预测准确度。为merge拓展模式。针对运动物体的边缘部分，VVC引入了一种几何划分模式，该模式可以将图像中运动物体的边缘部分，采用更灵活的表示方法。具体地，对于图像中运动物体的边缘CU，可以将其划分为两个非矩形的子CU分别进行单向预测，并进行加权融合，得到整个CU的预测值。</p>
+<p>使用GPM模式时，通过几何定位的直线将CU划分为两部分（下图所示）。</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/c4c1f8c3fbc8447685d342aedbeed944.png" alt="在这里插入图片描述">CU划分后的子分区中包含单独的运动信息，每个子分区仅允许单向预测，如下图所示，当前CU的右侧部分来自参考帧P0的MV0预测，左侧部分来自参考帧P1的MV1预测。最终通过使用整数融合矩阵W0和W1进行边缘融合生成最终的GPM预测PG。<br><img src="https://i-blog.csdnimg.cn/direct/5a6e64ba30ea403f92ace3359998c570.png" alt="在这里插入图片描述"><br>为了简化运动信息编码，GPM两个分区的运动信息使用Merge模式编码，GPM模式的候选列表是由常规Merge模式推导而来的。<br>具体细节和代码参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/BigDream123/article/details/116976112">带有运动矢量差的Merge技术(Merge mode with MVD)</a></p>
+<p><strong>原理</strong><br>为了区分不同的物体，可能在物体边缘产生大量小块，消耗过多头信息，且划分边缘与实际边缘不符合，无法有效表示非垂直边缘。</p>
+<p>GPM使用直线将矩形CU划分成2个不规则子区域，拥有自己的运动矢量信息，并进行相应的单向运动补偿。划分线可以用角度和偏移量表示，使用法线和点到直线的距离来表示。VVC中角度和偏移量只允许选择部分预定义的离散数值。各区域分别利用不同运动信息获得补偿，并对划分线附近区域以软混合的方式进行加权融合，以模拟自然场景中柔和的边缘过度。</p>
+<p><strong>几何划分</strong>：共支持64种划分方式。<br>子区域运动矢量：两个子区域都只使用单项预测，并以merge模式编码，运动矢量由GPM模式专用的单向MVP候选列表、列表索引获得。</p>
+<p><strong>运动补偿加权融合</strong>：为了避免划分线附近像素值的突变，距离话分享较近像素的权重渐变，融合了两个方向的预测值，模拟柔和过渡。</p>
+<p><strong>运动信息存储</strong>：1、当子块中心位置到划分线距离大于等于2时，存储运动矢量为中心所在子区域的运动矢量2、当划分线小于等于2的时候，如果两个子区域运动矢量所在参考列表不同，则作为双向预测分别存储两个运动矢量信息，如果两个子区域运动矢量所在参考列表相同，则取第二个预测分区的运动矢量作为单项预测存储。</p>
+<blockquote>
+<ol start="2">
+<li>AMVP</li>
+</ol>
+</blockquote>
+<h1 id="二、高级运动矢量预测技术（AMVP）"><a href="#二、高级运动矢量预测技术（AMVP）" class="headerlink" title="二、高级运动矢量预测技术（AMVP）"></a>二、高级运动矢量预测技术（AMVP）</h1><p>AMVP模式是H.265&#x2F;HEVC中提出的新的MV预测技术，H.266&#x2F;VVC仍采用了该技术，并在HEVC的基础上进行了改进。AMVP通过高效表达运动矢量插值MVDF进行运动信息编码。主要是利用空域和时域的运动矢量的相关性，为当前PU建立了候选预测MV列表，编码端从其中选出最优的预测MVP，并对MVP进行<strong>差分编码</strong>（即通过运动搜索获得真正的MV，将运动矢量差进行编码（MV-MVP））；解码端通过建立相同的列表，仅需要<strong>预测MVP在列表中的索引</strong>和<strong>运动向量残差MVD</strong>即可计算出当前PU的MV。</p>
+<p>Merge与AMVP模式的区别：</p>
+<ul>
+<li><strong>MVP和MVD差异</strong>：<br>Merge模式是直接将通过空域和时域MV的相关性获得的预测MVP作为最终的MV，而不存在MVD；<br>AMVP模式是以相关性得到预测MVP作为搜索起点，通过<strong>运动搜索</strong>获得更准确的MVP，然后再将预测的MVP和搜索得到的MV之间的差值MVD进行编码</li>
+<li><strong>编码传输内容差异</strong><br>Merge模式仅需要传最佳预测MV在候选列表中的索引；<br>AMVP模式除了需要传最佳MVP在候选列表的索引，还需要对运动矢量差MVD进行编码</li>
+<li><strong>Merge模式和AMVP模式的候选列表长度不同</strong><br>(Merge模式的候选列表长度为6，AMVP模式的候选列表长度为2）</li>
+<li><strong>构建MVP候选列表的方式也不同</strong><br>AMVP的候选列表长度为2，候选MV总共有4种类型：</li>
+</ul>
+<p>– 基于相邻块的空域MVP<br>– 基于同位块的时域MVP<br>– 基于历史信息构建的HMVP<br>– 零MV</p>
+<h2 id="2-1-常规AMVP模式"><a href="#2-1-常规AMVP模式" class="headerlink" title="2.1 常规AMVP模式"></a>2.1 常规AMVP模式</h2><p>AMVP是针对运动矢量信息的差分编码技术。利用空域、时域上运动矢量的相关性，为当前CU建立MVP候选列表，和Merge不同，AMVP在构建候选MVP候选列表的时候，针对不同参考图像得到的MVP列表可能不同，需要编码参考帧索引，还需要编码选中MVD列表缩影和MVD(MV-MVP)。AMVP列表针对每个参考图像建立，每个列表各项只包含单项运动信息，且列表长度仅为2。</p>
+<h3 id="2-1-1-空域候选MVP"><a href="#2-1-1-空域候选MVP" class="headerlink" title="2.1.1 空域候选MVP"></a>2.1.1 空域候选MVP</h3><p>VVC的AMVP模式规定,只能从当前PU的左侧和上方各产生一个候选MV，最多允许2个空域候选MV，左侧的检查顺序是A1-&gt;A0，上侧的检查顺序是B1-&gt;B0-&gt;B2。<br><img src="https://i-blog.csdnimg.cn/direct/fa1f18232ad84ba686c82dbafb8b596b.png" alt="在这里插入图片描述"></p>
+<h3 id="2-1-2-时域候选MVP"><a href="#2-1-2-时域候选MVP" class="headerlink" title="2.1.2 时域候选MVP"></a>2.1.2 时域候选MVP</h3><p>与merge类似</p>
+<h3 id="2-1-3-基于历史的候选MVP"><a href="#2-1-3-基于历史的候选MVP" class="headerlink" title="2.1.3 基于历史的候选MVP"></a>2.1.3 基于历史的候选MVP</h3><p>从HMVP中最近4项进行选择</p>
+<h3 id="2-1-4-零值MVP"><a href="#2-1-4-零值MVP" class="headerlink" title="2.1.4 零值MVP"></a>2.1.4 零值MVP</h3><h2 id="2-2-对称运动矢量差分编码技术（SMVD）"><a href="#2-2-对称运动矢量差分编码技术（SMVD）" class="headerlink" title="2.2 对称运动矢量差分编码技术（SMVD）"></a>2.2 对称运动矢量差分编码技术（SMVD）</h2><p>对于包含双向运动信息的AMVP模式，可以使用对称MVD编码模式。具体的，在编码时，仅需要编码前向MVD0，后向的MVD1可由MVD1&#x3D;（-MVD0）推导得到。换句话说，对于双向预测，并且参考位于当前帧两侧的情形，前后向运动矢量具有对称一致性，可以采用对称运动矢量差分编码。对称MVD模式(symmetric MVD mode)是VVC中新提出的一种双向预测时MVD语法单元传输模式。在使用对称MVD模式时，在传输双向预测的运动信息时不需要传list0和list1中参考图像的索引和list1的MVD。这些信息可以在解码端生成。<br><img src="https://i-blog.csdnimg.cn/direct/eaaed86af37f4cc4bffa619fcaf37336.png" alt="在这里插入图片描述"><br><strong>使用条件</strong></p>
+<ul>
+<li>AMVP候选包含双向运动信息</li>
+<li>当前CU的前向参考帧列表List0中距离最近的参考图像和后向参考帧列表List1中距离最近的参考图像正好处于当前图像的两侧</li>
+</ul>
+<p>**解码过程 **<br>对称MVD模式的解码过程如下：</p>
+<p>1、在slice层，变量BiDirPredFlag, RefIdxSymL0和RefIdxSymL1按如下方式生成：</p>
+<ul>
+<li>若mvd_l1_zero_flag&#x3D;1，则BiDirPredFlag&#x3D;0</li>
+<li>否则，如果在list0中离当前图像最近的参考图像和在list1中离当前图像最近的参考图像分别是前向参考图像和后向参考图像对或分别是后向参考图像和前向参考图像对，且list0和list1的参考图片都是短期参考图片，则BiDirPredFlag&#x3D;1。否则，BiDirPredFlag&#x3D;0</li>
+</ul>
+<p>2、在CTU层，如果CU是双向预测且BiDirPredFlag&#x3D;1，则需要在码流中显示传输一个对称模式标识符来表明是否使用对称模式。</p>
+<p>当对称模式标识符为真时，在码流中只需要传mvp_l0_flag, mvp_l1_flag和MVD0。list-0和list-1的参考索引分别被设置为等于该对参考图片。MVD1&#x3D;（-MVD0）最终运动向量可由下式生成：<br><img src="https://i-blog.csdnimg.cn/direct/97ea8ec139a349059fef521796264c9e.png" alt="在这里插入图片描述"><br>在解码端MVD1由MVD0的相反数生成，如下图所示。<br><img src="https://i-blog.csdnimg.cn/direct/095a430b8f084d3fa2d40f5706a3b77b.png" alt="在这里插入图片描述"><br>在编码端进行对称MVD模式的运动估计时需要一个初始MV。这个初始MV是从单向运动搜索MV、双向运动搜索MV和AMVP list中选择率失真代价最小的MV得到。 </p>
+<p>采用SMVD的时候，前后向参考图像直接选择两个参考图像列表中距离当前图像最近的，并且时间上处于当前图像两侧的短期参考图像。这样可以有效节省前向MV的参考图像索引、后向图像索引、后向MVD编码消耗的比特数。只需要编码双向AMVP候选列表索引、前向运动矢量差MVD。过程如下：</p>
+<p>分别获取两个参考图像列表中距离当前帧最近的短期参考图像，得到当前CU的前后向参考图像<br>根据前后向参考图像索引RefIdxSymL0和RefIdxSymL1分别建立前向AMVP候选列表和后向AMVP候选列表<br>根据MVP列表缩影，得到双向MVP<br>根据码流得到前向MVD，推断得到后向MVD<br>计算得到MV</p>
+<h2 id="2-3-自适应运动矢量精度（AMVR）"><a href="#2-3-自适应运动矢量精度（AMVR）" class="headerlink" title="2.3 自适应运动矢量精度（AMVR）"></a>2.3 自适应运动矢量精度（AMVR）</h2><p>允许每个CU自适应选择一种精度表示MVD，最高精度为1&#x2F;16，最低精度为4亮度像素。适用于传输非0MVD的情况吗，如常规AMVP、SMVD、仿射AMVP。使用率失真优化的方法噶判断是否使用AMVR以及采用何种精度。VTM使用快速算法跳过部分MVD精度。<br>由于实际运动通常是连续的，因此整像素精度通常不能很好地表示物体的运动。在HEVC中，亮度分量的运动矢量使用1&#x2F;4像素精度，色度分量的运动矢量使用1&#x2F;8像素精度；在VVC中，进一步提高了像素精度，亮度分量的运动矢量使用1&#x2F;16像素精度，色度分量的运动矢量使用1&#x2F;32像素精度。随着像素精度的增长，预测精度增长，但随之需要大量的编码比特。</p>
+<p>综合考虑预测精度和编码比特消耗，VVC提出了自适应运动矢量精度AMVR技术，在CU级对亮度分量MVD采用不同的像素精度进行编码。根据当前CU帧间预测模式的不同，亮度分量MVD编码精度有不同的选取策略：</p>
+<p>常规AMVP模式：1&#x2F;4亮度像素精度，1&#x2F;2亮度像素精度，整数亮度像素精度或四倍亮度像素精度。<br>仿射AMVP模式：1&#x2F;4亮度像素精度，整数亮度像素精度或1&#x2F;16亮度像素精度。<br>在编码端，需要比较各个精度下的率失真代价并选出代价最小的编码精度作为当前CU的最优精度。为了降低编码端复杂度，避免对每个MVD精度进行四次（Affine AMVP为三次）CU级的率失真代价的比较，在VVC中使用一些快速算法来跳过除了1&#x2F;4精度以外某些MVD精度的率失真代价检查。</p>
+<p>在HEVC中，当Slice header中的use_integer_mv_flag等于0时，编码快的MVD（CU的运动矢量和预测运动矢量之间的差值）以四分之一亮度像素精度进行编码。 在VVC中，引入了CU级自适应运动矢量精度（AMVR）方案。 AMVR允许以不同的精度对CU的MVD进行编码。</p>
+<p>根据当前CU的模式（常规AMVP模式或仿射AVMP模式），可以如下自适应地选择当前CU的MVD：</p>
+<p>常规AMVP模式：1&#x2F;4亮度像素精度，1&#x2F;2亮度像素精度，整数亮度像素精度或四倍亮度像素精度。<br>仿射AMVP模式：1&#x2F;4亮度像素精度，整数亮度像素精度或1&#x2F;16亮度像素精度。<br>只有当前CU具有至少一个非零MVD分量时，才会传输CU级像素精度。 如果所有MVD分量（即参考列表L0和参考列表L1的水平和垂直MVD）均为零，则MVD默认使用1&#x2F;4亮度像素精度。</p>
+<p>对于至少有一个非零MVD分量的CU，第一个标志位表示CU是否使用1&#x2F;4亮度像素精度。如果第一个标志为0，则不需要传输其余的标志，当前CU的MVD使用1&#x2F;4亮度像素精度。否则，</p>
+<p>对于常规AMVP模式，需要第二个标志位以表示CU使用1&#x2F;2亮度像素精度或其他MVD精度（整数或四倍亮度像素精度）。在1&#x2F;2亮度像素精度下，使用6抽头插值滤波器而不是默认的8抽头插值滤波器。如果不是1&#x2F;2亮度像素精度，则需要第三个标志用来指示当前CU使用整数亮度像素精度还是四倍亮度像素精度。<br>对于仿射AMVP模式，第二个标志用于指示是使用整数亮度像素精度还是1&#x2F;16 亮度像素精度。<br>为了确保重建的MV具有同样的精度，在与MVD相加之前，CU的MVP（运动矢量预测）会四舍五入到与MVD相同的精度。MVP向零进行四舍五入（即负MVP向正无穷大舍入，正MVP向负无穷大舍入）。</p>
+<p>编码器使用RD检查确定当前CU的MV精度。为了避免总是对每个CU的MVD执行四次精度检查，在VTM11中，除了1&#x2F;4亮度像素精度外，其余MVD精度的RD检查只能在某些条件下执行。</p>
+<p>对于普通AVMP模式，首先计算1&#x2F;4亮度像素精度和整数亮度像素精度的RD Cost。然后将整数亮度像素精度的RD Cost与1&#x2F;4亮度像素精度的RD Cost进行比较，以确定是否有必要进一步检验四倍亮度像素精度的RD Cost。如果1&#x2F;4亮度像素精度的RD Cost远小于整数亮度像素精度，则跳过四倍亮度像素精度的RD检查。如果整数亮度像素精度的RD Cost显著大于先前测试的MVD精度的最佳RD Cost，则跳过1&#x2F;2亮度像素精度的检查。<br>对于仿射AMVP模式，如果在检查仿射Merge&#x2F;Skip模式、Merge&#x2F;Skip模式、常规AMVP模式的1&#x2F;4亮度像素精度和仿射AMVP模式1&#x2F;4亮度像素精度的率失真代价后未选择仿射帧间模式，则不检查1&#x2F;16亮度像素精度和整数亮度像素精度的仿射帧间模式。<br>此外，在1&#x2F;16亮度像素级精度仿射帧间模式中，以1&#x2F;4亮度像素精度仿射帧间模式得到的仿射参数作为搜索起点。</p>
+<p>运动场存储<br>在VVC中，显式发出信号的运动矢量的最高精度为1&#x2F;4像素精度。 在某些仿射帧间预测模式中，以1&#x2F;16亮度像素精度导出运动矢量，以1&#x2F;16精度执行运动补偿预测。 在内部运动场存储方面，所有运动矢量都以1 &#x2F; 16亮度精度存储。</p>
+<p>对于TMVP和SbTVMP使用的临时运动场存储，与HEVC中的16x16大小粒度相比，VVC以8x8大小粒度执行运动场压缩。</p>
+<p>VTM中，MV的精度的定义：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">enum</span> <span class="hljs-title class_">MvPrecision</span><br>&#123;<br>  MV_PRECISION_4PEL     = <span class="hljs-number">0</span>,      <span class="hljs-comment">// 4-pel</span><br>  MV_PRECISION_INT      = <span class="hljs-number">2</span>,      <span class="hljs-comment">// 1-pel, shift 2 bits from 4-pel</span><br>  MV_PRECISION_HALF     = <span class="hljs-number">3</span>,      <span class="hljs-comment">// 1/2-pel</span><br>  MV_PRECISION_QUARTER  = <span class="hljs-number">4</span>,      <span class="hljs-comment">// 1/4-pel (the precision of regular MV difference signaling), shift 4 bits from 4-pel</span><br>  MV_PRECISION_SIXTEENTH = <span class="hljs-number">6</span>,     <span class="hljs-comment">// 1/16-pel (the precision of internal MV), shift 6 bits from 4-pel</span><br>  MV_PRECISION_INTERNAL = <span class="hljs-number">2</span> + MV_FRACTIONAL_BITS_INTERNAL,<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>几种模式的像素精度定义：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">const</span> MvPrecision Mv::m_amvrPrecision[<span class="hljs-number">4</span>] = &#123; MV_PRECISION_QUARTER, MV_PRECISION_INT, MV_PRECISION_4PEL, MV_PRECISION_HALF &#125;; <span class="hljs-comment">// for cu.imv=0, 1, 2 and 3</span><br><span class="hljs-type">const</span> MvPrecision Mv::m_amvrPrecAffine[<span class="hljs-number">3</span>] = &#123; MV_PRECISION_QUARTER, MV_PRECISION_SIXTEENTH, MV_PRECISION_INT &#125;; <span class="hljs-comment">// for cu.imv=0, 1 and 2</span><br><span class="hljs-type">const</span> MvPrecision Mv::m_amvrPrecIbc[<span class="hljs-number">3</span>] = &#123; MV_PRECISION_INT, MV_PRECISION_INT, MV_PRECISION_4PEL &#125;; <span class="hljs-comment">// for cu.imv=0, 1 and 2</span><br></code></pre></td></tr></table></figure>
+
+<p>精度转换的代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">changePrecision</span><span class="hljs-params">(<span class="hljs-type">const</span> MvPrecision&amp; src, <span class="hljs-type">const</span> MvPrecision&amp; dst)</span></span><br><span class="hljs-function"></span>&#123;<br>  <span class="hljs-type">const</span> <span class="hljs-type">int</span> shift = (<span class="hljs-type">int</span>)dst - (<span class="hljs-type">int</span>)src;<br>  <span class="hljs-keyword">if</span> (shift &gt;= <span class="hljs-number">0</span>)<br>  &#123;<br>    *<span class="hljs-keyword">this</span> &lt;&lt;= shift;<br>  &#125;<br>  <span class="hljs-keyword">else</span><br>  &#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> rightShift = -shift;<br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> nOffset = <span class="hljs-number">1</span> &lt;&lt; (rightShift - <span class="hljs-number">1</span>);<br>    hor = hor &gt;= <span class="hljs-number">0</span> ? (hor + nOffset - <span class="hljs-number">1</span>) &gt;&gt; rightShift : (hor + nOffset) &gt;&gt; rightShift;<br>    ver = ver &gt;= <span class="hljs-number">0</span> ? (ver + nOffset - <span class="hljs-number">1</span>) &gt;&gt; rightShift : (ver + nOffset) &gt;&gt; rightShift;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<ol start="3">
+<li>基于子块的帧间预测技术</li>
+</ol>
+</blockquote>
+<h1 id="三、基于子块的帧间预测技术"><a href="#三、基于子块的帧间预测技术" class="headerlink" title="三、基于子块的帧间预测技术"></a>三、基于子块的帧间预测技术</h1><p>视频内容包括平移、旋转、缩放、拉伸运动，利用基于子块的帧间预测模式将CU划分为多个子块，利用CU的运动信息按一定规则得到每个子块不同的运动信息，可以节省此类运动信息所包含的比特数。之前的帧间预测的运动估计仅考虑了简单的平移运动，但在自然界中还存在缩放、旋转、透视等运动，如果仅使用之前的平移运动模型，无法有效表示缩放等运动。</p>
+<p>研究发现，仿射（Affine）运动模型能够很好地描述自然界中的非平移运动，VVC中引入了基于块的放射运动补偿技术，包括四参数模型和六参数模型。具体地，利用块中的两个控制点（四参数模型）或者三个控制点（六参数模型）的MV，来推导出整个块中每个4x4子块的MV，之后分别根据每个子块的MV通过运动补偿得到每个子块的预测值。<br><img src="https://i-blog.csdnimg.cn/direct/066907087ddd442ca32e9ddaeac7435b.png" alt="在这里插入图片描述"><br>和传统的帧间预测模式类似，Affine模式也分为Affine Merge模式和Affine AMVP模式，Affine Merge模式是通过空间相邻的CU运动信息得到控制点的MV；Affine AMVP模式是根据空间相邻的CU运动信息预测控制点的MV，再以预测的CPMV作为搜索起点进行运动估计，得到最佳的CPMV，并将二者的差值和预测CPMV在候选列表中的索引传给解码端。</p>
+<h2 id="3-1-基于子块的时域MV预测技术（SbTMVP）"><a href="#3-1-基于子块的时域MV预测技术（SbTMVP）" class="headerlink" title="3.1 基于子块的时域MV预测技术（SbTMVP）"></a>3.1 基于子块的时域MV预测技术（SbTMVP）</h2><p>使用同位图像ColPic中参考块的运动信息直接得到当前CU子块的MV信息，在当前片是P片时为每个子块构造一个单项预测TMVP，在当前片为B片时为每个子块构造一个双向预测TMVP。当前CU各子块的运动信息由相应同位子块推导得到，当同位子块的运动信息不同时，子块运动信息也不同。</p>
+<p>– 获取同位运动偏移<br>– 获取中心运动信息<br>– 获取子块运动信息：针对内部子块推导得到对应的TMVP<br>– 基于子块的仿射运动补偿<br>运动具有一定的规律性，可以统一通过仿射变换的思想。即块内任意像素的运动矢量可以由已知固定像素的运动矢量确定。</p>
+<p>有4、6参数仿射模型，只需要编码CU控制点的运动矢量，根据模型公式就可以推导出CU内所有秀昂宿的运动矢量。VVC为每个4x4亮度子块推导一个共用的与i你懂矢量，以中心位置推导得到的运动矢量。并给出了内存访问带宽限制机制和回退模式。</p>
+<p>与HEVC中的时间运动矢量预测（temporal motion vector prediction, TMVP）类似，SbTMVP使用同位图片中的运动场来改善当前图片中CU的运动矢量预测和Merge模式。不同的是，sbTMVP预测的是子CU级的运动。</p>
+<p>SbTMVP中使用的子CU大小固定为8x8，SbTMVP模式仅适用于宽度和高度都大于或等于8的CU。</p>
+<p>在VVC中，SbTMVP和Affine Merge的候选是共存的，将SbTVMP得到的候选和仿射Merge候选共同组成基于子块的Merge候选列表。 通过序列参数集（SPS）标志启用&#x2F;禁用SbTVMP模式。 如果启用了SbTMVP模式，则将SbTMVP预测变量添加为基于子块的Merge候选列表的第一项，然后是仿射Merge候选项。</p>
+<p>将sbTMVP和Affine Merge共同的候选列表称为基于子块的Merge列表，其大小在SPS中用信号通知，并且基于子块的Merge列表的最大允许大小为5。</p>
+<blockquote>
+<p>仿射Merge模式</p>
+</blockquote>
+<h3 id="3-2、仿射Merge模式"><a href="#3-2、仿射Merge模式" class="headerlink" title="3.2、仿射Merge模式"></a>3.2、仿射Merge模式</h3><p>在基于子块的仿射运动补偿的基础上，各控制点的运动矢量（CPMV）由SubBlkMergeMVP列表直接得到，是merge的扩展模式。列表中每项候选项包含多个运动矢量，由空间、时间相邻CU的运动信息生成。</p>
+<p><strong>SubBlkMergeMVP列表</strong></p>
+<p>空间相邻仿射模式CU继承候选：最多包含2个，左侧相邻块扫描顺序A0-A1，上册相邻块为B0-B2，每侧采用一个使用仿射模式编码的CU来推导CPMVP候选。</p>
+<p>空域和时域相邻CU的平移MV构造：设置4个控制点备选。查表组合得到候选CPMVP<br>零值MV填充</p>
+<p>对于宽度和高度大于等于8的CU， 可以使用Affine Merge模式。Affine Merge模式中，控制点的运动矢量CPMV是根据空域相邻CU的运动信息生成的，最多有五个候选项，有以下五种方式生成CPMV的候选：</p>
+<p>继承Affine Merge候选项：直接继承其相邻CU的CPMV候选项（最多有两个候选项，上相邻CU最多一个，左相邻CU最多一个）<br>构造Affine Merge候选项：使用相邻CU的平移运动的MVs构造CPMVPs候选项（不限个数，直至填充够5个）<br>零MV（若不足5，则填充）</p>
+<h3 id="3-3、仿射AMVP模式"><a href="#3-3、仿射AMVP模式" class="headerlink" title="3.3、仿射AMVP模式"></a>3.3、仿射AMVP模式</h3><p>当仿射merge无法得到有效的控制点运动矢量的时候使用。针对指定的参考图像，利用仿射AMVP列表得到CPMV的预测值CPMVP，结合对应控制点MVD（MvdCp）表示CPMV。需要将单双向运动信息，包括参考索引、CPMVP列表索引、对应的Mvdcp，和预测残差一起送入码流。<br>Affine AMVP模式可应用于宽度和高度均大于或等于16的CU。在Affine AMVP模式下，需要传输其预测CPMV在候选列表中的索引以及它和运动搜索得到的实际CPMV的残差。Affine AVMP候选列表大小为2，它是通过依次使用以下5种CPMV候选类型生成的：</p>
+<ol>
+<li>继承AMVP候选项：继承其相邻CU的CPMV候选项</li>
+<li>构造Affine AMVP候选项：使用相邻CU的平移运动的MVs构造CPMVPs候选项</li>
+<li>直接使用相邻CU的平移MV</li>
+<li>同位块的时域MV</li>
+<li>零MV</li>
+</ol>
+<p><strong>仿射AMVP模式列表</strong><br><strong>1. 空域相邻仿射模式CU继承</strong>：根据采用仿射模式的空域相邻CU的CPMV推导得到CPMVP候选。<br><strong>2. 空域相邻CU的平移MVP构造</strong>：根据MV平移得到<br><strong>3. 空域相邻CU的平移MV填充</strong><br><strong>4. 时域平移MV填充</strong><br><strong>5. 零值MV填充</strong></p>
+<blockquote>
+<p>帧间后处理技术</p>
+</blockquote>
+<h1 id="四、帧间后处理技术"><a href="#四、帧间后处理技术" class="headerlink" title="四、帧间后处理技术"></a>四、帧间后处理技术</h1><p>为了进一步提高帧间预测的准确性，VVC采用了多种帧间预测后处理技术值，以修正帧间预测的预测像素，提高预测性能。<br>主要包含三个技术：</p>
+<ul>
+<li>DMVR技术：用于修正常规Merge模式双向预测MV，以Merge列表中的双向MV为初始MV，在一定范围内镜像搜索，以获得更精确的MV。</li>
+<li>BDOF技术：使用双向光流技术来修正双向预测的预测值。</li>
+<li>PROF技术：使用光流技术来细化基于子块的Affine运动补偿预测。</li>
+</ul>
+<h2 id="4-1-解码端运动矢量细化（DMVR）"><a href="#4-1-解码端运动矢量细化（DMVR）" class="headerlink" title="4.1 解码端运动矢量细化（DMVR）"></a>4.1 解码端运动矢量细化（DMVR）</h2><p>merge模式可以高效表示运动矢量信息，但可能会导致其运动矢量并非使参考块与编码块最匹配。所以VVC采用了一种双边匹配的解码端运动矢量细化技术。</p>
+<p>正对采用双向预测merge模式的CU，可以直接得到前后向运动矢量MVL0\MVL1。以对称的方式，给这两个运动矢量加一个小的偏移量MV_diff。基本过程：</p>
+<p>参考块获取，根据前后向运动矢量，对每个子块实施运动补偿得到前后向参考块，并对前后向参考子块进行扩充。<br>整像素搜索：通过计算前后向参考子块的SAD衡量其匹配程度，找到最小的对应MV_diff作为整像素搜索的最优MV整像素精度偏移量。<br>亚像素计算：亚像素精度MV_diff并不搜索MV_diff周围的亚像素位置，而是基于二次误差曲面函数计算得到。<br><img src="https://i-blog.csdnimg.cn/direct/425efb89c8704224aadcc76797b8a9df.png" alt="在这里插入图片描述"></p>
+<h2 id="4-2-基于光流场的预测值修正"><a href="#4-2-基于光流场的预测值修正" class="headerlink" title="4.2 基于光流场的预测值修正"></a>4.2 基于光流场的预测值修正</h2><p>光流指视频帧内容在时域上的瞬时运动速度，即像素在时间域上的运动速度。时间较短的两帧，光流也表现为统一目标点在两帧之间位移，即像素的运动矢量。所以可以利用图像帧中像素亮度在时间域上的变化及像素空域相关性，计算视频帧之间的像素运动信息。因此可以根据参考像素值、光流值、空域梯度得到。当运动补偿中运动矢量存在较小误差时，可以计算运动矢量误差，利用预测值进行修正。</p>
+<h2 id="4-3-双向光流预测值修正-BDOF"><a href="#4-3-双向光流预测值修正-BDOF" class="headerlink" title="4.3 双向光流预测值修正(BDOF)"></a>4.3 双向光流预测值修正(BDOF)</h2><p>采用参考帧对称的帧间双向预测的编码块，前、后向预测参考块和当前编码块间的光流对称。可以根据光流公式推到i计算解决一个优化问题：对齐后前后向预测参考块应一致。可以求出双向预测得到的预测值，和双向光流补偿值，得到当前块的补偿光流。为4x4的子块估计一个光流。</p>
+<p>子块获取：包括padding预处理<br>子块亮度空域梯度和时域梯度的计算：根据公式计算<br>光流计算：VVC采用了简化的光流计算方式<br>补偿值计算：进一步得到每个像素的光流修正值</p>
+<h3 id="4-4-基于光流的仿射预测修正"><a href="#4-4-基于光流的仿射预测修正" class="headerlink" title="4.4 基于光流的仿射预测修正"></a>4.4 基于光流的仿射预测修正</h3><p>针对采用仿射运动补偿的编码块，光流预测细化技术为4x4子块的每个像素计算光流补偿值，即像素运动矢量和子块运动矢量的插值，然后计算每个像素的亮度补偿值。</p>
+<h3 id="4-5-子块光流计算"><a href="#4-5-子块光流计算" class="headerlink" title="4.5 子块光流计算"></a>4.5 子块光流计算</h3><p>子块亮度空域梯度计算<br>亮度补偿值计算：利用空间梯度和光流补偿值，计算每个像素的亮度补偿值</p>
+<h1 id="五、帧间加权预测"><a href="#五、帧间加权预测" class="headerlink" title="五、帧间加权预测"></a>五、帧间加权预测</h1><p>Slice级加权预测<br>由于光强造成全局或者局部的亮度变化，但是这类相邻图像内容依旧相似，但在像素值上无法反应，所以对于亮度整体渐变的场景，slice级加权预测可以有效应对，对参考图像的重建像素值做一个线性变换得到预测值。</p>
+<p>可以用于单项预测也可以用于双向预测，slice内所有CU采用其中一组或者两组加权参数。</p>
+<h2 id="5-1、CU级双向加权预测（BCW）"><a href="#5-1、CU级双向加权预测（BCW）" class="headerlink" title="5.1、CU级双向加权预测（BCW）"></a>5.1、CU级双向加权预测（BCW）</h2><p>仅对双向预测CU开启，使用少量预定义的权值，且不同配置下权集不同，编码索引。<br>在VVC中，双向预测模式可以对两个预测信号进行加权平均。<br><img src="https://i-blog.csdnimg.cn/direct/c97c4b5f682247069479bb61fac0aa94.png" alt="在这里插入图片描述"><br>其中w为权重，总共包含5个权重，w∈{-2,3,4,5,10}。权重由预测模式确定。<br>BCW仅适用于具有256个或更多亮度像素的CU（即CU宽度乘以CU高度大于或等于256）。</p>
+<h2 id="5-2、加权预测（WP）"><a href="#5-2、加权预测（WP）" class="headerlink" title="5.2、加权预测（WP）"></a>5.2、加权预测（WP）</h2><p>加权预测用于修正P Slice或B Slice中的运动补偿预测像素，加权预测表示预测像素可以用一个（适用于P Slice情况）或者两个（适用于B Slice情况）参考图像中的像素通过与加权系数相乘得出，如下：<br><img src="https://i-blog.csdnimg.cn/direct/bf8a12be68ad466fb88b489843c4d74d.png" alt="在这里插入图片描述"><br>加权预测适用于两图像之间像素值整体变化且有相同变化规律的情形，如淡入、淡出等效果。<br>加权预测（WP）用于帧级加权，双向加权预测（BCW）用于CU级。加权预测WP既可用在双向预测，也可用在单向预测；双向加权预测BCW仅可用在双向预测。</p>
+<h1 id="六、帧间预测模式组织结构"><a href="#六、帧间预测模式组织结构" class="headerlink" title="六、帧间预测模式组织结构"></a>六、帧间预测模式组织结构</h1><p>VVC中使用了大量的帧间编码技术，但是编码选取帧间预测模式也需要消耗很多比特。所以设计了树形结构来编码该模式的使用。<br><img src="https://i-blog.csdnimg.cn/direct/93db67fdb6c04f4697c891b0d46a7e6a.png" alt="在这里插入图片描述"></p>
+<blockquote>
+<p>运动估计</p>
+</blockquote>
+<h1 id="七、运动估计"><a href="#七、运动估计" class="headerlink" title="七、运动估计"></a>七、运动估计</h1><p>由于视频中通常存在很多运动物体，因此简单地将相邻帧的同位像素作为预测值的预测精度并不高，因此，通常使用运动估计来掌握运动物体的运动情况。通过运动估计，可以在参考帧中找到一个最佳匹配块，最佳匹配块到当前块的位移即为运动矢量，得到运动矢量之后，就可以通过运动补偿得到当前块的预测值。<br><img src="https://i-blog.csdnimg.cn/direct/d64227c9fe584490a5076172ac489465.png" alt="在这里插入图片描述"><br>运动估计要求当前块在参考帧中某一范围内，找出最佳的匹配块，目前主流标准中常用的匹配准则是SAD准则和SATD准则，即<br><img src="https://i-blog.csdnimg.cn/direct/242e1bb37aaa465da825c1478cad2e51.png" alt="在这里插入图片描述"><br>SAD(s,p)表示的是原始块s和匹配块p的绝对误差和，λmotion<br>表示编码运动信息（如MV、参考图像索引）等所需的比特数，λmotion<br>为运动估计过程中的拉格朗日因子</p>
+<p>由于运动搜索算法复杂度非常高，所以编码器里常用的是快速运动搜索算法。在自然界中，物体的运动具有一定的连续性，所以相邻的两幅图像之间的物体运动可能并不是以整数像素为单位的，而有可能是1&#x2F;2 像素，1&#x2F;4 像素等等分像素单位。此时若依然使用整数像素进行搜索，则会出现匹配不准确的问题，导致最终的预测值和实际值之间的残差过大，影响编码性能。因此，近年来视频标准中常采用分像素运动估计，即首先对参考帧的行和列方向进行插值，对插值后的图像中进行搜索。HEVC采用1&#x2F;4像素精度进行运动估计，VVC中采用1&#x2F;16像素精度运动估计。</p>
+<p>H.266&#x2F;VVC的参考软件平台VTM中使用TZSearch搜索算法进行运动估计。<br><img src="https://i-blog.csdnimg.cn/direct/e0d201b43a2749fdb3dfd62ae37e10b4.png" alt="TZSearch算法中的菱形搜索模板"><br><img src="https://i-blog.csdnimg.cn/direct/5f2c32d3ee2543858767068844df65e6.png" alt="TZSearch算法中的正方形搜索模板"><br>TZSearch算法的步骤：</p>
+<p>①确定搜索起始点：VVC中采用AMVP技术来确定起始搜索点，AMVP会给出若干个候选预测MV，编码器从中选择率失真代价最小的作为预测MV，并用其所指向的位置作为起始搜索点。 </p>
+<p>②以步长1开始，按照上图所示的菱形模板(或正方形模板)在搜索范围内进行搜索，其中步长以2的整数次幂的形式进行递增，选出率失真代价最小的点作为该步骤搜索的结果。</p>
+<p>③若步骤②中得到的最优点对应的步长为1，则需要在该点的周围进行两点搜索，其主要目的是补充搜索最优点周围尚未搜索的点。如下图所示，若步骤②使用的是菱形模板，则最优点可能是2、4、5、7；若步骤二使用的是正方形模板，则最优点可能为1~8。两点搜索将会搜索图中与当前最优点距离最近的两个点。例如，若最优点为2，则会搜索a,b两个点；若最优点为6，则会搜素e,g两个点。</p>
+<p>④若步骤②中得到的最优点对应的步长大于某个阈值，则以该最优点为中心，在一定范围内做全搜索，即搜索该范围内的所有的点，选择率失真代价最小的作为该步骤的最优点。 </p>
+<p>⑤以步骤四得到的最优点为新的起始的搜索点，重复步骤二到步骤四，细化搜索，当相邻两次细化搜索得到的最优点一致时停止细化搜索，此时得到的MV即为最终的MV。</p>
+<blockquote>
+<p>运动补偿</p>
+</blockquote>
+<h1 id="八、运动补偿"><a href="#八、运动补偿" class="headerlink" title="八、运动补偿"></a>八、运动补偿</h1><p><strong>几何划分帧间预测技术GPM模式</strong>需要对划分边缘进行加权渐变处理与多种帧间预测模式同时应用的光流场修正、片级运动补偿(WP)、CU级权重的加权预测（BCW）等预测块处理技术</p>
+<p><strong>帧间编码信息的存储</strong><br>需要存储除了参考帧、MV水平分量、MV垂直分量，还有半像素插值滤波器索引、CU级权重双向加权预测的权重索引、用于放射模式的局部多控制点MV信息、参考图像的MV信息。</p>
+<p><strong>亚像素插值</strong><br>VVC采用双线性插值方法，插值滤波器为一维滤波器，按照先水平方向后垂直方向的顺序完成二维亚像素插值。<br>用于提升运动矢量精度也用来防止当前帧与参考帧分辨率不同的情况。</p>
+<p>插值滤波器选择<br>（1）亮度分量：最高支持1&#x2F;16像素精度插值，统一为8抽头滤波器。<br>（2）色度分量：最高支持1&#x2F;32像素精度插值，统一使用4抽头滤波器。</p>
+<p>水平、垂直滤波器的系数分别由水平、垂直方向的缩放因子决定，最后通过查表的方式获得插值滤波器的系数。</p>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2024/07/21/hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99%E8%AE%B0%E5%BD%95/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>Hexo搭建个人博客网站记录</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2024/07/20/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E5%86%85%E7%BC%96%E7%A0%81/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      深度解析H.266/VVC帧内编码
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC" rel="bookmark">深度解析H.266/VVC 熵编码CABAC</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波" rel="bookmark">深度解析H.266/VVC环路滤波</a></div></div></div>
+    
+  </div>
+</div>
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>
