@@ -182,7 +182,7 @@
 <li>基于自适应分段线性模型的亮度映射；应用在像素级，利用亮度值范围及广电转换特性来提高视频的编码效率。</li>
 <li>基于亮度的色度残差缩放：应用在色度块级，通过补偿亮度信号映射对色度信号的影响。</li>
 </ul>
-<p>解码端LMCS框架结构如下图所示：<br><img src="https://i-blog.csdnimg.cn/direct/81160951c7194651afa853c81f839cdb.png" alt="在这里插入图片描述"></p>
+<p>解码端LMCS框架结构如下图所示：<br><img src="/images/codec/micro.jpg" alt="在这里插入图片描述"></p>
 <h3 id="2-2-2-VVC-中的亮度-色度缩放"><a href="#2-2-2-VVC-中的亮度-色度缩放" class="headerlink" title="2.2.2 VVC 中的亮度&#x2F;色度缩放"></a>2.2.2 VVC 中的亮度&#x2F;色度缩放</h3><p><strong>基本思想</strong><br>        在指定的位深下更好地使用允许的亮度值范围。10bit视频亮度值范围为[64,940]。在编解码过程中，前向映射将范围[64,940]映射到[0,1023]中，再进行变换、量化等模块的处理。或者一个亮度范围较小的视频，没有充分利用允许的亮度值，因此LMCS就是将原始域亮度值映射到允许的亮度值范围。</p>
 <p><strong>基于分段线性模型的亮度映射</strong><br>        VVC中，前向映射函数FwdMap使用一个分段线性模型，反向映射函数InvMap为逆函数。<br>        根据视频的位深将原始域的码值范围划分为16个相等的片段，每个片段的码字数量由OrgCW表示，<br>        变量InputPivot[i]表示原始域内各片段的边界点。<br>        有InputPivot[i] &#x3D; i * OrgCW;<br>        映射域内各片段的边界点表示MappedPivot[i]，<br>        MappedPivot[i+1]-MappedPivot[i]的值就是映射域中第i个片段的亮度值个数，表示为SignalledCW[i]。</p>
 <p><strong>色度缩放</strong><br>        前向缩放将原始域色度值转换到映射域，有色度缩放以TU为单位，同一个TU使用相同的缩放因子，也使用分段线性模型，同一个片段色度缩放因子相同。色度缩放偏移量deltaCRS由自适应参数集LMCS_APS标识。<br><img src="https://i-blog.csdnimg.cn/direct/a7239aebc9f040cc8d5f1927014b3391.png" alt="在这里插入图片描述"></p>
@@ -427,7 +427,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC" rel="bookmark">深度解析H.266/VVC 熵编码CABAC</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC" rel="bookmark">深度解析H.266/VVC 熵编码CABAC</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2025\10\27\论文解读1-VcLLM：视频编解码器实际上是张量编解码器\" title="论文解读1-VcLLM：视频编解码器实际上是张量编解码器" rel="bookmark">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</a></div></div></div>
     
   </div>
 </div>
