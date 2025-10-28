@@ -293,13 +293,15 @@
 <li>弱滤波，对边界每侧修改1个像素</li>
 <li>色度滤波仅使用8x8的滤波处理单元。</li>
 </ul>
-<p>以8x8滤波处理单元为例，每个处理块横跨4个8x8的呈“+”字形的边界， 如下图所示，<br>边界两侧块分别用P（垂直边界左侧块或者水平边界上侧块）和Q（垂直边界右侧块和水平边界下侧块）表示。<br>对于需要滤波的边界，按照先亮度分量后色度分量的顺序；<br>对于同一分量的块，按照先垂直边界后水平边界的顺序。<br><img src="https://i-blog.csdnimg.cn/direct/6d887da96c374a6185c1b06bdbc9385a.png" alt="在这里插入图片描述"><br>VVC的去块滤波过程和HEVC的类似，主要包含三个步骤</p>
+<p>以8x8滤波处理单元为例，每个处理块横跨4个8x8的呈“+”字形的边界， 如下图所示，<br>边界两侧块分别用P（垂直边界左侧块或者水平边界上侧块）和Q（垂直边界右侧块和水平边界下侧块）表示。<br>对于需要滤波的边界，按照先亮度分量后色度分量的顺序；<br>对于同一分量的块，按照先垂直边界后水平边界的顺序。</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/6d887da96c374a6185c1b06bdbc9385a.png" alt="在这里插入图片描述"></p>
+<p>VVC的去块滤波过程和HEVC的类似，主要包含三个步骤</p>
 <ul>
 <li>根据边界两侧的编码模式和编码参数确定边界强度</li>
 <li>根据边界两侧像素值，确定滤波强度（包括滤波开关决策和滤波强度决策）</li>
 <li>进行滤波处理过程</li>
 </ul>
-<h2 id="2-3-样点自适应补偿（SAO）—改善振铃效应"><a href="#2-3-样点自适应补偿（SAO）—改善振铃效应" class="headerlink" title="2.3 样点自适应补偿（SAO）—改善振铃效应"></a>2.3 样点自适应补偿（SAO）—改善振铃效应</h2><h3 id="2-3-1-背景"><a href="#2-3-1-背景" class="headerlink" title="2.3.1 背景"></a>2.3.1 背景</h3><h3 id="2-3-2-VVC-中的样点自适应补偿"><a href="#2-3-2-VVC-中的样点自适应补偿" class="headerlink" title="2.3.2 VVC 中的样点自适应补偿"></a>2.3.2 VVC 中的样点自适应补偿</h3><h2 id="2-4-自适应滤波（ALF）—减少解码误差"><a href="#2-4-自适应滤波（ALF）—减少解码误差" class="headerlink" title="2.4 自适应滤波（ALF）—减少解码误差"></a>2.4 自适应滤波（ALF）—减少解码误差</h2><h3 id="2-4-1-背景"><a href="#2-4-1-背景" class="headerlink" title="2.4.1 背景"></a>2.4.1 背景</h3><p>自适应环路滤波（ALF）并不是在 H.266&#x2F;VVC 标准制定过程中才被提出来的技术，实际上其早在 H.265&#x2F;HEVC 标准制定时就基本确定了现有形式的雏形，只是由于当时硬件算力的限制未能加入到 HEVC 标准中。详细可阅读以下的论文。随着硬件算力的提升与一些优化方法的提出，以及人们对更高效率的编解码算法的期望，ALF 自然就成了 VVC 标准中不可或缺的部分。由于 ALF 是一个十分有效的手段，也就吸引力不少人去研究，很多率失真改进方法不断被提出，所以基本每一次会议之后都能看到一些不同的地方。这里我主要就其滤波的原理进行介绍，这些目前在网上的资料是比较少的，也可以让大家能够更好地理解 VTM 代码里的相关实现。</p>
+<h2 id="2-3-样点自适应补偿（SAO）—改善振铃效应"><a href="#2-3-样点自适应补偿（SAO）—改善振铃效应" class="headerlink" title="2.3 样点自适应补偿（SAO）—改善振铃效应"></a>2.3 样点自适应补偿（SAO）—改善振铃效应</h2><h3 id="2-3-1-背景"><a href="#2-3-1-背景" class="headerlink" title="2.3.1 背景"></a>2.3.1 背景</h3><h3 id="2-3-2-VVC-中的样点自适应补偿"><a href="#2-3-2-VVC-中的样点自适应补偿" class="headerlink" title="2.3.2 VVC 中的样点自适应补偿"></a>2.3.2 VVC 中的样点自适应补偿</h3><h2 id="2-4-自适应滤波（ALF）—减少解码误差"><a href="#2-4-自适应滤波（ALF）—减少解码误差" class="headerlink" title="2.4 自适应滤波（ALF）—减少解码误差"></a>2.4 自适应滤波（ALF）—减少解码误差</h2><h3 id="2-4-1-背景"><a href="#2-4-1-背景" class="headerlink" title="2.4.1 背景"></a>2.4.1 背景</h3><p>自适应环路滤波（ALF）并不是在 H.266&#x2F;VVC 标准制定过程中才被提出来的技术，实际上其早在 H.265&#x2F;HEVC 标准制定时就基本确定了现有形式的雏形，只是由于当时硬件算力的限制未能加入到 HEVC 标准中。详细可阅读以下的论文。随着硬件算力的提升与一些优化方法的提出，以及人们对更高效率的编解码算法的期望，ALF 自然就成了 VVC 标准中不可或缺的部分。由于 ALF 是一个十分有效的手段，也就吸引力不少人去研究，很多率失真改进方法不断被提出，所以基本每一次会议之后都能看到一些不同的地方。这里我主要就其滤波的原理进行介绍，可以让大家能够更好地理解 VTM 代码里的相关实现。</p>
 <p>ALF 模块处于去块效应滤波（Deblocking Filtering, DF）和样点自适应补偿（Sample Adaptive Offset, SAO）之后。相比于 DF 和 SAO，ALF 更加贴近于我们对图像滤波的一般理解，也就是说其可以表示为图像与卷积核之间的卷积运算。而至于所使用卷积核，当然不是什么高斯模糊、边缘检测之类的，视频编解码算法里降低码率和误差才是王道。靠滤波来直接降低码率自然是不行的，那是熵编码干的活，那什么滤波可以降低误差呢？没错，就是维纳滤波（Wiener Filtering, WF）。</p>
 <p>维纳滤波是一种基于最小均方误差准则、对平稳过程的最优估计器，其输出与期望输出之间的均方误差为最小。然而，要注意的是，维纳滤波并不是一种现成的滤波器，其只是确立了一种准则，具体还是要自己设计的，在信号与系统里也就是找到相应的系统冲激响应，在离散图像里也就是要找到相应的卷积核。因此，下面的内容将就该卷积核的求导进行详细的介绍。</p>
 <h3 id="2-4-2-VVC-中的自适应滤波-alf"><a href="#2-4-2-VVC-中的自适应滤波-alf" class="headerlink" title="2.4.2 VVC 中的自适应滤波 alf"></a>2.4.2 VVC 中的自适应滤波 alf</h3><p><strong>1. 滤波器的形状</strong><br>虽然维纳滤波并没有限制所用的滤波器形式，但我们还是要综合考虑其实现的难度以及所能带来的增益。在图像处理中，最方便、直观的滤波方式就是采用一个矩形的卷积核，ALF 也遵循这种习惯。不过，很显然，卷积核的尺寸越大，所获得的增益一般来说会越大，但其所带来的计算复杂度也就越高，而且这种增益和复杂度之间的关系并不是线性的。</p>
@@ -318,7 +320,8 @@
 <p><img src="https://i-blog.csdnimg.cn/direct/cf0b25857d0c41c2a65bc085143cea51.png" alt="在这里插入图片描述"><br>将上式写成矩阵形式，可得<br><img src="https://i-blog.csdnimg.cn/direct/468171e9cd9c499cb541ef33ac0a8e05.png" alt="在这里插入图片描述"><br>为了方便，我们令<br><img src="https://i-blog.csdnimg.cn/direct/e1701a0162ac4b83b2baf82448f5789d.png" alt="在这里插入图片描述"><br>那么上面的线性方程组可写为<br><img src="https://i-blog.csdnimg.cn/direct/2baf26840eb64dcd9aace4179cab9eb5.png" alt="在这里插入图片描述"><br>其中<br><img src="https://i-blog.csdnimg.cn/direct/5f30a6d1fc5c4f469a3cebfe6d714aba.png" alt="在这里插入图片描述"></p>
 <h3 id="3-块分类"><a href="#3-块分类" class="headerlink" title="3. 块分类"></a>3. 块分类</h3><p><strong>注意</strong>：对不同的小块使用不同的滤波器，因此需将这些小块进行分类，以区分出小块要使用的滤波器是哪一种。</p>
 <p>对于亮度分量需要为每个4x4的子块分类，共25个类别C。类别C是由4x4块的方向D和活动性A决定：<br>                                                                    C &#x3D; 5D + A<br>其中D和A分别表示当前块的Direction和Activity；</p>
-<p>计算之前需要先用1-D拉普拉斯算子计算当前块的水平、垂直和两个对角方向的gradient。为了计算D和A，需要计算子块的水平、垂直、两个对角线方向的梯度。梯度计算使用一维拉普拉斯方法实现：<br><img src="https://i-blog.csdnimg.cn/direct/ef65add47c934cd9a646d00c299c4b29.png" alt="在这里插入图片描述"><br>为了减少计算复杂度，在计算梯度前，进行一维拉普拉斯计算下采样，如下图：<br><img src="https://i-blog.csdnimg.cn/direct/0c1eba37c2dd47b99dd9824d2f4ed3f8.png" alt="在这里插入图片描述"><br><img src="https://i-blog.csdnimg.cn/direct/5e8b63e653594dbba15ee28b748ba10f.png" alt="在这里插入图片描述"><br>因此，计算4x4块类别C的步骤为：</p>
+<p>计算之前需要先用1-D拉普拉斯算子计算当前块的水平、垂直和两个对角方向的gradient。为了计算D和A，需要计算子块的水平、垂直、两个对角线方向的梯度。梯度计算使用一维拉普拉斯方法实现：<br><img src="https://i-blog.csdnimg.cn/direct/ef65add47c934cd9a646d00c299c4b29.png" alt="在这里插入图片描述"></p>
+<p>为了减少计算复杂度，在计算梯度前，进行一维拉普拉斯计算下采样，如下图：<br><img src="https://i-blog.csdnimg.cn/direct/0c1eba37c2dd47b99dd9824d2f4ed3f8.png" alt="在这里插入图片描述"><br><img src="https://i-blog.csdnimg.cn/direct/5e8b63e653594dbba15ee28b748ba10f.png" alt="在这里插入图片描述"><br>因此，计算4x4块类别C的步骤为：</p>
 <ol>
 <li>首先进行图像下采样，计算水平gh和垂直gv方向的梯度；</li>
 <li>其次，根据gh和gv计算gmax(h,v)和gmin(h,v),得到D和A：</li>
@@ -427,7 +430,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC" rel="bookmark">深度解析H.266/VVC 熵编码CABAC</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2025\10\27\论文解读1-VcLLM：视频编解码器实际上是张量编解码器\" title="论文解读1-VcLLM：视频编解码器实际上是张量编解码器" rel="bookmark">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC" rel="bookmark">深度解析H.266/VVC 熵编码CABAC</a></div></div><div class="null-item"><div class="null-title"><a href="\2025\10\27\论文解读1-VcLLM：视频编解码器实际上是张量编解码器\" title="论文解读1-VcLLM：视频编解码器实际上是张量编解码器" rel="bookmark">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</a></div></div></div>
     
   </div>
 </div>
