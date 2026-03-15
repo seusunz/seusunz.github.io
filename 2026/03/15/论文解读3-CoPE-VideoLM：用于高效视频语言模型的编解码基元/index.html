@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        论文解读3-CoPE-VideoLM：用于高效视频语言模型的编解码基元 | 九天之遥
+      
+    </title>
+    <meta name="description" content="书到用时方恨少，事非经过不知难" />
+    <meta name="keywords" content="" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner">
+      <div class="post-content__head">
+        <div class="post-title">论文解读3-CoPE-VideoLM：用于高效视频语言模型的编解码基元</div>
+        <div class="post-info">
+          
+  
+  <a href="/tags/VideoLM/" class="post-tag">#VideoLM</a><a href="/tags/%E8%A7%86%E9%A2%91%E5%8E%8B%E7%BC%A9/" class="post-tag">#视频压缩</a>
+
+
+
+          <span class="post-date">2026-03-15</span>
+        </div>
+      </div>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>论文开篇指出，当前的大型视频语言模型（VideoLMs）在处理视频时通常面临上下文窗口限制和计算资源消耗大的问题。为了妥协，现有的模型通常采取“稀疏RGB关键帧采样”（比如不管视频多长，只抽取64帧作为全尺寸图像输入）。这会导致两个严重问题：一是丢失宏观或微观的关键动作细节；二是将每一帧都作为完整的RGB图像处理会带来极大的计算冗余和首字生成延迟（TTFT）。</p>
+<p>作者的研究打破了传统的纯RGB帧输入方式，提出直接利用视频编解码器（Codec）底层的压缩基元——运动矢量（Motion Vectors）和残差（Residuals）。通过引入轻量级的 $\Delta$-Encoder，模型只对少量的 I帧（关键帧）进行完整的RGB计算，而对大量的 P帧（预测帧）直接处理其底层运动特征，从而在保持甚至超越现有模型性能的同时，将首字生成延迟降低了86%，Token使用量减少了93%。</p>
+<h1 id="核心贡献："><a href="#核心贡献：" class="headerlink" title="核心贡献："></a>核心贡献：</h1><p>提出了一种全新的编解码感知（Codec-aware）的分词框架，极大降低了计算时间和Token数量。</p>
+<p>设计了轻量级的 $\Delta$-Encoder 架构，专门用于处理并压缩编解码基元，产生极少量的 $\Delta$-Tokens。</p>
+<p>提出了一种对齐预训练策略，使得基于底层运动特征生成的Token可以与标准图像编码器的表征空间无缝衔接。</p>
+<h1 id="第一章：引言"><a href="#第一章：引言" class="headerlink" title="第一章：引言"></a>第一章：引言</h1><p>本章首先肯定了视频语言模型（VideoLMs）在赋予AI时序推理能力方面的重大意义。然而，它们受限于输入上下文窗口的大小。由于内存限制和注意力的二次计算复杂度，现有模型往往使用固定数量的均匀抽帧（例如64帧）。这不仅违反直觉（视频越长，信息越多，但帧数却固定），而且每一帧都被当做全新图像来编码，导致了巨大的预填充（Prefill）时间和极高的Token开销。</p>
+<p>为了应对这些挑战，任何关键帧采样方法从根本上限制了视频模型的理解能力，因为它们提供的时序覆盖率太低。</p>
+<p>作者的核心洞察是：借鉴视频压缩领域的成熟技术，利用编解码基元。视频压缩本身就是为了消除帧间冗余，它将视频分为完整画面的“关键帧”和只记录变化量的“预测帧”。本文提出对这些变化量（运动矢量和残差）直接进行轻量化编码，而不是还原成完整图像再处理。这可以避免大量昂贵的全图编码，并大幅降低TTFT。</p>
+<h1 id="第二章：相关工作"><a href="#第二章：相关工作" class="headerlink" title="第二章：相关工作"></a>第二章：相关工作</h1><p>本章回顾了相关背景知识。</p>
+<h2 id="A-视频语言模型："><a href="#A-视频语言模型：" class="headerlink" title="A. 视频语言模型："></a>A. 视频语言模型：</h2><p>回顾了从早期的Video-LLaMA到最新的LLaVA-Video等模型，指出开源模型基本都还在处理密集的RGB帧，忽略了标准视频编解码器中固有的结构化冗余。</p>
+<h2 id="B-Token压缩："><a href="#B-Token压缩：" class="headerlink" title="B. Token压缩："></a>B. Token压缩：</h2><p>介绍了现有的Token池化、剪枝等启发式或可学习的压缩方法（如FastV, DyCoke）。指出这些方法依然需要先对每一帧进行昂贵的RGB全量特征提取，治标不治本，没有利用内在的时序冗余。</p>
+<h2 id="C-压缩域视频表征："><a href="#C-压缩域视频表征：" class="headerlink" title="C. 压缩域视频表征："></a>C. 压缩域视频表征：</h2><p>过去有工作直接利用压缩域数据进行动作识别（如CoViAR），但将它们结构化地引入大型语言模型，并建立多模态长序列对其进行理解，本文是极具开创性的。</p>
+<h1 id="第三章：方法论"><a href="#第三章：方法论" class="headerlink" title="第三章：方法论"></a>第三章：方法论</h1><p>这是论文的核心技术章节，解释了CoPE-VideoLM的架构设计和训练范式。</p>
+<h2 id="A-预备知识"><a href="#A-预备知识" class="headerlink" title="A. 预备知识"></a>A. 预备知识</h2><p>介绍了视频编解码的基本概念，包括I帧（独立编码的完整RGB图像）、P帧（只包含前一帧到当前帧的运动矢量和残差变化）以及GOP（图像组）结构。</p>
+<h2 id="B-CoPE-VideoLM-架构"><a href="#B-CoPE-VideoLM-架构" class="headerlink" title="B. CoPE-VideoLM 架构"></a>B. CoPE-VideoLM 架构</h2><p>I帧处理：照常使用冻结的视觉编码器（如SigLIP）提取，产生庞大的 $M$ 个密集Token。</p>
+<p>P帧处理：完全跳过常规视觉编码器！使用本文设计的 $\Delta$-Encoder（由轻量级MLP和截断的ResNet-18以及Transformer组成）分别提取运动矢量特征和残差特征，最终只产生非常少量的 $N$ 个压缩Token（$N \ll M$，默认设为8）。</p>
+<p>P帧融合：支持将连续多个P帧的变化量进行累加融合，实现灵活的帧率调节。最终送入LLM的是一个I帧Token和少量P帧Token交替出现的序列。</p>
+<h2 id="C-训练范式"><a href="#C-训练范式" class="headerlink" title="C. 训练范式"></a>C. 训练范式</h2><p>采用两阶段训练方法：</p>
+<p>第一阶段（$\Delta$-Encoder预训练）：通过设计辅助网络，让 $\Delta$-Encoder 的输出去逼近常规视觉编码器提取的真实RGB特征（使用MSE损失），实现特征空间的对齐。</p>
+<p>第二阶段（端到端微调）：丢弃辅助网络，将 $\Delta$-Encoder 插入基础的 VideoLM (LLaVA-Video-7B) 中，与LLM一起使用标准的指令微调数据进行训练。</p>
+<h1 id="第四章：实验"><a href="#第四章：实验" class="headerlink" title="第四章：实验"></a>第四章：实验</h1><p>本章展示了CoPE-VideoLM在四大类共计14个视频理解基准测试上的实际效果。</p>
+<h2 id="A-Delta-Token的有效性"><a href="#A-Delta-Token的有效性" class="headerlink" title="A. $\Delta$-Token的有效性"></a>A. $\Delta$-Token的有效性</h2><p>实验证明，相比于同等抽帧数量的纯RGB模型，本方法只需加入少量的 $\Delta$-Tokens，就能大幅缩小甚至超越更高帧率RGB模型的性能，同时使用的Token数量减少了一个数量级。</p>
+<h2 id="B-与当前方法的比较"><a href="#B-与当前方法的比较" class="headerlink" title="B. 与当前方法的比较"></a>B. 与当前方法的比较</h2><p>通用视频问答：在PerceptionTest和ActivityNet-QA等数据集上取得了开源模型中的SOTA（最高水平），表明底层运动特征具有强大的时序理解能力。<br>时序推理：由于P帧原生表征物体“运动”，模型在TempCompass等强时序推理榜单上表现优异。<br>超长视频理解：利用释放出的Token空间，模型能够读入更多的帧。在Video-TT等长视频评测中拔得头筹。</p>
+<h2 id="C-运行时间与内存"><a href="#C-运行时间与内存" class="headerlink" title="C. 运行时间与内存"></a>C. 运行时间与内存</h2><p>在单张RTX 4090上，相较于输入64帧图像的基线模型，本文模型（每个GOP 1个I帧）的首字输出延迟（TTFT）从2.39秒骤降至0.33秒（降低86%），端到端延迟提升了56%。</p>
+<p>极其高效的Token利用率使得在1M上下文窗口下，本模型可以处理长达8小时（1 FPS）的视频，展现了极强的上下文扩展性。</p>
+<h1 id="第五章：结论"><a href="#第五章：结论" class="headerlink" title="第五章：结论"></a>第五章：结论</h1><p>总结全文，CoPE-VideoLM证明了“编解码感知的分词方法”是大型视频模型未来走向长上下文、低延迟、高效能的一条极具实践价值的道路。通过利用视频压缩算法原生编码的运动矢量和残差，模型在保持性能竞争力的同时实现了巨大的效率提升。</p>
+<h1 id="论文前景与优缺点分析"><a href="#论文前景与优缺点分析" class="headerlink" title="论文前景与优缺点分析"></a>论文前景与优缺点分析</h1><h2 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h2><p>创新性强：没有在复杂的特征融合或注意力剪枝上死磕，而是“降维打击”，直接利用视频文件本来就自带的压缩信息（Codec），规避了昂贵的视频解码和图像编码过程。</p>
+<p>性价比极高：通过8个 $\Delta$-Token替代原本需要几百个Token才能表达的视觉特征，极大缓解了LLM的上下文压力。</p>
+<p>推理速度快：大幅降低了首字生成延迟（TTFT），这对于未来开发实时视频助手（如机器人视觉、实时监控分析）意义重大。</p>
+<p>扩展能力强：使得消费级模型处理数小时的超长视频成为可能。</p>
+<h2 id="缺点与挑战"><a href="#缺点与挑战" class="headerlink" title="缺点与挑战"></a>缺点与挑战</h2><p>缺失B帧支持：目前仅支持因果依赖的I帧和P帧，尚未整合双向预测的B帧。因为B帧包含非因果依赖（需要未来的帧才能解码），计算更加复杂。</p>
+<p>基元表示形式：当前使用的是张量化的基元特征。如果能直接操作更底层的量化DCT（离散余弦变换）系数和块级运动矢量，效率可能会更高。</p>
+<p>固定融合窗口：目前使用的P帧融合窗口是固定的，这对于运动剧烈程度不断变化的视频任务来说是次优的。</p>
+<h2 id="前景展望"><a href="#前景展望" class="headerlink" title="前景展望"></a>前景展望</h2><p>高效长视频分析：该研究为处理极长上下文的视频任务（如长电影分析、全天候监控理解）扫清了计算障碍。</p>
+<p>实时视频交互：超低的TTFT使得基于大模型的实时视频对话、具身智能（机器人实时视觉反馈）变得更加可行。</p>
+<p>端侧视频大模型：降低了对内存和计算的依赖，为未来在手机、AR眼镜等端侧设备上部署强大的VideoLM提供了可能。</p>
+<p>技术融合：未来可以将这种Codec感知的分词技术与其他Token压缩&#x2F;剪枝技术结合，实现更极致的压缩效果。</p>
+<h1 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h1><p><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2602.13191">https://arxiv.org/abs/2602.13191</a></p>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <div class="post-nav-item-left"></div>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2025/11/25/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB2-Nested-Learning-The-Illusion-of-Deep-Learning-Architectures/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      论文解读2-Nested Learning:The Illusion of Deep Learning Architectures
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  
+  <a href="/tags/VideoLM/" class="post-tag">#VideoLM</a><a href="/tags/%E8%A7%86%E9%A2%91%E5%8E%8B%E7%BC%A9/" class="post-tag">#视频压缩</a>
+
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码" rel="bookmark">深度解析H.266/VVC帧间编码</a></div></div></div>
+    
+  </div>
+</div>
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

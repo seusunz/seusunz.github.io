@@ -5,7 +5,7 @@
     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
     <title>
       
-        项目开发 | 九天之遥
+        VideoLM | 九天之遥
       
     </title>
     <meta name="description" content="书到用时方恨少，事非经过不知难" />
@@ -58,7 +58,9 @@
           href='/css/layout.css' />
     
     
-  <link rel="stylesheet" type="text/css" href="/css/category.css" />
+  <link rel="stylesheet"
+        type="text/css"
+        href="/css/category.css" />
 
   <meta name="generator" content="Hexo 7.3.0"></head>
   <body>
@@ -144,40 +146,27 @@
     </div>
     <div class="body">
       
-  <div class="wall wall-category--plain">
-    <div class="wall-main">
-      <div class="wall-category-title">
-        <div class="title-icon"
-             style="background-image: url(/images/icon/icon-book.svg)"></div>
-        项目开发
-      </div>
-      <div class="wall-category-description">“个人项目开发”</div>
-      <div class="wall-category-tags">
-        <div id="tags-outer"><a href="/tags/pro/" style="font-size: 1em;">pro</a></div>
-      </div>
-    </div>
-  </div>
+  <div class="tag-page-title">#VideoLM</div>
   <div class="post-list">
     
-      
   
   <div class="post-card">
     <div class="post__head">
-      <a href="/2024/07/21/hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99%E8%AE%B0%E5%BD%95/" class="post-title hover-line">Hexo搭建个人博客网站记录</a>
+      <a href="/2026/03/15/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB3-CoPE-VideoLM%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%AB%98%E6%95%88%E8%A7%86%E9%A2%91%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%BC%96%E8%A7%A3%E7%A0%81%E5%9F%BA%E5%85%83/" class="post-title hover-line">论文解读3-CoPE-VideoLM：用于高效视频语言模型的编解码基元</a>
       
     </div>
     <div class="post__body">
       
-        <a href="/2024/07/21/hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99%E8%AE%B0%E5%BD%95/"
+        <a href="/2026/03/15/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB3-CoPE-VideoLM%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%AB%98%E6%95%88%E8%A7%86%E9%A2%91%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%BC%96%E8%A7%A3%E7%A0%81%E5%9F%BA%E5%85%83/"
            class="post-cover"
-           style="background-image: url(/images/image/bing_03.jpg)"></a>
+           style="background-image: url(/images/image/bing471.jpg)"></a>
       
-      <div class="post-excerpt">直接在github page平台上托管我们的博客。这样就可以安心的来写作，又不需要定期维护，而且hexo作为一个快速简洁的博客框架，用它来搭建博客真的非常容易。</div>
+      <div class="post-excerpt">当前的视频语言模型（VideoLMs）在处理视频时通常面临上下文窗口限制和巨大的计算资源消耗。为了妥协，现有的模型通常采取稀疏RGB关键帧采样，这不仅会丢失宏观或微观的关键动作细节，而且将每一帧都作为完整的RGB图像处理会带来极大的计算冗余和首字延迟（TTFT）。 我们的研究提出了一种全新的编解码感知（Codec-aware）分词框架：CoPE-VideoLM。通过直接利用视频编解码器底层的压缩基元——运动矢量和残差，引入轻量级的 $\Delta$-Encoder，模型只对少量的I帧进行完整的RGB计算，而对大量的P帧直接处理其底层运动特征。这在保持甚至超越现有模型性能的同时，将首字生成延迟降低了86%，Token使用量减少了93%。</div>
     </div>
     <div class="post__foot">
       <div class="post-tags">
   
-  <a href="/tags/pro/" class="post-tag">#pro</a>
+  <a href="/tags/VideoLM/" class="post-tag">#VideoLM</a><a href="/tags/%E8%A7%86%E9%A2%91%E5%8E%8B%E7%BC%A9/" class="post-tag">#视频压缩</a>
 
 
 </div>
@@ -185,7 +174,6 @@
   </div>
 
 
-    
     
   </div>
 
@@ -273,7 +261,6 @@
       <script>searchInitialize("/search.json")</script>
     
     
-  
-
+    
   </body>
 </html>
