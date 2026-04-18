@@ -8,8 +8,8 @@
         九天之遥
       
     </title>
-    <meta name="description" content="聚焦数字芯片设计、视频编解码、AI算法与工程实践，记录技术研究、项目复盘与生活思考。" />
-    <meta name="keywords" content="数字芯片设计, 视频编解码, H.266, VVC, ISP, NPU, AI算法, 技术博客" />
+    <meta name="description" content="聚焦编码与压缩硬件架构，连接视频编解码后端、通用压缩链路、高性能数据通路，以及与 AI Infra 相关的系统思考与工程实践。" />
+    <meta name="keywords" content="编码与压缩硬件架构, 视频编解码后端, H.266, VVC, CABAC, ZSTD, ISP, 数据通路, AI Infra, 张量压缩, 技术博客" />
     
       <link rel="apple-touch-icon"
             sizes="180x180"
@@ -131,7 +131,9 @@
           
           <div class="nav-menu">
             
-              <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
+                <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
               
                 <a class="nav-menu-item" href="/code">技术笔记</a>
               
@@ -151,8 +153,8 @@
   <div class="wall wall-index">
     <div class="wall-main" id="wall-main">
       <div class="wall-title">九天之遥</div>
-      <div class="wall-subtitle">数字芯片设计 · 视频编解码 · AI系统探索</div>
-      <div class="wall-description">记录数字芯片设计、视频编解码、AI算法与工程实践</div>
+      <div class="wall-subtitle">编码与压缩硬件架构 · 视频编解码后端 · AI Infra</div>
+      <div class="wall-description">记录编码与压缩硬件架构、视频编解码后端与 AI Infra 思考</div>
     </div>
     <div class="wall-bg">
       <div class="wall-bg-index">
@@ -194,12 +196,17 @@
         <div class="about-text-p">
           
             
-              我是一名聚焦数字芯片设计的视频编解码工程师，
+              我是孙振，东南大学电子科学与技术硕士，现从事高性能编码与压缩硬件架构设计。
               <br/>
             
           
             
-              长期关注 H.264/H.265/H.266、ISP、NPU 与低功耗实现。
+              曾在腾讯与大疆负责 H.266/H.265 Codec、CABAC、ALF、ZSTD 算术编解码、ISP YLTM 等核心模块设计，
+              <br/>
+            
+          
+            
+              持续关注视频编解码后端、通用压缩链路、高性能数据通路与工程化验证闭环。
               <br/>
             
           
@@ -208,12 +215,12 @@
             
           
             
-              这里整理技术笔记、论文解读、项目复盘与生活思考，
+              这里记录标准解析、项目复盘、论文阅读与长期思考，
               <br/>
             
           
             
-              希望把零散经验沉淀成可复用的方法与系统化认知。
+              也把自己的经历沉淀成一份持续更新的在线简历与技术作品集。
               <br/>
             
           
@@ -230,18 +237,18 @@
       <div class="focus-grid">
         
           <div class="focus-card">
-            <div class="focus-card__title">视频编解码</div>
-            <div class="focus-card__description">围绕 H.266/VVC、CABAC、帧内预测、帧间预测与环路滤波做系统拆解。</div>
+            <div class="focus-card__title">视频编解码后端</div>
+            <div class="focus-card__description">围绕 H.265/H.266、CABAC、环路滤波与离线/在线后端链路做系统拆解。</div>
           </div>
         
           <div class="focus-card">
-            <div class="focus-card__title">数字芯片架构</div>
-            <div class="focus-card__description">关注 Codec、ISP、NPU 等核心 IP 的架构设计、数据流组织与低功耗优化。</div>
+            <div class="focus-card__title">压缩与编码内核</div>
+            <div class="focus-card__description">关注 ZSTD 算术编解码、通用压缩后端、比特流组织与算法到 RTL 的映射方法。</div>
           </div>
         
           <div class="focus-card">
-            <div class="focus-card__title">AI 与多模态</div>
-            <div class="focus-card__description">持续跟进 VideoLM、张量压缩、嵌套学习等方向，并尝试连接算法与硬件实现。</div>
+            <div class="focus-card__title">高性能数据通路</div>
+            <div class="focus-card__description">聚焦 AXI / DDR / DMA、片上缓存组织、多模式切换与 PPA 工程化优化。</div>
           </div>
         
       </div>
@@ -272,7 +279,7 @@
           <a class="featured-card" href="/cv/">
             <div class="featured-card__tag">个人画像</div>
             <div class="featured-card__title">在线简历与经历地图</div>
-            <div class="featured-card__description">查看教育背景、工作经历、技能栈以及当前关注方向。</div>
+            <div class="featured-card__description">查看教育背景、腾讯/大疆项目经历、技能矩阵与职业方向。</div>
             <div class="featured-card__cta">进入阅读</div>
           </a>
         
@@ -286,14 +293,6 @@
         <div class="section-subtitle">适合第一次来到这里的访客</div>
       </div>
       <div class="quick-link-grid">
-        
-          <a class="quick-link-card" href="/blog/">
-            <div>
-              <div class="quick-link-card__title">全部文章</div>
-              <div class="quick-link-card__description">按时间线浏览所有更新内容</div>
-            </div>
-            <div class="quick-link-card__arrow">→</div>
-          </a>
         
           <a class="quick-link-card" href="/code/">
             <div>
