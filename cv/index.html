@@ -710,61 +710,61 @@ svg:not(:root).svg-inline--fa, svg:not(:host).svg-inline--fa {
                 
                   <div class="section__head section__head--static">
                 
-                    <div class="section-title">2025.11 - 至今 腾讯方寸V1· ZSTD 算术编解码</div>
-                    <div class="section-title-des">负责 ZSTD 模块中算术编码与解码链路的算法落地与 RTL 实现，面向流式压缩场景推进后端链路收敛</div>
+                    <div class="section-title">2025.11 - 至今 腾讯方寸V1 · ZSTD 算术编解码</div>
+                    <div class="section-title-des">项目定位：负责 ZSTD 算术编码与算术解码链路的微架构设计与 RTL 落地，面向流式压缩后端推进工程实现。</div>
                 
                   </div>
                 
                 <div class="section section--detail">
-                  <p>参与算术编码器与算术解码器微架构设计，围绕状态更新、码流组织、回压控制与流式接口完成算法到 RTL 的映射实现。</p><p>关注压缩/解压链路中的片内缓存、接口时序与吞吐稳定性，为后续离线 CABAC 与通用压缩后端设计积累可复用经验。</p><p>推进详细设计、用例验证、Lint 与综合分析，使模块在功能正确性与工程可实现性之间保持平衡。</p>
+                  <p>核心工作：参与算术编码器、算术解码器及码流组织链路设计，围绕概率状态更新、区间更新、码流生成与恢复完成算法到 RTL 的拆解实现。</p><p>架构重点：围绕流式接口、回压控制、边界处理与片内缓存协同优化数据通路，提升复杂输入场景下的吞吐稳定性与可综合性。</p><p>工程结果：配合完成详细设计、功能验证、Lint 与综合分析，为通用压缩后端及后续离线 CABAC 设计沉淀可复用经验。</p>
                 </div>
               
                 
                   <div class="section__head section__head--static">
                 
                     <div class="section-title">2024.10 - 2025.10 腾讯沧海 V2 · 瑶池编码器 · CABAC</div>
-                    <div class="section-title-des">负责 H.265 / H.266 CABAC 熵编码核心 IP 设计，面向 1.2GHz 与多工作模式完成关键链路收敛</div>
+                    <div class="section-title-des">项目定位：负责 H.265 / H.266 双协议 CABAC 熵编码核心 IP 设计，面向 1.2GHz 与多工作模式完成关键链路收敛。</div>
                 
                   </div>
                 
                 <div class="section section--detail">
-                  <p>负责 prepare、pack、arithmetic encode 等关键链路的微架构设计与 RTL 实现，打通前级语法元素处理、内部编码与 DMA 码流回写流程。</p><p>围绕上下文管理、码流拼接与接口时序约束进行流水线和片内缓存优化，支撑 online、offline、bypass、双 core、low-delay 等模式稳定切换。</p><p>完成详细设计文档、Lint / 综合 / 功耗分析与覆盖率收敛，持续推动模块在性能、面积与功耗上的工程优化。</p>
+                  <p>核心工作：负责 prepare、pack、arithmetic encode 等关键链路微架构设计与 RTL 实现，打通语法元素处理、内部编码与 DMA 码流回写流程。</p><p>架构重点：围绕上下文管理、码流拼接、接口时序约束与片内缓存组织进行流水化优化，支撑 online、offline、bypass、双 core、low-delay 等模式稳定切换。</p><p>工程结果：完成详细设计文档、直接用例验证、Lint、综合与功耗分析，持续推动模块在性能、面积、功耗与可验证性之间取得平衡。</p>
                 </div>
               
                 
                   <div class="section__head section__head--static">
                 
                     <div class="section-title">2024.08 - 2025.06 腾讯沧海 V2 · 瑶池编码器 · ALF</div>
-                    <div class="section-title-des">负责 H.266 Adaptive Loop Filter 相关模块设计，覆盖统计、求解与滤波执行链路</div>
+                    <div class="section-title-des">项目定位：负责 H.266 Adaptive Loop Filter 相关模块设计，覆盖统计、求解、仲裁与滤波执行链路。</div>
                 
                   </div>
                 
                 <div class="section section--detail">
-                  <p>设计 ALF stat 与 frame top 微架构，完成 CTU 级统计、帧级系数求解、双 core 仲裁与 DDR 读写流程闭环。</p><p>支撑压缩 / 非压缩数据路径及 1080P@480fps 编码场景，兼顾带宽、时序与片上缓存利用率。</p><p>完成详细设计、直接用例验证、Lint 检查与综合分析，保障模块按计划交付并顺利演进。</p>
+                  <p>核心工作：设计 ALF stat 与 frame top 微架构，完成 CTU 级统计、帧级系数求解、双 core 仲裁以及 DDR 读写流程闭环。</p><p>架构重点：支撑压缩 / 非压缩数据路径及 1080P@480fps 编码场景，兼顾带宽、时序收敛与片上缓存利用率。</p><p>工程结果：完成详细设计、直接用例验证、Lint 检查与综合分析，保障模块按计划交付并顺利演进。</p>
                 </div>
               
                 
                   <div class="section__head section__head--static">
                 
-                    <div class="section-title">2023.05 - 2024.05 大疆 E 系列 · ISP YLTM / GTM</div>
-                    <div class="section-title-des">主导 ISP 图像增强核心 IP 设计，面向 4K@120fps、800MHz 与多工作模式完成关键链路实现</div>
+                    <div class="section-title">2023.05 - 2024.04 大疆 E 系列 · ISP YLTM / GTM</div>
+                    <div class="section-title-des">项目定位：主导 ISP 图像增强核心 IP 设计，面向 4K@120fps、800MHz 与多工作模式完成关键链路实现。</div>
                 
                   </div>
                 
                 <div class="section section--detail">
-                  <p>主导直方图统计、亮度补偿、LUT 生成、3D 插值与 AI mask 颜色保护等关键链路的硬件实现，完成算法到微架构的落地转换。</p><p>通过时钟门控、算子复杂度裁剪与 SRAM 空时复用降低面积和功耗，并结合 DDR 回灌策略提升映射效果与系统可实现性。</p><p>支持 10bit 一拍两点、2 / 4 分窗及多模式切换，增强模块在性能、灵活性与工程适配上的综合表现。</p>
+                  <p>核心工作：主导直方图统计、亮度补偿、LUT 生成、3D 插值与 AI mask 颜色保护等关键链路的硬件实现，完成算法到微架构的落地转换。</p><p>架构重点：通过时钟门控、算子复杂度裁剪与 SRAM 空时复用优化面积和功耗，并结合 DDR 回灌策略提升映射效果与系统可实现性。</p><p>工程结果：支持 10bit 一拍两点、2 / 4 分窗及多模式切换，增强模块在性能、灵活性与工程适配上的综合表现。</p>
                 </div>
               
                 
                   <div class="section__head section__head--static">
                 
-                    <div class="section-title">2022.07 - 2023.05 大疆 E 系列 · H.265 Codec FME</div>
-                    <div class="section-title-des">负责 H.265 编码器帧间预测模块优化，面向 8K@60fps、700MHz 场景推进数据通路改进</div>
+                    <div class="section-title">2022.07 - 2023.04 大疆 E 系列 · H.265 Codec FME</div>
+                    <div class="section-title-des">项目定位：负责 H.265 编码器帧间预测模块优化，面向 8K@60fps、700MHz 场景推进数据通路改进。</div>
                 
                   </div>
                 
                 <div class="section section--detail">
-                  <p>优化 1 / 2 插值中 X / Y 方向冗余计算，重构参考像素存储与大位宽数据通路，降低关键处理周期。</p><p>推进移位寄存器与 SRAM 乒乓读写架构优化，提升带宽利用率与存储访问效率，为高吞吐场景下的模块实现提供支撑。</p><p>完成详细设计、初步验证、Lint 检查与综合分析，支撑模块版本迭代与交付。</p>
+                  <p>核心工作：优化 1 / 2 插值中 X / Y 方向冗余计算，重构参考像素存储与大位宽数据通路，降低关键处理周期。</p><p>架构重点：推进移位寄存器与 SRAM 乒乓读写架构优化，提升带宽利用率与存储访问效率，为高吞吐场景下的模块实现提供支撑。</p><p>工程结果：完成详细设计、初步验证、Lint 检查与综合分析，支撑模块版本迭代与交付。</p>
                 </div>
               
             
