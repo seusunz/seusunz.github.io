@@ -434,6 +434,117 @@
     text-align: center;
   }
 }
+.index-section {
+  max-width: 1100px;
+  margin: 0 auto 140px;
+  padding: 0 20px;
+}
+.section-heading {
+  margin-bottom: 28px;
+}
+.section-title {
+  font-size: 34px;
+  font-weight: bold;
+}
+.section-subtitle {
+  margin-top: 10px;
+  color: #667085;
+  font-family: sourceHanSerif;
+  line-height: 1.8;
+}
+.focus-grid,
+.featured-grid,
+.quick-link-grid {
+  display: grid;
+  gap: 22px;
+}
+.focus-grid,
+.featured-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.quick-link-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.focus-card,
+.featured-card,
+.quick-link-card {
+  border-radius: 22px;
+  border: 1px solid rgba(213,222,235,0.9);
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,249,253,0.96));
+  box-shadow: 0 20px 60px rgba(28,42,78,0.08);
+}
+.focus-card {
+  padding: 28px 24px;
+}
+.focus-card__title,
+.featured-card__title,
+.quick-link-card__title {
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1.5;
+}
+.focus-card__description,
+.featured-card__description,
+.quick-link-card__description {
+  margin-top: 14px;
+  color: #5f6675;
+  line-height: 1.9;
+}
+.featured-card,
+.quick-link-card {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out;
+}
+.featured-card:hover,
+.quick-link-card:hover {
+  transform: translateY(-6px);
+  border-color: #c8d7f2;
+  box-shadow: 0 24px 70px rgba(28,42,78,0.12);
+}
+.featured-card {
+  min-height: 240px;
+  padding: 26px 24px;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.featured-card__tag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(47,95,167,0.08);
+  color: #2f5fa7;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+.featured-card__cta {
+  margin-top: 22px;
+  color: #2f5fa7;
+  font-weight: bold;
+}
+.quick-link-card {
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 22px;
+}
+.quick-link-card__arrow {
+  font-size: 28px;
+  color: #2f5fa7;
+  margin-left: 16px;
+}
+@media screen and (max-width: 1023px) {
+  .focus-grid,
+  .featured-grid,
+  .quick-link-grid {
+    grid-template-columns: 1fr;
+  }
+  .index-section {
+    margin-bottom: 100px;
+  }
+}
 @media screen and (max-width: 415px) {
   .timeline {
     margin: 200px auto;
@@ -470,6 +581,9 @@
   }
   .normal-eqt img {
     width: 200px;
+  }
+  .section-title {
+    font-size: 28px;
   }
 }
 @-moz-keyframes spark {
