@@ -148,6 +148,11 @@
 }
 .post-title {
   font-size: 30px;
+  font-family: "Palatino Linotype", "Book Antiqua", "Times New Roman", "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  word-break: break-word;
 }
 .post-content__head {
   margin: 40px 0;

@@ -103,8 +103,11 @@
 .post-title {
   text-decoration: none;
   font-size: 28px;
-  font-weight: bold;
+  font-family: "Palatino Linotype", "Book Antiqua", "Times New Roman", "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  font-weight: 600;
   line-height: 1.45;
+  letter-spacing: 0.015em;
+  word-break: break-word;
 }
 .post-title-pined {
   font-size: 0.75em;
