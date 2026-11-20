@@ -177,7 +177,7 @@
       
         <a href="/2026/03/15/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB3-CoPE-VideoLM%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%AB%98%E6%95%88%E8%A7%86%E9%A2%91%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%BC%96%E8%A7%A3%E7%A0%81%E5%9F%BA%E5%85%83/"
            class="post-cover"
-           style="background-image: url(/images/image/bing471.jpg)"></a>
+           style="background-image: url(/images/image/Bing472.jpg)"></a>
       
       <div class="post-excerpt">CoPE-VideoLM 最核心的贡献，是把视频压缩链路中的运动矢量和残差直接引入 VideoLM，而不是先把每一帧都还原成完整 RGB 图像。本文围绕 codec-aware tokenization、Delta-Encoder 与长视频效率提升，解读这篇兼具系统感和模型感的工作。</div>
     </div>
@@ -205,7 +205,7 @@
       
         <a href="/2025/11/25/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB2-Nested-Learning-The-Illusion-of-Deep-Learning-Architectures/"
            class="post-cover"
-           style="background-image: url(/images/image/bing144.jpg)"></a>
+           style="background-image: url(/images/image/Bing144.jpg)"></a>
       
       <div class="post-excerpt">Nested Learning 试图回答一个更底层的问题：深度学习真正的能力究竟来自层数堆叠，还是来自模型内部多时间尺度、多层次嵌套优化过程。本文围绕联想记忆、更新频率、Deep Optimizers、Self-Modifying Titans 与 CMS/HOPE，梳理论文的关键思想与实验意义。</div>
     </div>
@@ -233,7 +233,7 @@
       
         <a href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/"
            class="post-cover"
-           style="background-image: url(/images/image/bing471.jpg)"></a>
+           style="background-image: url(/images/image/Bing471.jpg)"></a>
       
       <div class="post-excerpt">VcLLM 最值得关注的地方，不是把视频编解码器搬过来做个类比，而是真正证明了视频编解码器可以作为通用张量编解码器，显著缓解大模型训练和推理中的显存与通信瓶颈。本文从压缩机理、系统实现与硬件启发三个层面解读这篇工作。</div>
     </div>
@@ -255,7 +255,7 @@
         <span class="post-date">2024-08-14</span>
         
       </div>
-      <a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/" class="post-title hover-line">深度解析H.266/VVC 熵编码CABAC</a>
+      <a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/" class="post-title hover-line">深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现</a>
     </div>
     <div class="post__body">
       
@@ -263,12 +263,12 @@
            class="post-cover"
            style="background-image: url(/images/image/bing_08.jpg)"></a>
       
-      <div class="post-excerpt">与变长编码不同，算术编码的本质是为整个输入序列分配一个码字，而不是给每个字符分别指定码字，因此平均意义上可以为单个字符分配码长小于1的码字，所以算数编码可以给出接近最优的编码结果。</div>
+      <div class="post-excerpt">从信息熵出发，沿“二值化 → 上下文建模 → 概率估计 → 算术编码引擎”逐层拆解 H.265/H.266 CABAC，给出与 VTM 源码逐行对应的公式，再落到 1 bin/cycle 关键环路、上下文存储位宽、进位处理与 WPP 同步等硬件设计问题。</div>
     </div>
     <div class="post__foot">
       <div class="post-tags">
   
-  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/HEVC/" class="post-tag">#HEVC</a><a href="/tags/CABAC/" class="post-tag">#CABAC</a><a href="/tags/%E7%86%B5%E7%BC%96%E7%A0%81/" class="post-tag">#熵编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a>
 
 
 </div>
@@ -283,7 +283,7 @@
         <span class="post-date">2024-07-29</span>
         
       </div>
-      <a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-title hover-line">深度解析H.266/VVC环路滤波</a>
+      <a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-title hover-line">深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF</a>
     </div>
     <div class="post__body">
       
@@ -291,12 +291,12 @@
            class="post-cover"
            style="background-image: url(/images/image/bing_07.jpg)"></a>
       
-      <div class="post-excerpt">VVC中DBF用于降低方块效应、SAO用于改善振铃效应、ALF可以减少解码误差。在编码环路中，一般是先去方块滤波、样点自适应补偿和自适应环路滤波的顺序。LMCS一般对编码前的图像进行预处理。</div>
+      <div class="post-excerpt">按重建图像的处理顺序拆解 VVC 环路滤波：LMCS 的分段线性映射与色度缩放，去块滤波的边界强度、决策与长滤波器，SAO 的边缘/边带补偿，ALF 的分类、维纳滤波推导与非线性 clipping，以及 CCALF；规则均与 VTM 9.3 源码核对，最后讨论行缓存、虚拟边界与编码端统计等硬件问题。</div>
     </div>
     <div class="post__foot">
       <div class="post-tags">
   
-  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-tag">#环路滤波</a><a href="/tags/ALF/" class="post-tag">#ALF</a>
 
 
 </div>

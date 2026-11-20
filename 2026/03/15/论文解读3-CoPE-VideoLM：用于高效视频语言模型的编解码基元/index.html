@@ -149,7 +149,7 @@
     <div class="body">
       
   <article class="post-content">
-    <div class="post-inner">
+    <div class="post-inner--toc">
       <div class="post-content__head">
         <div class="post-title">论文解读3-CoPE-VideoLM：用于高效视频语言模型的编解码基元</div>
         <div class="post-info">
@@ -163,25 +163,52 @@
         </div>
       </div>
       
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E6%91%98%E8%A6%81"><span class="post-toc-text">摘要</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E6%A0%B8%E5%BF%83%E8%B4%A1%E7%8C%AE"><span class="post-toc-text">核心贡献</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E8%BF%99%E7%AF%87%E8%AE%BA%E6%96%87%E5%9C%A8%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="post-toc-text">1. 这篇论文在解决什么问题</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-%E6%96%B9%E6%B3%95%E6%A0%B8%E5%BF%83%EF%BC%9A%E6%8A%8A%E5%8E%8B%E7%BC%A9%E5%9F%9F%E7%89%B9%E5%BE%81%E7%9B%B4%E6%8E%A5%E5%8F%98%E6%88%90-Token"><span class="post-toc-text">2. 方法核心：把压缩域特征直接变成 Token</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1-I-%E5%B8%A7%E5%92%8C-P-%E5%B8%A7%E5%88%86%E5%B7%A5%E5%A4%84%E7%90%86"><span class="post-toc-text">2.1 I 帧和 P 帧分工处理</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2-%CE%94-Encoder-%E7%9A%84%E8%A7%92%E8%89%B2"><span class="post-toc-text">2.2 Δ-Encoder 的角色</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-3-%E4%B8%A4%E9%98%B6%E6%AE%B5%E8%AE%AD%E7%BB%83%E4%BF%9D%E8%AF%81%E8%AF%AD%E4%B9%89%E5%AF%B9%E9%BD%90"><span class="post-toc-text">2.3 两阶段训练保证语义对齐</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%E8%AF%B4%E6%98%8E%E4%BA%86%E4%BB%80%E4%B9%88"><span class="post-toc-text">3. 实验结果说明了什么</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-1-%E7%94%A8%E6%9B%B4%E5%B0%91-Token-%E6%8D%A2%E6%9D%A5%E6%9B%B4%E5%BC%BA%E6%97%B6%E5%BA%8F%E8%A6%86%E7%9B%96"><span class="post-toc-text">3.1 用更少 Token 换来更强时序覆盖</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-2-%E5%AF%B9%E5%BC%BA%E6%97%B6%E5%BA%8F%E4%BB%BB%E5%8A%A1%E5%B0%A4%E5%85%B6%E6%9C%89%E5%88%A9"><span class="post-toc-text">3.2 对强时序任务尤其有利</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-3-%E7%B3%BB%E7%BB%9F%E6%95%88%E7%8E%87%E6%8F%90%E5%8D%87%E9%9D%9E%E5%B8%B8%E5%AE%9E%E5%9C%A8"><span class="post-toc-text">3.3 系统效率提升非常实在</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E7%AF%87%E5%B7%A5%E4%BD%9C%E5%80%BC%E5%BE%97%E9%87%8D%E8%A7%86"><span class="post-toc-text">4. 为什么这篇工作值得重视</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-%E4%BC%98%E7%82%B9%E4%B8%8E%E6%8C%91%E6%88%98"><span class="post-toc-text">5. 优点与挑战</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E4%BC%98%E7%82%B9"><span class="post-toc-text">优点</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E6%8C%91%E6%88%98"><span class="post-toc-text">挑战</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-%E5%89%8D%E6%99%AF%E5%B1%95%E6%9C%9B"><span class="post-toc-text">6. 前景展望</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-%E8%8A%AF%E7%89%87%E8%AE%BE%E8%AE%A1%E8%80%85%E8%A7%86%E8%A7%92%EF%BC%9A%E5%8E%8B%E7%BC%A9%E5%9F%9F%E4%BF%A1%E6%81%AF%E4%BB%8E%E5%93%AA%E9%87%8C%E6%9D%A5"><span class="post-toc-text">7. 芯片设计者视角：压缩域信息从哪里来</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E7%9B%B8%E5%85%B3%E9%98%85%E8%AF%BB"><span class="post-toc-text">相关阅读</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E9%93%BE%E6%8E%A5"><span class="post-toc-text">链接</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
       <div class="post-content__body">
         
           <div class="post-gallery">
             
           </div>
         
-        <h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>当前视频语言模型一个非常现实的瓶颈是：<strong>视频太长，而 RGB 帧太贵。</strong> 现有方法通常只能从长视频里抽取少量关键帧送入视觉编码器，这虽然能控制计算成本，却会损失时序细节；而如果把每一帧都当成完整图像去编码，Token 数量、预填充时延和显存压力又会迅速失控。</p>
+        <table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>论文</td>
+<td>CoPE-VideoLM: Leveraging Codec Primitives For Efficient Video Language Modeling</td>
+</tr>
+<tr>
+<td>作者</td>
+<td>Sayan Deb Sarkar, Rémi Pautrat, Ondrej Miksik, Marc Pollefeys, Iro Armeni, Mahdi Rad, Mihai Dusmanu</td>
+</tr>
+<tr>
+<td>发布</td>
+<td>arXiv 2602.13191，2026-02（v2 2026-03）</td>
+</tr>
+<tr>
+<td>一句话</td>
+<td>只对少量 I 帧做完整 RGB 编码，P 帧直接用码流中的运动矢量与残差生成少量 Token，首字延迟最多降低 86%、Token 用量最多降低 93%</td>
+</tr>
+</tbody></table>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>当前视频语言模型一个非常现实的瓶颈是：<strong>视频太长，而 RGB 帧太贵。</strong> 现有方法通常只能从长视频里抽取少量关键帧送入视觉编码器，这虽然能控制计算成本，却会损失时序细节；而如果把每一帧都当成完整图像去编码，Token 数量、预填充时延和显存压力又会迅速失控。</p>
 <p>CoPE-VideoLM 的思路非常直接：既然视频本来就是以压缩格式存在的，那就不要无视编解码器已经提取出来的运动信息。作者把视频压缩中的<strong>运动矢量</strong>和<strong>残差</strong>直接作为建模对象，只对少量 I 帧做完整 RGB 编码，对大量 P 帧则使用轻量级的 Δ-Encoder 处理底层变化量。这一改动大幅降低了首字生成延迟和 Token 开销，同时在视频理解任务上保持甚至超过了现有方法。</p>
+<span id="more"></span>
+
 <h2 id="核心贡献"><a href="#核心贡献" class="headerlink" title="核心贡献"></a>核心贡献</h2><ul>
-<li><p>提出 <strong>codec-aware tokenization</strong>，直接利用视频压缩域中的运动矢量和残差，而不是只依赖 RGB 帧。</p>
-</li>
-<li><p>设计轻量级 <strong>Δ-Encoder</strong>，将 P 帧变化量压缩成极少数 Δ-Tokens。</p>
-</li>
-<li><p>提出对齐预训练策略，使压缩域特征能够与标准视觉编码器表征空间对齐。</p>
-</li>
-<li><p>在多类视频理解任务上取得很强表现，同时显著降低 TTFT 与 Token 数量。</p>
-</li>
-<li><p>为长视频、多模态实时交互和端侧 VideoLM 提供了更有工程可行性的路线。</p>
-</li>
+<li>提出 <strong>codec-aware tokenization</strong>，直接利用视频压缩域中的运动矢量和残差，而不是只依赖 RGB 帧。</li>
+<li>设计轻量级 <strong>Δ-Encoder</strong>，将 P 帧变化量压缩成极少数 Δ-Tokens。</li>
+<li>提出对齐预训练策略，使压缩域特征能够与标准视觉编码器表征空间对齐。</li>
+<li>在多类视频理解任务上取得很强表现，同时显著降低 TTFT 与 Token 数量。</li>
+<li>为长视频、多模态实时交互和端侧 VideoLM 提供了更有工程可行性的路线。</li>
 </ul>
 <h2 id="1-这篇论文在解决什么问题"><a href="#1-这篇论文在解决什么问题" class="headerlink" title="1. 这篇论文在解决什么问题"></a>1. 这篇论文在解决什么问题</h2><p>VideoLM 的困难不只是“模型还不够强”，而是输入表示本身就很昂贵：</p>
 <ul>
@@ -209,25 +236,42 @@
 <h3 id="2-2-Δ-Encoder-的角色"><a href="#2-2-Δ-Encoder-的角色" class="headerlink" title="2.2 Δ-Encoder 的角色"></a>2.2 Δ-Encoder 的角色</h3><p>论文设计了一个轻量级的 Δ-Encoder，用来处理 P 帧变化量。它不需要像标准视觉编码器那样对整张图做高成本特征提取，而是只关注“变化本身”，最终把一帧或多帧变化压缩成极少量 Token。</p>
 <p>这里最关键的收益有两个：</p>
 <ul>
-<li><p><strong>Token 数量急剧下降</strong>：P 帧只需要很少几个 Δ-Tokens；</p>
-</li>
-<li><p><strong>时延显著降低</strong>：大量帧不再经过重型图像编码链路。</p>
-</li>
+<li><strong>Token 数量急剧下降</strong>：P 帧只需要很少几个 Δ-Tokens；</li>
+<li><strong>时延显著降低</strong>：大量帧不再经过重型图像编码链路。</li>
 </ul>
 <p>这正是它能把首字延迟从秒级大幅拉低的根本原因。</p>
 <h3 id="2-3-两阶段训练保证语义对齐"><a href="#2-3-两阶段训练保证语义对齐" class="headerlink" title="2.3 两阶段训练保证语义对齐"></a>2.3 两阶段训练保证语义对齐</h3><p>如果直接把压缩域特征送进 LLM，一个自然问题是：这些特征和标准视觉表征能对齐吗？</p>
 <p>作者用两阶段训练解决这个问题：</p>
 <ul>
-<li><p>第一阶段先让 Δ-Encoder 学会逼近常规视觉编码器提取的特征；</p>
-</li>
-<li><p>第二阶段再把它接入基础 VideoLM 做端到端微调。</p>
-</li>
+<li>第一阶段先让 Δ-Encoder 学会逼近常规视觉编码器提取的特征；</li>
+<li>第二阶段再把它接入基础 VideoLM 做端到端微调。</li>
 </ul>
 <p>这样一来，模型既保留了压缩域表示的高效率，又尽量避免语义空间不一致带来的性能损失。</p>
 <h2 id="3-实验结果说明了什么"><a href="#3-实验结果说明了什么" class="headerlink" title="3. 实验结果说明了什么"></a>3. 实验结果说明了什么</h2><p>论文在多类视频理解任务上验证了 CoPE-VideoLM，结果里最值得关注的不是单一分数，而是下面三点：</p>
 <h3 id="3-1-用更少-Token-换来更强时序覆盖"><a href="#3-1-用更少-Token-换来更强时序覆盖" class="headerlink" title="3.1 用更少 Token 换来更强时序覆盖"></a>3.1 用更少 Token 换来更强时序覆盖</h3><p>相比纯 RGB 抽帧方案，CoPE-VideoLM 用极少量 Δ-Tokens 就能表达更多视频帧的信息。这意味着模型不必在“多看几帧”和“控制上下文长度”之间二选一。</p>
 <h3 id="3-2-对强时序任务尤其有利"><a href="#3-2-对强时序任务尤其有利" class="headerlink" title="3.2 对强时序任务尤其有利"></a>3.2 对强时序任务尤其有利</h3><p>因为 P 帧本来就显式刻画了运动变化，模型在时序推理类任务上往往更有优势。对 VideoLM 来说，这比单纯增加关键帧数量更贴近问题本质。</p>
-<h3 id="3-3-系统效率提升非常实在"><a href="#3-3-系统效率提升非常实在" class="headerlink" title="3.3 系统效率提升非常实在"></a>3.3 系统效率提升非常实在</h3><p>论文给出了非常有说服力的系统数据：在单张 RTX 4090 上，首字生成延迟（TTFT）从 <strong>2.39 秒</strong> 降到 <strong>0.33 秒</strong>，下降约 <strong>86%<strong>；同时 Token 使用量大幅减少。这说明 CoPE-VideoLM 不是“准确率略涨一点但系统没法落地”的工作，而是真正兼顾了</strong>模型效果与推理效率</strong>。</p>
+<h3 id="3-3-系统效率提升非常实在"><a href="#3-3-系统效率提升非常实在" class="headerlink" title="3.3 系统效率提升非常实在"></a>3.3 系统效率提升非常实在</h3><p>论文给出了非常有说服力的系统数据：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>首字生成延迟（TTFT，单张 RTX 4090）</td>
+<td>从 <strong>2.39 秒</strong> 降到 <strong>0.33 秒</strong>，最多降低约 <strong>86%</strong></td>
+</tr>
+<tr>
+<td>Token 用量</td>
+<td>与标准 VideoLM 相比最多降低 <strong>93%</strong></td>
+</tr>
+<tr>
+<td>理解能力</td>
+<td>在通用问答、时序与运动推理、长视频理解、空间场景理解等 <strong>14 个基准</strong>上持平或超过基线</td>
+</tr>
+</tbody></table>
+<p>这说明 CoPE-VideoLM 不是“准确率略涨一点但系统没法落地”的工作，而是真正兼顾了<strong>模型效果与推理效率</strong>。</p>
 <h2 id="4-为什么这篇工作值得重视"><a href="#4-为什么这篇工作值得重视" class="headerlink" title="4. 为什么这篇工作值得重视"></a>4. 为什么这篇工作值得重视</h2><p>我觉得这篇论文最有价值的点，是它把 VideoLM 里一个长期被忽略的问题挑明了：</p>
 <blockquote>
 <p>视频模型不应该只思考“怎么把更多 RGB 帧塞进模型”，而应该思考“视频里哪些信息根本没必要再走一遍昂贵的 RGB 编码”。</p>
@@ -259,8 +303,21 @@
 <li><strong>压缩域与 Token 压缩技术融合</strong> 可能形成新一代高效视频输入管线。</li>
 </ul>
 <p>从更大的视角看，CoPE-VideoLM 提醒我们：对于视频这种天然被压缩表示的数据，模型设计不应假装“压缩不存在”。谁能更好地利用压缩链路中的先验，谁就更有机会做出真正高效的视频大模型。</p>
+<h2 id="7-芯片设计者视角：压缩域信息从哪里来"><a href="#7-芯片设计者视角：压缩域信息从哪里来" class="headerlink" title="7. 芯片设计者视角：压缩域信息从哪里来"></a>7. 芯片设计者视角：压缩域信息从哪里来</h2><blockquote>
+<p>本节为 2026-11 新增，从视频编解码硬件的角度补充论文的系统落地问题。</p>
+</blockquote>
+<p><strong>1. 硬件解码器通常不“吐”运动矢量。</strong> 论文用到的 MV 与残差在解码过程中本来就存在，但 NVDEC 这类硬件解码器的输出通常只有重建帧。要拿到压缩域信息，要么在软件中只做<strong>码流解析</strong>（熵解码 + 语法解析，跳过运动补偿与重建），要么让硬件解码器增加一个“块级元数据导出”接口。</p>
+<p><strong>2. 只做解析也不是免费的。</strong> 熵解码（CABAC）是严格串行的，高码率码流的解析本身有吞吐上限。不过相比“完整解码 + RGB 送入视觉编码器”，只解析的计算量要小得多，这正是方案能显著降低 TTFT 的根源。</p>
+<p><strong>3. 元数据导出在硬件上很便宜。</strong> 对编解码 IP 来说，导出 MV 场、块划分、预测模式、QP 图这类块级信息，只需要一条额外的 DMA 通路和规整的数据格式，面积代价远小于整个解码器。编码器内部本来就有类似的块级信息通路（预测信息从模式决策流向熵编码）。如果 codec-aware 的视频大模型成为主流，<strong>“面向 AI 的压缩域元数据接口”很可能成为下一代编解码 IP 的标配功能</strong>。</p>
+<p><strong>4. 新标准的 MV 场更复杂。</strong> H.264&#x2F;H.265 的 MV 基本是块级平移；VVC 引入了仿射运动（子块 MV）、GPM 几何划分、DMVR&#x2F;BDOF 解码端细化，码流中的 MV 与最终用于补偿的 MV 不再一一对应。直接把 VVC 码流中的 MV 当作“运动语义”使用，需要考虑这些工具带来的偏差（帧间工具细节见 <a href="/2024/07/21/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81/">深度解析H.266&#x2F;VVC帧间编码</a>）。</p>
+<h2 id="相关阅读"><a href="#相关阅读" class="headerlink" title="相关阅读"></a>相关阅读</h2><ul>
+<li><a href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</a></li>
+<li><a href="/2024/07/21/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81/">深度解析H.266&#x2F;VVC帧间编码</a></li>
+<li><a href="/2025/11/25/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB2-Nested-Learning-The-Illusion-of-Deep-Learning-Architectures/">论文解读2-Nested Learning</a></li>
+</ul>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2602.13191">论文原文</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2602.13191">arXiv：2602.13191</a></li>
+<li><a target="_blank" rel="noopener" href="https://microsoft.github.io/CoPE">项目主页</a></li>
 </ul>
 
       </div>
@@ -316,7 +373,7 @@
         </svg>
         <span class="text-small">上一篇</span>
       </div>
-      <div>项目复盘：VVC CABAC 熵编码核心 IP 设计实践</div>
+      <div>项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践</div>
     </a>
   
   <div class="vhr"></div>
@@ -348,7 +405,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC" rel="bookmark">深度解析H.266/VVC 熵编码CABAC</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div></div>
     
   </div>
 </div>

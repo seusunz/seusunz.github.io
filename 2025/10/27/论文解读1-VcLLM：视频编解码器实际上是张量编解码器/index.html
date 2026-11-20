@@ -149,7 +149,7 @@
     <div class="body">
       
   <article class="post-content">
-    <div class="post-inner">
+    <div class="post-inner--toc">
       <div class="post-content__head">
         <div class="post-title">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</div>
         <div class="post-info">
@@ -163,14 +163,46 @@
         </div>
       </div>
       
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E6%91%98%E8%A6%81"><span class="post-toc-text">摘要</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E6%A0%B8%E5%BF%83%E8%B4%A1%E7%8C%AE"><span class="post-toc-text">核心贡献</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E8%BF%99%E7%AF%87%E8%AE%BA%E6%96%87%E5%9C%A8%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="post-toc-text">1. 这篇论文在解决什么问题</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E8%83%BD%E5%8E%8B%E5%BC%A0%E9%87%8F"><span class="post-toc-text">2. 为什么视频编解码器能压张量</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1-%E7%86%B5%E7%BC%96%E7%A0%81%E6%9C%89%E6%95%88"><span class="post-toc-text">2.1 熵编码有效</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2-%E5%8F%98%E6%8D%A2%E7%BC%96%E7%A0%81%E5%B9%B6%E4%B8%8D%E5%8F%AA%E6%98%AF%E2%80%9C%E5%8E%BB%E7%9B%B8%E5%85%B3%E2%80%9D"><span class="post-toc-text">2.2 变换编码并不只是“去相关”</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-3-%E5%B8%A7%E5%86%85%E9%A2%84%E6%B5%8B%E5%B1%85%E7%84%B6%E4%B9%9F%E6%9C%89%E6%95%88"><span class="post-toc-text">2.3 帧内预测居然也有效</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-4-%E5%B8%A7%E9%97%B4%E9%A2%84%E6%B5%8B%E5%AF%B9%E5%BC%A0%E9%87%8F%E5%9F%BA%E6%9C%AC%E6%97%A0%E6%95%88"><span class="post-toc-text">2.4 帧间预测对张量基本无效</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-VcLLM-%E5%A6%82%E4%BD%95%E8%90%BD%E5%88%B0%E7%B3%BB%E7%BB%9F%E9%87%8C"><span class="post-toc-text">3. VcLLM 如何落到系统里</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-1-%E6%8E%A8%E7%90%86%E9%98%B6%E6%AE%B5%EF%BC%9A%E8%A7%A3%E5%86%B3%E6%9D%83%E9%87%8D%E5%92%8C-KV-%E7%BC%93%E5%AD%98%E9%97%AE%E9%A2%98"><span class="post-toc-text">3.1 推理阶段：解决权重和 KV 缓存问题</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-2-%E8%AE%AD%E7%BB%83%E9%98%B6%E6%AE%B5%EF%BC%9A%E6%8A%8A%E5%8E%8B%E7%BC%A9%E5%B8%A6%E5%85%A5%E9%80%9A%E4%BF%A1%E4%B8%BB%E9%93%BE%E8%B7%AF"><span class="post-toc-text">3.2 训练阶段：把压缩带入通信主链路</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-3-%E5%85%B3%E9%94%AE%E6%95%B0%E6%8D%AE"><span class="post-toc-text">3.3 关键数据</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E8%BF%99%E7%AF%87%E5%B7%A5%E4%BD%9C%E6%9C%80%E6%9C%89%E4%BB%B7%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9"><span class="post-toc-text">4. 这篇工作最有价值的地方</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-%E4%BC%98%E7%82%B9%E4%B8%8E%E6%8C%91%E6%88%98"><span class="post-toc-text">5. 优点与挑战</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E4%BC%98%E7%82%B9"><span class="post-toc-text">优点</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E6%8C%91%E6%88%98"><span class="post-toc-text">挑战</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-%E5%89%8D%E6%99%AF%E5%B1%95%E6%9C%9B"><span class="post-toc-text">6. 前景展望</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-%E8%8A%AF%E7%89%87%E8%AE%BE%E8%AE%A1%E8%80%85%E8%A7%86%E8%A7%92%EF%BC%9A%E5%A6%82%E6%9E%9C%E7%9C%9F%E8%A6%81%E5%81%9A%E4%B8%80%E9%A2%97%E2%80%9C%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81-IP%E2%80%9D"><span class="post-toc-text">7. 芯片设计者视角：如果真要做一颗“张量编解码 IP”</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E7%9B%B8%E5%85%B3%E9%98%85%E8%AF%BB"><span class="post-toc-text">相关阅读</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E9%93%BE%E6%8E%A5"><span class="post-toc-text">链接</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
       <div class="post-content__body">
         
           <div class="post-gallery">
             
           </div>
         
-        <h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>这篇论文的核心观点非常鲜明：<strong>视频编解码器不仅能压视频，也能高效压缩大模型里的各种张量。</strong> 作者发现，权重、激活值、梯度这些张量在统计分布上与视频像素存在某些相似性，因此 H.264 &#x2F; H.265 这一类成熟的视频压缩流水线，只需要很小改动，就能迁移到张量压缩问题上。</p>
+        <table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>论文</td>
+<td>VcLLM: Video Codecs are Secretly Tensor Codecs</td>
+</tr>
+<tr>
+<td>作者</td>
+<td>Ceyu Xu, Yongji Wu, Xinyu Yang, Beidi Chen, Matthew Lentz, Danyang Zhuo, Lisa Wu Wills</td>
+</tr>
+<tr>
+<td>发布</td>
+<td>arXiv 2407.00467，2024-06</td>
+</tr>
+<tr>
+<td>一句话</td>
+<td>把 H.264&#x2F;H.265 编码流水线（及 GPU 上的 NVENC&#x2F;NVDEC）直接当作通用张量编解码器，压缩 LLM 的权重、KV 缓存、激活与梯度</td>
+</tr>
+</tbody></table>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>这篇论文的核心观点非常鲜明：<strong>视频编解码器不仅能压视频，也能高效压缩大模型里的各种张量。</strong> 作者发现，权重、激活值、梯度这些张量在统计分布上与视频像素存在某些相似性，因此 H.264 &#x2F; H.265 这一类成熟的视频压缩流水线，只需要很小改动，就能迁移到张量压缩问题上。</p>
 <p>在这个观察之上，论文提出了 <strong>VcLLM</strong> 框架：直接利用 GPU 上已有的硬件视频编解码单元，对 LLM 推理和训练中的张量进行压缩与恢复。这样做的价值非常直接——既能减少显存占用，又能降低多卡通信成本，还能让原本需要昂贵服务器的大模型任务，落到更便宜的硬件组合上。</p>
+<span id="more"></span>
+
 <h2 id="核心贡献"><a href="#核心贡献" class="headerlink" title="核心贡献"></a>核心贡献</h2><ul>
 <li>证明视频编解码器对 <strong>权重、激活值、梯度</strong> 等多类张量都具有较强压缩效果。</li>
 <li>提出 <strong>VcLLM</strong> 框架，利用 GPU 硬件编解码器实现通用张量压缩。</li>
@@ -209,6 +241,61 @@
 <li>在压缩率更高的情况下，验证效果仍优于一些经典梯度压缩方法。</li>
 </ul>
 <p>从系统角度看，这意味着 VcLLM 不是只能做“静态模型压缩”，而是能进入真正的 <strong>训练数据面</strong>。</p>
+<h3 id="3-3-关键数据"><a href="#3-3-关键数据" class="headerlink" title="3.3 关键数据"></a>3.3 关键数据</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>结果</th>
+<th>出处</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LLaMA-3-70B 权重压缩</td>
+<td>平均 <strong>2.88 bit</strong>，PIQA &#x2F; WinoGrande &#x2F; HellaSwag 与 3.0~3.25 bit 的 GPTQ、AWQ（分组 128）相当</td>
+<td>Table I</td>
+</tr>
+<tr>
+<td>KV 缓存压缩（128k 上下文）</td>
+<td>压到约 <strong>2.9 bit</strong>，KV 缓存从 40 GB 降到 7.2 GB</td>
+<td>Fig. 6</td>
+</tr>
+<tr>
+<td>4 × 8 GB 设备推理 LLaMA-3-70B</td>
+<td>权重与 KV 缓存 2.9 bit、设备间激活通信 3.5 bit，支持 128k 上下文</td>
+<td>Sec. IV</td>
+</tr>
+<tr>
+<td>数据并行梯度压缩（Pythia-160M）</td>
+<td>平均 2.6 bit，困惑度优于 3.25 bit 的 1-bit Adam，且无需预热</td>
+<td>Fig. 8</td>
+</tr>
+</tbody></table>
+<p>消融实验（Fig. 2）把 H.265 流水线逐级打开，在 MSE &lt; 0.01 的约束下观察每个模块的贡献：</p>
+<table>
+<thead>
+<tr>
+<th>逐级启用</th>
+<th>权重张量平均 bit&#x2F;值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>不编码（8 bit 基线）</td>
+<td>8.0</td>
+</tr>
+<tr>
+<td>+ 熵编码</td>
+<td>7.6</td>
+</tr>
+<tr>
+<td>+ 量化、DCT 变换、帧内预测</td>
+<td>逐级下降，最终约 <strong>2.6</strong></td>
+</tr>
+<tr>
+<td>+ 帧间预测</td>
+<td><strong>不降反升</strong></td>
+</tr>
+</tbody></table>
+<p>这张表本身就是整篇论文的论据：熵编码、变换、帧内预测各有贡献，而帧间预测对张量无效。</p>
 <h2 id="4-这篇工作最有价值的地方"><a href="#4-这篇工作最有价值的地方" class="headerlink" title="4. 这篇工作最有价值的地方"></a>4. 这篇工作最有价值的地方</h2><p>我觉得 VcLLM 最强的地方，不在于提出某个新量化公式，而在于它展示了一个更普适的工程思路：</p>
 <ul>
 <li><strong>把成熟基础设施重新解释为 AI 系统组件</strong>；</li>
@@ -235,8 +322,20 @@
 <li><strong>未来硬件会出现专用张量编解码 IP</strong>：相比直接复用视频编解码器，更适合张量统计特性的设计很可能成为下一代 AI 芯片的标配模块。</li>
 </ul>
 <p>从这个角度看，这篇论文不只是一次巧妙的系统优化，更像是给“AI 基础设施中的压缩模块”指了一条新路线。</p>
+<h2 id="7-芯片设计者视角：如果真要做一颗“张量编解码-IP”"><a href="#7-芯片设计者视角：如果真要做一颗“张量编解码-IP”" class="headerlink" title="7. 芯片设计者视角：如果真要做一颗“张量编解码 IP”"></a>7. 芯片设计者视角：如果真要做一颗“张量编解码 IP”</h2><blockquote>
+<p>本节为 2026-11 新增，从做视频编码器 RTL 的角度，补充几点论文没有展开的硬件问题。</p>
+</blockquote>
+<p><strong>1. 熵编码会成为吞吐墙。</strong> 论文实测 GPU 上 NVENC 的吞吐约 900 MB&#x2F;s、NVDEC 约 1100 MB&#x2F;s，因为它们本来是为 4K、60fps 以内的视频设计的。瓶颈的根源在熵编码：CABAC 的常规 bin 编码是严格串行的，下一个 bin 依赖上一个 bin 更新后的 Range 与上下文状态，单引擎大约 1 bin&#x2F;cycle（原理见 <a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/">CABAC 深度解析</a> 第 6 节）。视频编码器靠 WPP&#x2F;Tile 在“行&#x2F;块”粒度上并行，而张量的吞吐需求要高几个数量级。专用的张量编解码 IP 更可能采用<strong>多路交织的并行熵编码</strong>（如多 lane 的 range coder 或 rANS），而不是照搬 CABAC。</p>
+<p><strong>2. 视频编码器里最贵的部分恰恰用不上。</strong> 运动估计与运动补偿往往是视频编码器面积与带宽的最大头，而论文已经证明帧间预测对张量无效。论文的硬件综合结果给出了量化依据：在 100 Gbps 吞吐目标下，H.265 编码器约 11.7 mm²，去掉帧间预测后的专用张量编码器约 2.4 mm²，面积降到约五分之一。</p>
+<p><strong>3. 上下文模型需要重新设计。</strong> CABAC 的上下文是为图像语法元素（划分标志、MVD、系数位置模板等）设计的。张量的统计结构不同（如按通道、按层分布差异大），按通道或按张量块组织的上下文模型可能更合适，这部分可以直接借鉴视频编码中“上下文建模 + 自适应概率估计”的方法论，但不必继承其语法。</p>
+<p><strong>4. 数据排布是隐藏成本。</strong> 复用 NVENC&#x2F;NVDEC 需要把张量重排成满足分辨率对齐、位深（8&#x2F;10 bit）、YUV 采样格式约束的“伪图像”，这一步在系统中会带来额外的搬运与填充开销。专用 IP 可以直接以张量块为单位处理，省掉这层格式转换。</p>
+<h2 id="相关阅读"><a href="#相关阅读" class="headerlink" title="相关阅读"></a>相关阅读</h2><ul>
+<li><a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/">深度解析H.266&#x2F;VVC 熵编码CABAC：从规范公式到RTL实现</a></li>
+<li><a href="/2026/03/15/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB3-CoPE-VideoLM%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%AB%98%E6%95%88%E8%A7%86%E9%A2%91%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%BC%96%E8%A7%A3%E7%A0%81%E5%9F%BA%E5%85%83/">论文解读3-CoPE-VideoLM：用于高效视频语言模型的编解码基元</a>：方向相反的另一种“codec × AI”，用压缩域信息直接喂给视频大模型</li>
+<li><a href="/2025/11/25/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB2-Nested-Learning-The-Illusion-of-Deep-Learning-Architectures/">论文解读2-Nested Learning</a>：如果推理时权重也要更新，AI 芯片的存储系统要怎么变</li>
+</ul>
 <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.00467">论文原文</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.00467">arXiv：2407.00467</a></li>
 </ul>
 
       </div>
@@ -309,7 +408,7 @@
           <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
         </svg>
       </div>
-      深度解析H.266/VVC 熵编码CABAC
+      深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现
     </a>
   
 </div>
@@ -324,7 +423,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码" rel="bookmark">深度解析H.266/VVC帧内编码</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC" rel="bookmark">深度解析H.266/VVC 熵编码CABAC</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div></div>
     
   </div>
 </div>

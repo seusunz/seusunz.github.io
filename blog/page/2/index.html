@@ -168,10 +168,38 @@
   <div class="post-card">
     <div class="post__head">
       <div class="post-meta">
+        <span class="post-date">2025-10-27</span>
+        
+      </div>
+      <a href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/" class="post-title hover-line">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</a>
+    </div>
+    <div class="post__body">
+      
+        <a href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/"
+           class="post-cover"
+           style="background-image: url(/images/image/Bing471.jpg)"></a>
+      
+      <div class="post-excerpt">VcLLM 最值得关注的地方，不是把视频编解码器搬过来做个类比，而是真正证明了视频编解码器可以作为通用张量编解码器，显著缓解大模型训练和推理中的显存与通信瓶颈。本文从压缩机理、系统实现与硬件启发三个层面解读这篇工作。</div>
+    </div>
+    <div class="post__foot">
+      <div class="post-tags">
+  
+  <a href="/tags/Tensor-Compression/" class="post-tag">#Tensor Compression</a><a href="/tags/Video-Codec/" class="post-tag">#Video Codec</a><a href="/tags/LLM-System/" class="post-tag">#LLM System</a>
+
+
+</div>
+      <a href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/" class="post-more text-link">继续阅读</a>
+    </div>
+  </div>
+
+  
+  <div class="post-card">
+    <div class="post__head">
+      <div class="post-meta">
         <span class="post-date">2024-08-14</span>
         
       </div>
-      <a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/" class="post-title hover-line">深度解析H.266/VVC 熵编码CABAC</a>
+      <a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/" class="post-title hover-line">深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现</a>
     </div>
     <div class="post__body">
       
@@ -179,12 +207,12 @@
            class="post-cover"
            style="background-image: url(/images/image/bing_08.jpg)"></a>
       
-      <div class="post-excerpt">与变长编码不同，算术编码的本质是为整个输入序列分配一个码字，而不是给每个字符分别指定码字，因此平均意义上可以为单个字符分配码长小于1的码字，所以算数编码可以给出接近最优的编码结果。</div>
+      <div class="post-excerpt">从信息熵出发，沿“二值化 → 上下文建模 → 概率估计 → 算术编码引擎”逐层拆解 H.265/H.266 CABAC，给出与 VTM 源码逐行对应的公式，再落到 1 bin/cycle 关键环路、上下文存储位宽、进位处理与 WPP 同步等硬件设计问题。</div>
     </div>
     <div class="post__foot">
       <div class="post-tags">
   
-  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/HEVC/" class="post-tag">#HEVC</a><a href="/tags/CABAC/" class="post-tag">#CABAC</a><a href="/tags/%E7%86%B5%E7%BC%96%E7%A0%81/" class="post-tag">#熵编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a>
 
 
 </div>
@@ -199,7 +227,7 @@
         <span class="post-date">2024-07-29</span>
         
       </div>
-      <a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-title hover-line">深度解析H.266/VVC环路滤波</a>
+      <a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-title hover-line">深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF</a>
     </div>
     <div class="post__body">
       
@@ -207,12 +235,12 @@
            class="post-cover"
            style="background-image: url(/images/image/bing_07.jpg)"></a>
       
-      <div class="post-excerpt">VVC中DBF用于降低方块效应、SAO用于改善振铃效应、ALF可以减少解码误差。在编码环路中，一般是先去方块滤波、样点自适应补偿和自适应环路滤波的顺序。LMCS一般对编码前的图像进行预处理。</div>
+      <div class="post-excerpt">按重建图像的处理顺序拆解 VVC 环路滤波：LMCS 的分段线性映射与色度缩放，去块滤波的边界强度、决策与长滤波器，SAO 的边缘/边带补偿，ALF 的分类、维纳滤波推导与非线性 clipping，以及 CCALF；规则均与 VTM 9.3 源码核对，最后讨论行缓存、虚拟边界与编码端统计等硬件问题。</div>
     </div>
     <div class="post__foot">
       <div class="post-tags">
   
-  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-tag">#环路滤波</a><a href="/tags/ALF/" class="post-tag">#ALF</a>
 
 
 </div>
@@ -227,7 +255,7 @@
         <span class="post-date">2024-07-21</span>
         
       </div>
-      <a href="/2024/07/21/hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99%E8%AE%B0%E5%BD%95/" class="post-title hover-line">Hexo搭建个人博客网站记录</a>
+      <a href="/2024/07/21/hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99%E8%AE%B0%E5%BD%95/" class="post-title hover-line">Hexo 搭建个人技术博客：从部署到踩坑记录</a>
     </div>
     <div class="post__body">
       
@@ -235,7 +263,7 @@
            class="post-cover"
            style="background-image: url(/images/image/bing_03.jpg)"></a>
       
-      <div class="post-excerpt">从环境安装、Hexo 初始化到 GitHub Pages 部署，这篇文章梳理了个人博客从零搭建到上线的完整过程。</div>
+      <div class="post-excerpt">用 Hexo + GitHub Pages 搭建并长期维护一个技术博客：环境安装、部署、源码与站点分仓管理，以及数学公式、图片外链、文件名大小写、依赖丢失等真实踩过的坑。</div>
     </div>
     <div class="post__foot">
       <div class="post-tags">
@@ -255,7 +283,7 @@
         <span class="post-date">2024-07-21</span>
         
       </div>
-      <a href="/2024/07/21/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81/" class="post-title hover-line">深度解析H.266/VVC帧间编码</a>
+      <a href="/2024/07/21/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81/" class="post-title hover-line">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a>
     </div>
     <div class="post__body">
       
@@ -263,12 +291,12 @@
            class="post-cover"
            style="background-image: url(/images/image/bing_02.jpg)"></a>
       
-      <div class="post-excerpt">帧间预测是利用视频帧与帧之间的相关性，去除视频帧间的时间冗余信息。统计表明，帧间差绝对值超过3的像素平均不到一帧像素的4%，因此，采用高效的帧间编码方式，可以很大程度上提高视频压缩效率。</div>
+      <div class="post-excerpt">按“MV 从哪来 → 怎么细化 → 怎么补偿”的主线拆解 VVC 帧间工具：Merge 的五类候选与 MMVD/CIIP/GPM，AMVP、SMVD 与 AMVR，SbTMVP 与仿射，DMVR/BDOF/PROF 解码端细化，BCW 加权与 1/16 精度插值；每项给出 VTM 9.3 源码位置，最后从参考像素带宽的角度解释这些工具的使用限制。</div>
     </div>
     <div class="post__foot">
       <div class="post-tags">
   
-  <a href="/tags/vvc/" class="post-tag">#vvc</a>
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/%E5%B8%A7%E9%97%B4%E9%A2%84%E6%B5%8B/" class="post-tag">#帧间预测</a>
 
 
 </div>
@@ -276,37 +304,9 @@
     </div>
   </div>
 
-  
-  <div class="post-card">
-    <div class="post__head">
-      <div class="post-meta">
-        <span class="post-date">2024-07-20</span>
-        
-      </div>
-      <a href="/2024/07/20/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E5%86%85%E7%BC%96%E7%A0%81/" class="post-title hover-line">深度解析H.266/VVC帧内编码</a>
-    </div>
-    <div class="post__body">
-      
-        <a href="/2024/07/20/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E5%86%85%E7%BC%96%E7%A0%81/"
-           class="post-cover"
-           style="background-image: url(/images/image/bing_01.jpg)"></a>
-      
-      <div class="post-excerpt">帧内预测技术是利用同一帧中相邻像素的相关性，利用当前块相邻区域的重建像素预测当前块中像素的技术，当前CU可以利用相邻位置处的重建像素来预测当前CU中的像素。通过帧内预测之后，再将预测残差通过变换、量化等，可以有效地去除视频的空间冗余。</div>
-    </div>
-    <div class="post__foot">
-      <div class="post-tags">
-  
-  <a href="/tags/vvc/" class="post-tag">#vvc</a>
-
-
-</div>
-      <a href="/2024/07/20/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E5%86%85%E7%BC%96%E7%A0%81/" class="post-more text-link">继续阅读</a>
-    </div>
-  </div>
-
 
     
-    <div class="paginator"><a class="page-number" href="/blog/">1</a><span class="page-number current">2</span></div>
+    <div class="paginator"><a class="page-number" href="/blog/">1</a><span class="page-number current">2</span><a class="page-number" href="/blog/page/3/">3</a></div>
   </div>
 
     </div>

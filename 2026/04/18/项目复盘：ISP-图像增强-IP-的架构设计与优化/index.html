@@ -5,7 +5,7 @@
     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
     <title>
       
-        项目复盘：ISP 图像增强 IP 的架构设计与优化 | 九天之遥
+        项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化 | 九天之遥
       
     </title>
     <meta name="description" content="聚焦视频编码与数据压缩硬件架构，以及与 AI Infra 相关的系统思考与工程实践。" />
@@ -151,11 +151,11 @@
   <article class="post-content">
     <div class="post-inner--toc">
       <div class="post-content__head">
-        <div class="post-title">项目复盘：ISP 图像增强 IP 的架构设计与优化</div>
+        <div class="post-title">项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化</div>
         <div class="post-info">
           
   
-  <a href="/tags/ISP/" class="post-tag">#ISP</a><a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" class="post-tag">#图像处理</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" class="post-tag">#架构设计</a>
+  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/ISP/" class="post-tag">#ISP</a><a href="/tags/Tone-Mapping/" class="post-tag">#Tone Mapping</a><a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" class="post-tag">#图像处理</a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" class="post-tag">#架构设计</a>
 
 
 
@@ -165,7 +165,7 @@
       
         <aside class="toc-outer">
           <div class="toc-title">目录</div>
-          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B8%AA%E6%A8%A1%E5%9D%97%E9%9A%BE%E5%81%9A"><span class="post-toc-text">为什么这个模块难做</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E9%A1%B9%E7%9B%AE%E7%9B%AE%E6%A0%87"><span class="post-toc-text">项目目标</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF%EF%BC%9A%E5%85%88%E6%90%AD%E6%95%B0%E6%8D%AE%E6%B5%81%E9%AA%A8%E6%9E%B6"><span class="post-toc-text">设计思路：先搭数据流骨架</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97%E6%8B%86%E8%A7%A3"><span class="post-toc-text">核心模块拆解</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-%E5%AE%9E%E6%97%B6%E7%BB%9F%E8%AE%A1%E8%B7%AF%E5%BE%84"><span class="post-toc-text">1. 实时统计路径</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-%E8%AF%AD%E4%B9%89%E4%BF%A1%E6%81%AF%E8%9E%8D%E5%90%88"><span class="post-toc-text">2. 语义信息融合</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-%E7%AA%97%E5%8F%A3%E4%B8%8E%E7%BC%93%E5%AD%98%E7%BB%84%E7%BB%87"><span class="post-toc-text">3. 窗口与缓存组织</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E6%88%91%E6%9C%80%E7%9C%8B%E9%87%8D%E7%9A%84%E4%B8%89%E7%B1%BB%E4%BC%98%E5%8C%96"><span class="post-toc-text">我最看重的三类优化</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E5%AD%98%E5%82%A8%E8%B5%84%E6%BA%90%E5%A4%8D%E7%94%A8"><span class="post-toc-text">存储资源复用</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E8%AE%A1%E7%AE%97%E5%8D%95%E5%85%83%E9%87%8D%E6%9E%84"><span class="post-toc-text">计算单元重构</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E5%B8%A6%E5%AE%BD%E4%B8%8E%E6%8E%A5%E5%8F%A3%E4%BC%98%E5%8C%96"><span class="post-toc-text">带宽与接口优化</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E5%A6%82%E4%BD%95%E9%AA%8C%E8%AF%81%E8%BF%99%E7%B1%BB%E6%A8%A1%E5%9D%97"><span class="post-toc-text">如何验证这类模块</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E5%81%9A%E5%AE%8C%E4%B9%8B%E5%90%8E%E6%9C%80%E5%A4%A7%E7%9A%84%E4%BD%93%E4%BC%9A"><span class="post-toc-text">做完之后最大的体会</span></a></li></ol>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E9%A1%B9%E7%9B%AE%E7%94%BB%E5%83%8F"><span class="post-toc-text">1. 项目画像</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-%E5%85%88%E7%AE%97%E8%B4%A6%EF%BC%9A2-pixel-cycle-%E5%A4%9F%E4%B8%8D%E5%A4%9F"><span class="post-toc-text">2. 先算账：2 pixel&#x2F;cycle 够不够</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-%E7%AE%97%E6%B3%95%E9%AA%A8%E6%9E%B6%EF%BC%9AGTM-%E4%B8%8E-LTM-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="post-toc-text">3. 算法骨架：GTM 与 LTM 的区别</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84%E5%86%B3%E7%AD%96"><span class="post-toc-text">4. 核心架构决策</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-1-%E5%88%86%E9%98%B6%E6%AE%B5%E6%B5%81%E6%B0%B4-%E4%B9%98%E5%8A%A0%E9%98%B5%E5%88%97%E5%85%B1%E4%BA%AB"><span class="post-toc-text">4.1 分阶段流水 + 乘加阵列共享</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-2-SRAM-%E7%A9%BA%E6%97%B6%E5%A4%8D%E7%94%A8"><span class="post-toc-text">4.2 SRAM 空时复用</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-3-%E5%A4%A7%E6%A0%B8%E6%BB%A4%E6%B3%A2%E7%9A%84%E5%88%86%E8%A7%A3"><span class="post-toc-text">4.3 大核滤波的分解</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-4-AI-Mask-%E8%9E%8D%E5%90%88%EF%BC%9A%E5%83%8F%E7%B4%A0%E7%BA%A7%E7%9A%84%E2%80%9C%E4%BF%9D%E6%8A%A4%E5%8C%BA%E2%80%9D"><span class="post-toc-text">4.4 AI Mask 融合：像素级的“保护区”</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-%E4%BD%8E%E5%8A%9F%E8%80%97%E6%89%8B%E6%AE%B5"><span class="post-toc-text">5. 低功耗手段</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-%E5%BD%93%E5%B8%A7%E5%9B%9E%E7%81%8C%EF%BC%9A%E4%B8%80%E7%AC%94-DDR-%E5%B8%A6%E5%AE%BD%E8%B4%A6"><span class="post-toc-text">6. 当帧回灌：一笔 DDR 带宽账</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-%E9%AA%8C%E8%AF%81%EF%BC%9A%E7%94%BB%E8%B4%A8%E4%B8%8E%E7%A8%B3%E5%AE%9A%E6%80%A7%E4%B8%A4%E6%9D%A1%E7%BA%BF"><span class="post-toc-text">7. 验证：画质与稳定性两条线</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#8-%E5%A4%8D%E7%9B%98%EF%BC%9A%E4%B8%89%E7%82%B9%E4%BD%93%E4%BC%9A"><span class="post-toc-text">8. 复盘：三点体会</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#9-%E5%B8%B8%E8%A2%AB%E9%97%AE%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="post-toc-text">9. 常被问到的问题</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E7%9B%B8%E5%85%B3%E9%98%85%E8%AF%BB"><span class="post-toc-text">相关阅读</span></a></li></ol>
           <a href="#" class="toc-top">回到顶部</a>
         </aside>
       
@@ -176,92 +176,226 @@
           </div>
         
         <blockquote>
-<p>这篇文章更关注 ISP 图像增强 IP 的工程实现方式，而不是单一算法本身。</p>
+<p><strong>写在前面</strong>：这篇不讲“图像增强算法有多好看”，只讲一件事：一个 HDR 局部色调映射算法，如何在<strong>固定像素吞吐、有限 SRAM、有限 DDR 带宽</strong>三重约束下变成一个能交付的硬核。</p>
+<p><strong>保密说明</strong>：文中不涉及具体产品与内部实现代码，数据仅给出公开规格级信息或可由规格推导的估算。</p>
 </blockquote>
-<h2 id="为什么这个模块难做"><a href="#为什么这个模块难做" class="headerlink" title="为什么这个模块难做"></a>为什么这个模块难做</h2><p>ISP 图像增强看似是“图像处理算法上板”，但真正进入芯片实现后，会同时面对三个矛盾：</p>
-<ul>
-<li>算法希望有更大的邻域、更高的精度和更多上下文</li>
-<li>硬件实现希望更短的路径、更小的存储和更低的功耗</li>
-<li>系统集成希望吞吐稳定、接口简单、带宽可控</li>
-</ul>
-<p>也就是说，这类模块天然就是一个<strong>算法、架构、系统三方拉扯</strong>的问题。</p>
-<h2 id="项目目标"><a href="#项目目标" class="headerlink" title="项目目标"></a>项目目标</h2><p>我在做这类 ISP 图像增强模块时，通常会把目标拆成四层：</p>
-<ul>
-<li><strong>画质目标</strong>：关键区域增强要看得见收益，不能只做“功能正确”</li>
-<li><strong>实时目标</strong>：保证在目标分辨率和帧率下持续吞吐</li>
-<li><strong>资源目标</strong>：在有限 SRAM 与逻辑预算下完成实现</li>
-<li><strong>接口目标</strong>：与前后级模块配合顺畅，减少系统回压</li>
-</ul>
-<h2 id="设计思路：先搭数据流骨架"><a href="#设计思路：先搭数据流骨架" class="headerlink" title="设计思路：先搭数据流骨架"></a>设计思路：先搭数据流骨架</h2><p>如果一开始就沉迷于局部算子优化，最后往往会发现系统被带宽和缓存拖垮。所以我更习惯先搭好<strong>数据流骨架</strong>，再决定各个算子怎么放进去。</p>
-<p>我会优先确定这些事情：</p>
-<ul>
-<li>输入图像是逐像素流式处理，还是基于 tile &#x2F; block 组织</li>
-<li>哪些中间结果必须缓存，哪些可以边算边用</li>
-<li>关键统计信息是否需要跨行、跨窗口复用</li>
-<li>哪些路径必须高精度，哪些路径允许做定点近似</li>
-</ul>
-<h2 id="核心模块拆解"><a href="#核心模块拆解" class="headerlink" title="核心模块拆解"></a>核心模块拆解</h2><h3 id="1-实时统计路径"><a href="#1-实时统计路径" class="headerlink" title="1. 实时统计路径"></a>1. 实时统计路径</h3><p>图像增强里很多策略都依赖统计结果，例如亮度分布、局部纹理强度、区域权重等。这里如果统计路径设计得太重，会直接拖垮主通路。</p>
-<p>因此我的原则是：</p>
-<ul>
-<li>把统计与增强主链尽量解耦</li>
-<li>统计值更新与使用之间保持稳定时序边界</li>
-<li>能复用的数据尽量复用，避免重复扫图</li>
-</ul>
-<h3 id="2-语义信息融合"><a href="#2-语义信息融合" class="headerlink" title="2. 语义信息融合"></a>2. 语义信息融合</h3><p>当图像增强引入 AI Mask 或语义分割结果后，系统不再是单纯的像素处理流水，而是带有“区域感知”的增强链路。</p>
-<p>这时候设计重点变成：</p>
-<ul>
-<li>如何把语义标签与像素流在时序上对齐</li>
-<li>如何针对不同区域使用不同增强强度</li>
-<li>如何避免在关键区域切换时引入额外气泡</li>
-</ul>
-<h3 id="3-窗口与缓存组织"><a href="#3-窗口与缓存组织" class="headerlink" title="3. 窗口与缓存组织"></a>3. 窗口与缓存组织</h3><p>很多图像增强运算都离不开窗口操作。真正实现时，决定复杂度高低的往往不是算子本身，而是：</p>
-<ul>
-<li>行缓存怎么摆</li>
-<li>窗口怎么更新</li>
-<li>SRAM 怎样复用</li>
-<li>数据什么时候进，什么时候出</li>
-</ul>
-<p>如果窗口数据组织得足够顺，很多本来昂贵的操作都能变得非常规整。</p>
-<h2 id="我最看重的三类优化"><a href="#我最看重的三类优化" class="headerlink" title="我最看重的三类优化"></a>我最看重的三类优化</h2><h3 id="存储资源复用"><a href="#存储资源复用" class="headerlink" title="存储资源复用"></a>存储资源复用</h3><p>ISP 类模块通常不是算不动，而是存不下、搬不动。因此，SRAM 复用策略几乎决定了面积与功耗的下限。</p>
-<p>我在设计时会优先问自己：</p>
-<ul>
-<li>某段缓存是否真的需要独占</li>
-<li>上下游时序是否允许时分复用</li>
-<li>相邻处理阶段能否共用同一块存储资源</li>
-</ul>
-<h3 id="计算单元重构"><a href="#计算单元重构" class="headerlink" title="计算单元重构"></a>计算单元重构</h3><p>对于较大的卷积窗或滤波窗，直接硬推往往资源开销太大。我更倾向于：</p>
-<ul>
-<li>把二维操作拆成更规整的一维流水</li>
-<li>对系数、精度和数据宽度做有针对性的定点化</li>
-<li>让乘加链长度与时钟频率目标匹配</li>
-</ul>
-<p>这类重构通常能显著改善资源和时序表现。</p>
-<h3 id="带宽与接口优化"><a href="#带宽与接口优化" class="headerlink" title="带宽与接口优化"></a>带宽与接口优化</h3><p>很多设计初期看起来“逻辑能跑”，一接系统就出问题，根本原因在于 DDR、AXI 或片上缓冲之间的节奏没配平。</p>
-<p>因此我会额外关注：</p>
-<ul>
-<li>突发传输是否足够连续</li>
-<li>是否存在无效读写或重复搬运</li>
-<li>图像增强结果是否必须回灌，还是可以直接旁路复用</li>
-</ul>
-<h2 id="如何验证这类模块"><a href="#如何验证这类模块" class="headerlink" title="如何验证这类模块"></a>如何验证这类模块</h2><p>ISP 图像增强的验证，不应该只停留在寄存器级或单帧功能对比，还要建立“算法收益”和“系统稳定性”的双重视角。</p>
-<p>比较有效的方法包括：</p>
-<ul>
-<li><strong>场景集回归</strong>：覆盖暗光、逆光、高动态范围、纹理密集等典型场景</li>
-<li><strong>指标对比</strong>：结合 PSNR、局部对比度、边缘保真等指标观察收益</li>
-<li><strong>系统压力测试</strong>：持续喂入高吞吐数据，检查是否出现 backpressure 或缓存抖动</li>
-<li><strong>边界条件检查</strong>：关注行首行尾、窗口边界、语义区域切换等位置</li>
-</ul>
-<h2 id="做完之后最大的体会"><a href="#做完之后最大的体会" class="headerlink" title="做完之后最大的体会"></a>做完之后最大的体会</h2><p>这类项目给我的启发很直接：</p>
-<ul>
-<li><strong>图像增强不是孤立算子，而是系统工程</strong></li>
-<li><strong>真正的优化往往发生在存储、数据流和接口层</strong></li>
-<li><strong>画质收益与硬件成本必须一体化评估</strong></li>
-</ul>
-<p>如果后续继续写这一系列，我会把下面这些主题单独展开：</p>
-<ul>
-<li>ISP 模块中窗口缓存的常见组织方式</li>
-<li>图像处理算法如何做更稳健的定点化</li>
-<li>面向实时视频链路的带宽预算与接口设计方法</li>
+<span id="more"></span>
+
+<h2 id="1-项目画像"><a href="#1-项目画像" class="headerlink" title="1. 项目画像"></a>1. 项目画像</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能</td>
+<td>HDR 局部色调映射（LTM），集成 AI Mask 像素级色彩保护通路</td>
+</tr>
+<tr>
+<td>吞吐</td>
+<td><strong>4K@120fps</strong>，<strong>2 pixel&#x2F;cycle</strong></td>
+</tr>
+<tr>
+<td>频率 &#x2F; 位深</td>
+<td>800 MHz &#x2F; 10 bit</td>
+</tr>
+<tr>
+<td>工作模式</td>
+<td>4 种可配：VHDR-LTM &#x2F; GTM &#x2F; YLTM &#x2F; YLTMST</td>
+</tr>
+<tr>
+<td>分窗</td>
+<td>支持 2 &#x2F; 4 分窗</td>
+</tr>
+<tr>
+<td>我的角色</td>
+<td>模块独立交付；与 AI 团队协作集成 AI Mask 通路</td>
+</tr>
+</tbody></table>
+<h2 id="2-先算账：2-pixel-cycle-够不够"><a href="#2-先算账：2-pixel-cycle-够不够" class="headerlink" title="2. 先算账：2 pixel&#x2F;cycle 够不够"></a>2. 先算账：2 pixel&#x2F;cycle 够不够</h2><p>ISP 硬核的第一个问题永远是吞吐预算：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">有效像素率 = 3840 × 2160 × 120 = 995.3 Mpixel/s<br>需要的周期 = 995.3M / 2 pixel/cycle ≈ 497.7 Mcycle/s<br>时钟周期   = 800 Mcycle/s<br>有效占比   ≈ 62%<br></code></pre></td></tr></table></figure>
+
+<p>剩下约 38% 的周期并不是“浪费”，而是要留给三件事：</p>
+<ol>
+<li><strong>行&#x2F;帧消隐</strong>：传感器输出本身就有 blanking，实际像素到达是突发的；</li>
+<li><strong>反压与 DDR 抖动</strong>：当帧回灌（第 6 节）依赖 DDR 读，读延迟有波动；</li>
+<li><strong>分窗边界开销</strong>：2&#x2F;4 分窗时，窗口交界处需要额外的重叠像素。</li>
+</ol>
+<p>结论：<strong>2 pixel&#x2F;cycle 是在 800 MHz 下兼顾时序与余量的平衡点</strong>。1 pixel&#x2F;cycle 需要约 1 GHz 以上的有效周期，在该工艺下不现实；4 pixel&#x2F;cycle 则会让所有算子、行缓存端口翻倍，面积代价不划算。</p>
+<h2 id="3-算法骨架：GTM-与-LTM-的区别"><a href="#3-算法骨架：GTM-与-LTM-的区别" class="headerlink" title="3. 算法骨架：GTM 与 LTM 的区别"></a>3. 算法骨架：GTM 与 LTM 的区别</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>GTM（全局色调映射）</th>
+<th>LTM（局部色调映射）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>映射曲线</td>
+<td>整帧一条</td>
+<td>每个分块一条</td>
+</tr>
+<tr>
+<td>统计</td>
+<td>整帧直方图 &#x2F; 均值</td>
+<td>按 Mesh&#x2F;Block 分块统计</td>
+</tr>
+<tr>
+<td>效果</td>
+<td>简单、无块效应，但暗部&#x2F;亮部细节难兼顾</td>
+<td>局部对比度好，但需处理块边界</td>
+</tr>
+<tr>
+<td>硬件代价</td>
+<td>低</td>
+<td>统计存储 × 分块数，加插值电路</td>
+</tr>
+</tbody></table>
+<p>LTM 的数据通路可以概括为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">RGB ──► RGB→Y ──► 分块统计 (HIST / Mean) ──► 每块映射曲线 ──┐<br> │                                                       ▼<br> │                                     逐像素：相邻 4 块曲线双线性插值<br> │                                                       │<br> └──────────► 7×7 空域滤波（细节/亮度补偿） ──────────────┤<br>                                                         ▼<br>                      3D LUT 插值（融合 AI Mask）──► 亮度/色彩补偿 ──► 输出<br></code></pre></td></tr></table></figure>
+
+<p><strong>块效应是 LTM 最核心的工程问题</strong>。如果每个像素只用自己所在块的曲线，块边界会出现明显的亮度台阶。标准做法是：对每个像素，取其周围 4 个块中心的曲线结果，按距离做双线性插值。这样映射在空间上是连续的，代价是<strong>每个像素要查 4 条曲线</strong>，这是数据通路里最重的部分之一。</p>
+<h2 id="4-核心架构决策"><a href="#4-核心架构决策" class="headerlink" title="4. 核心架构决策"></a>4. 核心架构决策</h2><h3 id="4-1-分阶段流水-乘加阵列共享"><a href="#4-1-分阶段流水-乘加阵列共享" class="headerlink" title="4.1 分阶段流水 + 乘加阵列共享"></a>4.1 分阶段流水 + 乘加阵列共享</h3><p>LTM 的三个计算密集阶段（直方图统计、7×7 空域滤波、3D LUT 插值）在时间上不会同时处于峰值。本项目采用<strong>分阶段流水 + 乘加阵列共享</strong>：三个阶段共享一组 16 个 MAC 的乘加阵列，通过调度在不同阶段间复用，而不是每个阶段各配一套。</p>
+<p>能这样做的前提是对数据流的精确刻画：哪个阶段在哪个时间窗占用 MAC、占用多少，都要在架构阶段就算清楚，否则共享会变成冲突。</p>
+<h3 id="4-2-SRAM-空时复用"><a href="#4-2-SRAM-空时复用" class="headerlink" title="4.2 SRAM 空时复用"></a>4.2 SRAM 空时复用</h3><p>ISP 模块通常不是“算不动”，而是“存不下、搬不动”。存储组织上有两个关键点：</p>
+<ol>
+<li><strong>时间复用</strong>：统计阶段使用的缓存与映射阶段使用的缓存在时间上错开，可以共享同一块物理 SRAM；</li>
+<li><strong>空间复用</strong>：2&#x2F;4 分窗时，窗与窗之间通过共享 SRAM 的不同区域工作，而不是为每个窗独立配置存储，分窗带来的额外面积开销很小。</li>
+</ol>
+<h3 id="4-3-大核滤波的分解"><a href="#4-3-大核滤波的分解" class="headerlink" title="4.3 大核滤波的分解"></a>4.3 大核滤波的分解</h3><p>7×7 空域滤波若直接实现，每像素需要 49 次乘加，且行缓存要存 6 行。本项目把它分解为<strong>三级 3×3 级联</strong>：小核级联的等效感受野是 <code>1 + Σ(kᵢ − 1)</code>，n 级 3×3 级联为 (2n+1)×(2n+1)，三级正好覆盖 7×7。</p>
+<table>
+<thead>
+<tr>
+<th>实现方式</th>
+<th>每像素乘加</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接 7×7</td>
+<td>49</td>
+<td>系数任意，代价最高</td>
+</tr>
+<tr>
+<td>三级 3×3 级联</td>
+<td>3 × 9 &#x3D; 27</td>
+<td>感受野 7×7；每级窗口只需 3 行，可与流水自然对齐</td>
+</tr>
+<tr>
+<td>两级 3×3 级联</td>
+<td>18</td>
+<td>感受野只有 5×5，覆盖不到 7×7</td>
+</tr>
+</tbody></table>
+<p>级联的代价是<strong>等效系数受约束</strong>：三个 3×3 核卷积得到的 7×7 核只有 27 个自由度，不能表示任意 49 系数的 7×7 核；同时每级输出都要做一次定点截断，误差会逐级累积。所以这类分解必须先在算法侧确认画质损失可接受，再在硬件侧确定每级的位宽。</p>
+<h3 id="4-4-AI-Mask-融合：像素级的“保护区”"><a href="#4-4-AI-Mask-融合：像素级的“保护区”" class="headerlink" title="4.4 AI Mask 融合：像素级的“保护区”"></a>4.4 AI Mask 融合：像素级的“保护区”</h3><p>AI Mask 来自上游的语义分割结果，用于对特定颜色区域（如肤色、天空）做像素级保护，避免色调映射后偏色。硬件上它带来三个问题：</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>处理思路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>时序对齐</td>
+<td>Mask 与像素来自不同通路，到达延迟不同，需要按行&#x2F;像素坐标严格对齐</td>
+</tr>
+<tr>
+<td>分辨率不一致</td>
+<td>Mask 往往低于原图分辨率，需要在像素级做上采样或插值</td>
+</tr>
+<tr>
+<td>融合方式</td>
+<td>在 3D LUT 插值阶段把 Mask 作为权重融入，而不是额外增加一级处理</td>
+</tr>
+</tbody></table>
+<p>把 Mask 融合放进 3D LUT 插值阶段而不是单独成级，是在<strong>不增加流水深度</strong>的前提下引入语义信息的关键。</p>
+<h2 id="5-低功耗手段"><a href="#5-低功耗手段" class="headerlink" title="5. 低功耗手段"></a>5. 低功耗手段</h2><table>
+<thead>
+<tr>
+<th>手段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RTL 级细粒度时钟门控</td>
+<td>按模式与分窗关闭不用的子模块和寄存器组；4 种模式下活跃电路差异很大，门控收益明显</td>
+</tr>
+<tr>
+<td>算子复杂度优化</td>
+<td>大核分解、乘加共享，减少翻转的逻辑总量</td>
+</tr>
+</tbody></table>
+<h2 id="6-当帧回灌：一笔-DDR-带宽账"><a href="#6-当帧回灌：一笔-DDR-带宽账" class="headerlink" title="6. 当帧回灌：一笔 DDR 带宽账"></a>6. 当帧回灌：一笔 DDR 带宽账</h2><p>LTM 有一个先天矛盾：<strong>映射曲线依赖整帧（或整块）的统计结果，但像素是流式到达的</strong>。常见的两种解法：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>隔帧应用</td>
+<td>第 N 帧的统计用于第 N+1 帧</td>
+<td>无额外带宽；场景突变时出现一帧滞后</td>
+</tr>
+<tr>
+<td><strong>当帧回灌</strong></td>
+<td>统计的同时把图像写入 DDR，统计完成后再读回并应用当帧曲线</td>
+<td>DDR 读写各一遍；需要隐藏读延迟</td>
+</tr>
+</tbody></table>
+<p>本项目采用<strong>当帧回灌</strong>，实现当帧统计、当帧映射。以 4K@120fps、每像素按 4 字节存储估算：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">单帧数据量 ≈ 3840 × 2160 × 4 B ≈ 33.2 MB<br>写 + 读带宽 ≈ 33.2 MB × 120 × 2 ≈ 8.0 GB/s<br></code></pre></td></tr></table></figure>
+
+<p>这对系统 DDR 来说是一笔不小的开销，因此回灌通路要尽量“只搬必要的数据”，读侧也必须<strong>完全隐藏延迟</strong>。本项目用 <strong>AXI4 burst-16 预取</strong>：在像素真正需要之前提前发起长突发读，把 DDR 访问延迟隐藏在计算流水中，实现当帧 LTM 无延迟损失。</p>
+<blockquote>
+<p>上面的带宽数字是按规格做的数量级估算，用于说明“为什么必须预取”，不代表实际存储格式。</p>
+</blockquote>
+<h2 id="7-验证：画质与稳定性两条线"><a href="#7-验证：画质与稳定性两条线" class="headerlink" title="7. 验证：画质与稳定性两条线"></a>7. 验证：画质与稳定性两条线</h2><p>ISP 硬核的验证不能停留在“单帧功能对比通过”，需要同时覆盖“算法收益”和“系统稳定性”：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能正确性</td>
+<td>与算法定点模型逐像素比对（bit-true）</td>
+</tr>
+<tr>
+<td>画质收益</td>
+<td>典型场景集回归：暗光、逆光、高动态范围、纹理密集</td>
+</tr>
+<tr>
+<td>模式覆盖</td>
+<td>4 种模式 × 2&#x2F;4 分窗 × 不同 Mask 分布</td>
+</tr>
+<tr>
+<td>系统稳定性</td>
+<td>长时间高吞吐喂数，检查 DDR 抖动下是否出现反压断流</td>
+</tr>
+<tr>
+<td>边界条件</td>
+<td>行首行尾、分窗交界、块中心插值的边缘外推、Mask 与像素错位</td>
+</tr>
+</tbody></table>
+<h2 id="8-复盘：三点体会"><a href="#8-复盘：三点体会" class="headerlink" title="8. 复盘：三点体会"></a>8. 复盘：三点体会</h2><ol>
+<li><strong>吞吐预算决定架构上限</strong>：2 pixel&#x2F;cycle 这个数字是从像素率、频率和余量反推的，后面所有算子的并行度都跟着它走；</li>
+<li><strong>优化主战场在存储和搬运，而不是算子</strong>：乘加阵列共享、SRAM 空时复用、当帧回灌的预取，处理的都是“数据放哪、什么时候搬”的问题；</li>
+<li><strong>画质收益和硬件代价必须一起评估</strong>：大核分解、Mask 融合方式都是“算法侧确认可接受 → 硬件侧再落地”的协作结果。</li>
+</ol>
+<h2 id="9-常被问到的问题"><a href="#9-常被问到的问题" class="headerlink" title="9. 常被问到的问题"></a>9. 常被问到的问题</h2><p><strong>Q1：GTM 和 LTM 的区别？分窗边界如何避免块效应？</strong><br>GTM 整帧一条曲线，LTM 每块一条。块效应用相邻 4 个块中心曲线的双线性插值消除，代价是每像素查 4 条曲线。</p>
+<p><strong>Q2：4K@120fps@800MHz 下 2 pixel&#x2F;cycle 的预算怎么算？</strong><br>3840×2160×120 ≈ 995 Mpixel&#x2F;s，2 pixel&#x2F;cycle 需要约 498 Mcycle&#x2F;s，占 800 MHz 的约 62%，余量用于消隐、反压和分窗开销。</p>
+<p><strong>Q3：当帧回灌和隔帧应用怎么选？</strong><br>看场景对“一帧滞后”的容忍度和系统 DDR 带宽余量。当帧回灌画质响应更好，但要付出整帧读写带宽，并且必须用预取隐藏读延迟。</p>
+<p><strong>Q4：n 级 3×3 级联等效多大的核？</strong><br>(2n+1)×(2n+1)：两级为 5×5，三级为 7×7；且等效核受约束，不能表示任意大核。</p>
+<h2 id="相关阅读"><a href="#相关阅读" class="headerlink" title="相关阅读"></a>相关阅读</h2><ul>
+<li><a href="/2026/04/18/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AVVC-CABAC-%E7%86%B5%E7%BC%96%E7%A0%81%E6%A0%B8%E5%BF%83-IP-%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/">项目复盘：VVC&#x2F;HEVC 双协议 CABAC 熵编码 IP 设计实践</a></li>
+<li><a href="/2026/11/19/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AVVC-ALF-%E8%87%AA%E9%80%82%E5%BA%94%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2-IP-%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/">项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</a>：同样是窗口滤波，对比 ALF 帧级滤波的行缓存推导</li>
+<li><a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/">深度解析H.266&#x2F;VVC环路滤波</a>：同样是“窗口滤波 + 行缓存”主导的硬件结构，可与本文 4.2&#x2F;4.3 节对照</li>
 </ul>
 
       </div>
@@ -306,7 +440,19 @@
     
     <div class="post-nav">
   
-    <div class="post-nav-item-left"></div>
+    <a class="post-nav-item-left" href="/2026/11/19/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AVVC-ALF-%E8%87%AA%E9%80%82%E5%BA%94%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2-IP-%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</div>
+    </a>
   
   <div class="vhr"></div>
   
@@ -322,7 +468,7 @@
           <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
         </svg>
       </div>
-      项目复盘：VVC CABAC 熵编码核心 IP 设计实践
+      项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践
     </a>
   
 </div>
@@ -331,13 +477,13 @@
       <div class="related-post">
   <div class="related__head">
   
-  <a href="/tags/ISP/" class="post-tag">#ISP</a><a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" class="post-tag">#图像处理</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" class="post-tag">#架构设计</a>
+  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/ISP/" class="post-tag">#ISP</a><a href="/tags/Tone-Mapping/" class="post-tag">#Tone Mapping</a><a href="/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/" class="post-tag">#图像处理</a><a href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" class="post-tag">#架构设计</a>
 
 
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：VVC-CABAC-熵编码核心-IP-设计实践\" title="项目复盘：VVC CABAC 熵编码核心 IP 设计实践" rel="bookmark">项目复盘：VVC CABAC 熵编码核心 IP 设计实践</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo搭建个人博客网站记录" rel="bookmark">Hexo搭建个人博客网站记录</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2026\11\19\项目复盘：VVC-ALF-自适应环路滤波-IP-设计实践\" title="项目复盘：VVC ALF 自适应环路滤波 IP 设计实践" rel="bookmark">项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现" rel="bookmark">深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：VVC-CABAC-熵编码核心-IP-设计实践\" title="项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践" rel="bookmark">项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践</a></div></div></div>
     
   </div>
 </div>
