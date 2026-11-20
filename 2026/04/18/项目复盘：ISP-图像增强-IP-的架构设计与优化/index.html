@@ -256,7 +256,8 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">RGB ──► RGB→Y ──► 分块统计 (HIST / Mean) ──► 每块映射曲线 ──┐<br> │                                                       ▼<br> │                                     逐像素：相邻 4 块曲线双线性插值<br> │                                                       │<br> └──────────► 7×7 空域滤波（细节/亮度补偿） ──────────────┤<br>                                                         ▼<br>                      3D LUT 插值（融合 AI Mask）──► 亮度/色彩补偿 ──► 输出<br></code></pre></td></tr></table></figure>
 
 <p><strong>块效应是 LTM 最核心的工程问题</strong>。如果每个像素只用自己所在块的曲线，块边界会出现明显的亮度台阶。标准做法是：对每个像素，取其周围 4 个块中心的曲线结果，按距离做双线性插值。这样映射在空间上是连续的，代价是<strong>每个像素要查 4 条曲线</strong>，这是数据通路里最重的部分之一。</p>
-<h2 id="4-核心架构决策"><a href="#4-核心架构决策" class="headerlink" title="4. 核心架构决策"></a>4. 核心架构决策</h2><h3 id="4-1-分阶段流水-乘加阵列共享"><a href="#4-1-分阶段流水-乘加阵列共享" class="headerlink" title="4.1 分阶段流水 + 乘加阵列共享"></a>4.1 分阶段流水 + 乘加阵列共享</h3><p>LTM 的三个计算密集阶段（直方图统计、7×7 空域滤波、3D LUT 插值）在时间上不会同时处于峰值。本项目采用<strong>分阶段流水 + 乘加阵列共享</strong>：三个阶段共享一组 16 个 MAC 的乘加阵列，通过调度在不同阶段间复用，而不是每个阶段各配一套。</p>
+<h2 id="4-核心架构决策"><a href="#4-核心架构决策" class="headerlink" title="4. 核心架构决策"></a>4. 核心架构决策</h2><p><img src="/images/posts/proj-isp/ltm-pipeline.svg" alt="LTM 处理链总览"></p>
+<h3 id="4-1-分阶段流水-乘加阵列共享"><a href="#4-1-分阶段流水-乘加阵列共享" class="headerlink" title="4.1 分阶段流水 + 乘加阵列共享"></a>4.1 分阶段流水 + 乘加阵列共享</h3><p>LTM 的三个计算密集阶段（直方图统计、7×7 空域滤波、3D LUT 插值）在时间上不会同时处于峰值。本项目采用<strong>分阶段流水 + 乘加阵列共享</strong>：三个阶段共享一组 16 个 MAC 的乘加阵列，通过调度在不同阶段间复用，而不是每个阶段各配一套。</p>
 <p>能这样做的前提是对数据流的精确刻画：哪个阶段在哪个时间窗占用 MAC、占用多少，都要在架构阶段就算清楚，否则共享会变成冲突。</p>
 <h3 id="4-2-SRAM-空时复用"><a href="#4-2-SRAM-空时复用" class="headerlink" title="4.2 SRAM 空时复用"></a>4.2 SRAM 空时复用</h3><p>ISP 模块通常不是“算不动”，而是“存不下、搬不动”。存储组织上有两个关键点：</p>
 <ol>
@@ -483,7 +484,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2026\11\19\项目复盘：VVC-ALF-自适应环路滤波-IP-设计实践\" title="项目复盘：VVC ALF 自适应环路滤波 IP 设计实践" rel="bookmark">项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现" rel="bookmark">深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：VVC-CABAC-熵编码核心-IP-设计实践\" title="项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践" rel="bookmark">项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2026\11\19\项目复盘：VVC-ALF-自适应环路滤波-IP-设计实践\" title="项目复盘：VVC ALF 自适应环路滤波 IP 设计实践" rel="bookmark">项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：VVC-CABAC-熵编码核心-IP-设计实践\" title="项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践" rel="bookmark">项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践</a></div></div></div>
     
   </div>
 </div>

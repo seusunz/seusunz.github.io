@@ -198,6 +198,10 @@
 <td>一句话</td>
 <td>把模型、优化器与注意力统一看作“不同更新频率的嵌套优化问题”，并据此提出 Deep Optimizers、Self-Modifying Titans 与连续记忆系统 CMS，集成为 HOPE</td>
 </tr>
+<tr>
+<td>为什么读</td>
+<td>“推理时权重也要更新”会直接改写 AI 芯片存储层次的设计前提 —— 与视频编解码芯片“参数在 slice 边界才切换”的准静态假设恰好是两个极端</td>
+</tr>
 </tbody></table>
 <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>这篇论文最有意思的地方，不是再提出一个更大的模型，而是试图重新解释“为什么深度学习有效”。作者认为，我们平常看到的“层数更深、参数更多、模型更强”只是表面现象；真正决定模型表达力和学习能力的，可能是模型内部存在多少层<strong>嵌套的优化问题</strong>，以及这些优化问题如何在不同时间尺度上协同工作。</p>
 <p>论文据此提出了 <strong>Nested Learning（NL）</strong> 范式：把模型理解成一组彼此嵌套、更新频率不同、上下文流不同的学习模块。这个视角不仅重新解释了注意力、FFN、优化器和上下文学习，也进一步推出了三条落地路径：更强的优化器、更能自我修改的序列模型，以及一个连续记忆系统。作者最终用 HOPE 架构对这些想法做了集成验证。</p>
@@ -226,7 +230,8 @@
 <li>优化器状态是在学习“历史梯度 → 当前更新策略”的映射。</li>
 </ul>
 <p>这样一来，<strong>模型、注意力、优化器</strong> 不再是彼此割裂的模块，而都被统一进“联想记忆 + 上下文压缩”的框架里。</p>
-<h3 id="2-2-更新频率才是更本质的组织维度"><a href="#2-2-更新频率才是更本质的组织维度" class="headerlink" title="2.2 更新频率才是更本质的组织维度"></a>2.2 更新频率才是更本质的组织维度</h3><p>在 NL 看来，模型内部最重要的不是“谁在第几层”，而是谁<strong>以什么频率更新</strong>：</p>
+<h3 id="2-2-更新频率才是更本质的组织维度"><a href="#2-2-更新频率才是更本质的组织维度" class="headerlink" title="2.2 更新频率才是更本质的组织维度"></a>2.2 更新频率才是更本质的组织维度</h3><p><img src="/images/posts/paper-nl/timescales.svg" alt="Nested Learning 的多时间尺度"></p>
+<p>在 NL 看来，模型内部最重要的不是“谁在第几层”，而是谁<strong>以什么频率更新</strong>：</p>
 <ul>
 <li>高频模块：每一步都快速响应新输入，像即时工作记忆；</li>
 <li>中频模块：在较长区间内整合局部模式；</li>
@@ -455,7 +460,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div></div>
     
   </div>
 </div>

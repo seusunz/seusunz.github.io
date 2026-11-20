@@ -198,6 +198,10 @@
 <td>一句话</td>
 <td>只对少量 I 帧做完整 RGB 编码，P 帧直接用码流中的运动矢量与残差生成少量 Token，首字延迟最多降低 86%、Token 用量最多降低 93%</td>
 </tr>
+<tr>
+<td>为什么读</td>
+<td>运动矢量和残差第一次成为大模型的一等公民 —— 这些正是视频编码器硬件每天都在产出的数据，直接关系到编解码 IP 在 AI 时代的接口价值</td>
+</tr>
 </tbody></table>
 <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>当前视频语言模型一个非常现实的瓶颈是：<strong>视频太长，而 RGB 帧太贵。</strong> 现有方法通常只能从长视频里抽取少量关键帧送入视觉编码器，这虽然能控制计算成本，却会损失时序细节；而如果把每一帧都当成完整图像去编码，Token 数量、预填充时延和显存压力又会迅速失控。</p>
 <p>CoPE-VideoLM 的思路非常直接：既然视频本来就是以压缩格式存在的，那就不要无视编解码器已经提取出来的运动信息。作者把视频压缩中的<strong>运动矢量</strong>和<strong>残差</strong>直接作为建模对象，只对少量 I 帧做完整 RGB 编码，对大量 P 帧则使用轻量级的 Δ-Encoder 处理底层变化量。这一改动大幅降低了首字生成延迟和 Token 开销，同时在视频理解任务上保持甚至超过了现有方法。</p>
@@ -223,7 +227,8 @@
 <li>真正重要的时序信息可能根本没被采到。</li>
 </ul>
 <p>CoPE-VideoLM 的核心判断是：<strong>视频中最值得传给模型的，不一定是完整 RGB，而是“发生了什么变化”。</strong></p>
-<h2 id="2-方法核心：把压缩域特征直接变成-Token"><a href="#2-方法核心：把压缩域特征直接变成-Token" class="headerlink" title="2. 方法核心：把压缩域特征直接变成 Token"></a>2. 方法核心：把压缩域特征直接变成 Token</h2><h3 id="2-1-I-帧和-P-帧分工处理"><a href="#2-1-I-帧和-P-帧分工处理" class="headerlink" title="2.1 I 帧和 P 帧分工处理"></a>2.1 I 帧和 P 帧分工处理</h3><p>作者没有完全放弃传统视觉编码器，而是做了有区分的设计：</p>
+<h2 id="2-方法核心：把压缩域特征直接变成-Token"><a href="#2-方法核心：把压缩域特征直接变成-Token" class="headerlink" title="2. 方法核心：把压缩域特征直接变成 Token"></a>2. 方法核心：把压缩域特征直接变成 Token</h2><p><img src="/images/posts/paper-cope/paths.svg" alt="CoPE 与传统路径对比"></p>
+<h3 id="2-1-I-帧和-P-帧分工处理"><a href="#2-1-I-帧和-P-帧分工处理" class="headerlink" title="2.1 I 帧和 P 帧分工处理"></a>2.1 I 帧和 P 帧分工处理</h3><p>作者没有完全放弃传统视觉编码器，而是做了有区分的设计：</p>
 <ul>
 <li><strong>I 帧</strong>：继续走完整 RGB 编码路径，保留高质量视觉语义；</li>
 <li><strong>P 帧</strong>：不再恢复为完整图像，而是直接处理运动矢量和残差。</li>
@@ -405,7 +410,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div></div>
     
   </div>
 </div>

@@ -155,7 +155,7 @@
         <div class="post-info">
           
   
-  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/%E5%B8%A7%E9%97%B4%E9%A2%84%E6%B5%8B/" class="post-tag">#帧间预测</a>
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E5%B8%A7%E9%97%B4%E9%A2%84%E6%B5%8B/" class="post-tag">#帧间预测</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a>
 
 
 
@@ -309,6 +309,7 @@
 <p>HMVP 的意义在于：空域候选只看紧邻的几个位置，而 HMVP 能把“稍远处、但运动相同”的块的 MV 带进来，对大面积一致运动的场景很有效。</p>
 <h3 id="2-3-Merge-估计区域（MER）"><a href="#2-3-Merge-估计区域（MER）" class="headerlink" title="2.3 Merge 估计区域（MER）"></a>2.3 Merge 估计区域（MER）</h3><p>编码器希望并行地为多个小 CU 做 Merge 决策，但小 CU 之间互为空域邻居，存在依赖。VVC 允许定义一个 Merge 估计区域：<strong>与当前 CU 位于同一 MER 内的空域邻居视为不可用</strong>（代码中的 <code>isDiffMER</code> 判断），MER 内的 CU 也不更新 HMVP 表。这样同一 MER 里的所有 CU 可以同时推导 Merge 列表。</p>
 <h3 id="2-4-MMVD：带-MV-偏移的-Merge"><a href="#2-4-MMVD：带-MV-偏移的-Merge" class="headerlink" title="2.4 MMVD：带 MV 偏移的 Merge"></a>2.4 MMVD：带 MV 偏移的 Merge</h3><p>MMVD（Merge with MVD）在 Merge 候选的基础上加一个<strong>结构化的小偏移</strong>，用很少的比特修正 Merge MV：</p>
+<p><img src="/images/posts/vvc-inter/mmvd.svg" alt="MMVD 的三要素组合"></p>
 <table>
 <thead>
 <tr>
@@ -806,7 +807,7 @@ $$P = \big( (8-w)\cdot P_0 + w\cdot P_1 + 4 \big) \gg 3,\qquad w \in \{-2,\ 3,\ 
       <div class="related-post">
   <div class="related__head">
   
-  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/%E5%B8%A7%E9%97%B4%E9%A2%84%E6%B5%8B/" class="post-tag">#帧间预测</a>
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E5%B8%A7%E9%97%B4%E9%A2%84%E6%B5%8B/" class="post-tag">#帧间预测</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a>
 
 
 </div>

@@ -218,8 +218,7 @@
 </tr>
 </tbody></table>
 <h2 id="2-为什么要拆成“CTU-级-帧级”"><a href="#2-为什么要拆成“CTU-级-帧级”" class="headerlink" title="2. 为什么要拆成“CTU 级 + 帧级”"></a>2. 为什么要拆成“CTU 级 + 帧级”</h2><p>编码端 ALF 的核心是<strong>维纳滤波</strong>：用整帧（或整个 APS 覆盖范围内）的像素统计出自相关矩阵与互相关向量，再解线性方程组得到最优系数。这带来一个绕不开的数据依赖：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">CTU 0 ... CTU N 的统计 ──► 整帧统计完成 ──► 解方程得到系数 ──► 用系数滤波整帧<br>       (随 CTU 流水)          (帧尾)            (帧级)              (帧级)<br></code></pre></td></tr></table></figure>
-
+<p><img src="/images/posts/proj-alf/two-level-split.svg" alt="ALF 的 CTU 级与帧级拆分"></p>
 <p><strong>系数要等整帧统计完才能算出来，而滤波又依赖系数</strong>。如果要在“当帧”完成 ALF，就必须把 ALF 拆成两半：</p>
 <table>
 <thead>
@@ -572,7 +571,7 @@
 </div>
   <div class="realated__body">
     
-      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF" rel="bookmark">深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现" rel="bookmark">深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：ISP-图像增强-IP-的架构设计与优化\" title="项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化" rel="bookmark">项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：VVC-CABAC-熵编码核心-IP-设计实践\" title="项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践" rel="bookmark">项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践</a></div></div></div>
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF" rel="bookmark">深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：ISP-图像增强-IP-的架构设计与优化\" title="项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化" rel="bookmark">项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：VVC-CABAC-熵编码核心-IP-设计实践\" title="项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践" rel="bookmark">项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践</a></div></div></div>
     
   </div>
 </div>
