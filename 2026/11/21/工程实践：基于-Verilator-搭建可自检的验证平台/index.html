@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        工程实践：基于 Verilator 搭建"设计可自检"的验证平台——以 zcle_aenc_wrapper 为例 | 九天之遥
+      
+    </title>
+    <meta name="description" content="聚焦视频编码与数据压缩硬件架构，以及与 AI Infra 相关的系统思考与工程实践。" />
+    <meta name="keywords" content="编码与压缩硬件架构, 视频编解码后端, H.266, VVC, CABAC, ZSTD, ISP, 数据通路, AI Infra, 张量压缩, 技术博客" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner--toc">
+      <div class="post-content__head">
+        <div class="post-title">工程实践：基于 Verilator 搭建"设计可自检"的验证平台——以 zcle_aenc_wrapper 为例</div>
+        <div class="post-info">
+          
+  
+  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/Verilator/" class="post-tag">#Verilator</a><a href="/tags/%E9%AA%8C%E8%AF%81%E5%B9%B3%E5%8F%B0/" class="post-tag">#验证平台</a><a href="/tags/%E8%87%AA%E6%A3%80/" class="post-tag">#自检</a><a href="/tags/ZSTD/" class="post-tag">#ZSTD</a>
+
+
+
+          <span class="post-date">2026-11-21</span>
+        </div>
+      </div>
+      
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E8%B7%91%E5%AE%8C%E4%B8%8D%E5%B4%A9%E2%80%9D%E4%B8%8D%E7%AE%97%E9%AA%8C%E8%AF%81%E9%80%9A%E8%BF%87"><span class="post-toc-text">1. 为什么”跑完不崩”不算验证通过</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-DUT-%E6%8E%A5%E5%8F%A3%E5%88%86%E6%9E%90%EF%BC%9A%E4%BB%8E-wrapper-%E7%AB%AF%E5%8F%A3%E6%8E%A8%E5%AF%BC%E5%B9%B3%E5%8F%B0%E7%BB%84%E4%BB%B6"><span class="post-toc-text">2. DUT 接口分析：从 wrapper 端口推导平台组件</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-%E5%B9%B3%E5%8F%B0%E5%88%86%E5%B1%82%E4%B8%8E%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="post-toc-text">3. 平台分层与数据流</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-Golden-%E7%94%9F%E6%88%90%EF%BC%9APython-%E8%84%9A%E6%9C%AC"><span class="post-toc-text">4. Golden 生成：Python 脚本</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-C-Testbench%EF%BC%9A%E9%A9%B1%E5%8A%A8%E3%80%81%E6%8A%93%E5%8C%85%E3%80%81%E8%87%AA%E6%A3%80"><span class="post-toc-text">5. C++ Testbench：驱动、抓包、自检</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-1-%E5%B7%A5%E5%85%B7%E5%87%BD%E6%95%B0%E4%B8%8E%E7%8A%B6%E6%80%81"><span class="post-toc-text">5.1 工具函数与状态</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-2-AXI-monitor%EF%BC%9A%E6%8A%8A-256-bit-%E5%86%99%E6%95%B0%E6%8D%AE%E9%87%8D%E7%BB%84%E4%B8%BA%E5%AD%97%E8%8A%82%E6%B5%81"><span class="post-toc-text">5.2 AXI monitor：把 256-bit 写数据重组为字节流</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-3-Driver%EF%BC%9A%E5%96%82-literals-%E5%B9%B6%E9%9A%8F%E6%9C%BA%E5%8C%96%E5%9B%9E%E5%8E%8B"><span class="post-toc-text">5.3 Driver：喂 literals 并随机化回压</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-4-Scoreboard%EF%BC%9A%E8%87%AA%E6%A3%80%E5%88%A4%E5%AE%9A"><span class="post-toc-text">5.4 Scoreboard：自检判定</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-5-main%EF%BC%9A%E7%BB%84%E8%A3%85%E5%9B%9B%E5%B1%82"><span class="post-toc-text">5.5 main：组装四层</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-Makefile-%E4%B8%8E%E4%B8%80%E9%94%AE%E8%BF%90%E8%A1%8C"><span class="post-toc-text">6. Makefile 与一键运行</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-%E8%AE%A9%E8%87%AA%E6%A3%80%E6%9B%B4%E5%8F%AF%E9%9D%A0%E7%9A%84%E5%9B%9B%E4%B8%AA%E5%AE%9E%E8%B7%B5"><span class="post-toc-text">7. 让自检更可靠的四个实践</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#7-1-%E9%94%99%E8%AF%AF%E6%B3%A8%E5%85%A5%E8%A6%81%E4%B8%93%E9%97%A8%E8%B7%91%E4%B8%80%E9%81%8D"><span class="post-toc-text">7.1 错误注入要专门跑一遍</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#7-2-debug-%E6%80%BB%E7%BA%BF%E5%81%9A%E7%8A%B6%E6%80%81%E6%96%AD%E8%A8%80"><span class="post-toc-text">7.2 debug 总线做状态断言</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#7-3-golden-%E4%B8%8E-RTL-%E7%94%A8%E4%B8%8D%E5%90%8C%E5%AE%9E%E7%8E%B0%E8%B7%AF%E5%BE%84"><span class="post-toc-text">7.3 golden 与 RTL 用不同实现路径</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#7-4-%E5%9B%9E%E5%BD%92%E8%A6%81%E9%9A%8F%E6%9C%BA%E5%8C%96-seed"><span class="post-toc-text">7.4 回归要随机化 seed</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#8-%E5%B0%8F%E7%BB%93"><span class="post-toc-text">8. 小结</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E7%9B%B8%E5%85%B3%E9%98%85%E8%AF%BB"><span class="post-toc-text">相关阅读</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <blockquote>
+<p><strong>写在前面</strong>：这篇文章不是讲 Verilator 怎么用，而是讲<strong>怎么让验证平台自己判定对错</strong>。我用项目里真实的 <code>zcle_aenc_wrapper</code> 作例子——它有 CSR、literals 从接口、AXI 主接口、三路编码通道、错误注入和 debug 总线，是典型的”跑起来不崩、但很难确认结果对不对”的模块。</p>
+<p><strong>口径说明</strong>：文中的接口信号取自真实设计 <code>zcle_aenc_wrapper.v</code>；代码是按这些端口写的<strong>可运行骨架</strong>，你可以直接拷到项目里改路径使用。涉及项目内部的状态编码只做必要抽象，不影响平台结构。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="1-为什么”跑完不崩”不算验证通过"><a href="#1-为什么”跑完不崩”不算验证通过" class="headerlink" title="1. 为什么”跑完不崩”不算验证通过"></a>1. 为什么”跑完不崩”不算验证通过</h2><p>用 Verilator 仿真一个 RTL 模块，最低限度只需要：例化顶层、打时钟、复位、跑若干周期、打印一句 PASS。项目里已有的 <code>verilator_sim_main.cpp</code> 就是这么做的：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; SIM_CYCLES; i++) &#123;<br>    top-&gt;clk = <span class="hljs-number">0</span>; top-&gt;<span class="hljs-built_in">eval</span>();<br>    top-&gt;clk = <span class="hljs-number">1</span>; top-&gt;<span class="hljs-built_in">eval</span>();<br>&#125;<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[PASS] Verilator simulation completed: %d cycles without crash.\n&quot;</span>, ...);<br></code></pre></td></tr></table></figure>
+
+<p>这能验证”编译能过、仿真不崩”，但回答不了三个真正重要的问题：</p>
+<ol>
+<li><strong>输出码流对不对？</strong> 没有 golden，只有波形，肉眼不可能逐 bit 核对 256 bit × N 拍的 AXI 写数据；</li>
+<li><strong>回压&#x2F;边界场景会不会出错？</strong> 上游 ready 一直拉高、下游 AXI 一直 ready，等于没测握手与状态保持；</li>
+<li><strong>错误注入与 debug 总线是否按预期工作？</strong> 这些功能不触发就永远是”未验证”。</li>
+</ol>
+<p>一套<strong>可自检</strong>的平台，要把这三点变成机器可判定的结论：输入与 golden 同源、输出自动抓包重组、结果自动比对、异常自动报错退出。</p>
+<h2 id="2-DUT-接口分析：从-wrapper-端口推导平台组件"><a href="#2-DUT-接口分析：从-wrapper-端口推导平台组件" class="headerlink" title="2. DUT 接口分析：从 wrapper 端口推导平台组件"></a>2. DUT 接口分析：从 wrapper 端口推导平台组件</h2><p><code>zcle_aenc_wrapper</code> 的端口按功能可以分成五组，每组对应平台里的一个组件：</p>
+<p><img src="/images/posts/verilator-zcle-aenc/selfcheck-arch.svg" alt="Verilator 自检验证平台架构"></p>
+<table>
+<thead>
+<tr>
+<th>端口组</th>
+<th>真实信号（节选）</th>
+<th>平台对应组件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CSR 配置</td>
+<td><code>csr_aenc_enable</code>、<code>csr_aenc_cmp_thr[31:0]</code>、<code>csr_aenc_error_int[1:0]</code></td>
+<td>driver 的配置阶段</td>
+</tr>
+<tr>
+<td>literals 输入</td>
+<td><code>zcle_lit_hist_qvalid/qdata[127:0]/qstrb/block_last/chunk_last/frame_last/qready</code></td>
+<td>stimulus driver</td>
+</tr>
+<tr>
+<td>literals 读返回</td>
+<td><code>aenc_lit_pvalid/rdata[127:0]/rresp/pready</code>、<code>aenc_lit_qvalid/qdata/qstrb</code></td>
+<td>简化 AXI 从模型</td>
+</tr>
+<tr>
+<td>码流输出</td>
+<td><code>zcle_zpke_arith_m_axi_aw*/w*/b*</code>（256 bit 写数据通道）</td>
+<td>AXI monitor + 码流重组</td>
+</tr>
+<tr>
+<td>状态与调试</td>
+<td><code>aenc_descrp_vld/rsp_data[63:0]</code>、<code>aenc_debug_info_bus[164:0]</code>、<code>aenc_error_int[1:0]</code></td>
+<td>scoreboard &#x2F; 断言</td>
+</tr>
+</tbody></table>
+<p>平台设计的第一条原则由此确定：<strong>先按端口分组，再决定组件边界</strong>。不要写一个大而全的 <code>main()</code> 把所有信号堆在一起——那样回压逻辑、抓包逻辑、比对逻辑会互相纠缠，调试时无法定位是 driver 错了还是 DUT 错了。</p>
+<h2 id="3-平台分层与数据流"><a href="#3-平台分层与数据流" class="headerlink" title="3. 平台分层与数据流"></a>3. 平台分层与数据流</h2><p>平台分四层，每层只做一件事：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">① golden 层（Python）      —— 生成 stimulus.bin 与 expected.bin<br>② driver 层（C++）         —— 按握手协议把 stimulus 喂给 DUT，随机化 ready<br>③ monitor 层（C++）        —— 监听 AXI W 通道，按 wstrb 抽取有效字节重组码流<br>④ check 层（C++）          —— 逐字节比对、检查描述符、检查错误注入与断言<br></code></pre></td></tr></table></figure>
+
+<p>四层之间只通过文件（<code>stimulus.bin</code> &#x2F; <code>expected.bin</code>）和内存中的 <code>std::vector&lt;uint8_t&gt;</code> 传递数据。这个解耦很关键：<strong>golden 用 Python 写、比对在 C++ 做</strong>，两边独立实现，可以避免”用同一份错误逻辑既生成激励又生成期望”的自欺。</p>
+<h2 id="4-Golden-生成：Python-脚本"><a href="#4-Golden-生成：Python-脚本" class="headerlink" title="4. Golden 生成：Python 脚本"></a>4. Golden 生成：Python 脚本</h2><p>Golden 的目标是产出两个文件：喂给 DUT 的字面量字节流 <code>stimulus.bin</code>，以及期望的压缩码流 <code>expected.bin</code>。项目里已有 <code>data/gen_stimulus.py</code>、<code>tb/compute_expected.py</code> 等脚本，下面的 <code>make_golden.py</code> 是把它们整合成”一次生成、契约清晰”的版本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/env python3</span><br><span class="hljs-comment"># make_golden.py —— 生成 stimulus.bin 与 expected.bin</span><br><span class="hljs-keyword">import</span> argparse, random, struct<br><span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">gen_literals</span>(<span class="hljs-params">nbytes: <span class="hljs-built_in">int</span>, seed: <span class="hljs-built_in">int</span></span>) -&gt; <span class="hljs-built_in">bytes</span>:<br>    rng = random.Random(seed)<br>    <span class="hljs-comment"># 混合高熵与低熵段，覆盖不同压缩比</span><br>    out = <span class="hljs-built_in">bytearray</span>()<br>    <span class="hljs-keyword">while</span> <span class="hljs-built_in">len</span>(out) &lt; nbytes:<br>        mode = rng.randrange(<span class="hljs-number">3</span>)<br>        <span class="hljs-keyword">if</span> mode == <span class="hljs-number">0</span>:                       <span class="hljs-comment"># 高熵随机</span><br>            out += <span class="hljs-built_in">bytes</span>(rng.randrange(<span class="hljs-number">256</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(rng.randrange(<span class="hljs-number">64</span>, <span class="hljs-number">512</span>)))<br>        <span class="hljs-keyword">elif</span> mode == <span class="hljs-number">1</span>:                     <span class="hljs-comment"># 低熵重复</span><br>            v = rng.randrange(<span class="hljs-number">256</span>)<br>            out += <span class="hljs-built_in">bytes</span>([v]) * rng.randrange(<span class="hljs-number">64</span>, <span class="hljs-number">512</span>)<br>        <span class="hljs-keyword">else</span>:                               <span class="hljs-comment"># 小幅游走，制造局部相关</span><br>            v = rng.randrange(<span class="hljs-number">256</span>)<br>            <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(rng.randrange(<span class="hljs-number">64</span>, <span class="hljs-number">512</span>)):<br>                out.append(v)<br>                v = (v + rng.choice([-<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>])) &amp; <span class="hljs-number">0xff</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">bytes</span>(out[:nbytes])<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">golden_compress</span>(<span class="hljs-params">data: <span class="hljs-built_in">bytes</span></span>) -&gt; <span class="hljs-built_in">bytes</span>:<br>    <span class="hljs-comment"># 项目里替换为 cmodel 的 arithmetic_compress_literals() 输出</span><br>    <span class="hljs-comment"># 这里用恒等变换占位，目的是固定 golden 与 RTL 的接口契约</span><br>    <span class="hljs-keyword">return</span> data<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>():<br>    ap = argparse.ArgumentParser()<br>    ap.add_argument(<span class="hljs-string">&quot;--nbytes&quot;</span>, <span class="hljs-built_in">type</span>=<span class="hljs-built_in">int</span>, default=<span class="hljs-number">4096</span>)<br>    ap.add_argument(<span class="hljs-string">&quot;--seed&quot;</span>, <span class="hljs-built_in">type</span>=<span class="hljs-built_in">int</span>, default=<span class="hljs-number">20261121</span>)<br>    ap.add_argument(<span class="hljs-string">&quot;--out&quot;</span>, <span class="hljs-built_in">type</span>=Path, default=Path(<span class="hljs-string">&quot;golden&quot;</span>))<br>    args = ap.parse_args()<br>    args.out.mkdir(exist_ok=<span class="hljs-literal">True</span>)<br><br>    stim = gen_literals(args.nbytes, args.seed)<br>    gold = golden_compress(stim)<br>    (args.out / <span class="hljs-string">&quot;stimulus.bin&quot;</span>).write_bytes(stim)<br>    (args.out / <span class="hljs-string">&quot;expected.bin&quot;</span>).write_bytes(gold)<br>    <span class="hljs-comment"># 元数据单独存，C++ 侧按同一格式读取</span><br>    (args.out / <span class="hljs-string">&quot;meta.txt&quot;</span>).write_text(<br>        <span class="hljs-string">f&quot;stimulus_bytes=<span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(stim)&#125;</span>\nexpected_bytes=<span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(gold)&#125;</span>\nseed=<span class="hljs-subst">&#123;args.seed&#125;</span>\n&quot;</span><br>    )<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;[GOLDEN] stimulus=<span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(stim)&#125;</span>B  expected=<span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(gold)&#125;</span>B&quot;</span>)<br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+
+<p><strong>三个注意点</strong>：</p>
+<ol>
+<li>激励必须<strong>同时覆盖高熵、低熵和局部相关</strong>三种分布，否则只能验证”压缩器恰好工作”的一种情形；</li>
+<li>golden 与 stimulus 必须<strong>同一次生成、写在同一目录</strong>，避免版本错配；</li>
+<li><code>meta.txt</code> 提供长度契约，C++ 侧先读它再分配缓冲，能提前发现 golden 与 testbench 不一致。</li>
+</ol>
+<h2 id="5-C-Testbench：驱动、抓包、自检"><a href="#5-C-Testbench：驱动、抓包、自检" class="headerlink" title="5. C++ Testbench：驱动、抓包、自检"></a>5. C++ Testbench：驱动、抓包、自检</h2><p>下面是平台主体。代码按 <code>zcle_aenc_wrapper.v</code> 的真实端口写，Verilator 生成的头为 <code>Vzcle_aenc_wrapper.h</code>。</p>
+<h3 id="5-1-工具函数与状态"><a href="#5-1-工具函数与状态" class="headerlink" title="5.1 工具函数与状态"></a>5.1 工具函数与状态</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;Vzcle_aenc_wrapper.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;verilated.h&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cstdint&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cstdio&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fstream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;random&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;algorithm&gt;</span></span><br><br><span class="hljs-keyword">using</span> u8  = <span class="hljs-type">uint8_t</span>;<br><span class="hljs-keyword">using</span> u32 = <span class="hljs-type">uint32_t</span>;<br><span class="hljs-keyword">using</span> u64 = <span class="hljs-type">uint64_t</span>;<br><span class="hljs-keyword">using</span> u128 = <span class="hljs-type">unsigned</span> __int128;   <span class="hljs-comment">// GCC/Clang 扩展，128-bit literals 数据用</span><br><br><br><span class="hljs-function"><span class="hljs-type">static</span> std::vector&lt;u8&gt; <span class="hljs-title">read_bin</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span>* p)</span> </span>&#123;<br>    <span class="hljs-function">std::ifstream <span class="hljs-title">f</span><span class="hljs-params">(p, std::ios::binary)</span></span>;<br>    <span class="hljs-keyword">return</span> std::<span class="hljs-built_in">vector</span>&lt;u8&gt;((std::<span class="hljs-built_in">istreambuf_iterator</span>&lt;<span class="hljs-type">char</span>&gt;(f)),<br>                            std::<span class="hljs-built_in">istreambuf_iterator</span>&lt;<span class="hljs-type">char</span>&gt;());<br>&#125;<br><br><span class="hljs-keyword">struct</span> <span class="hljs-title class_">AxiWrite</span> &#123;<br>    u32  addr;<br>    u8   strb;          <span class="hljs-comment">// 本拍有效字节掩码</span><br>    u8   data[<span class="hljs-number">32</span>];      <span class="hljs-comment">// 256-bit 写数据按字节展开</span><br>    <span class="hljs-type">bool</span> last;<br>&#125;;<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">TB</span> &#123;<br><span class="hljs-keyword">public</span>:<br>    Vzcle_aenc_wrapper* dut;<br>    std::mt19937 rng&#123;<span class="hljs-number">20261121</span>&#125;;<br>    <span class="hljs-type">vluint64_t</span> tick = <span class="hljs-number">0</span>;<br><br>    std::vector&lt;u8&gt; stim, gold, captured;<br>    std::vector&lt;AxiWrite&gt; wq;       <span class="hljs-comment">// AXI monitor 抓到的写事务</span><br>    <span class="hljs-type">size_t</span> stim_pos = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">int</span>    misfires = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">bool</span>   descrp_seen = <span class="hljs-literal">false</span>;<br><br>    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">TB</span><span class="hljs-params">(Vzcle_aenc_wrapper* d)</span> : dut(d) &#123;</span>&#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">reset</span><span class="hljs-params">()</span> </span>&#123;<br>        dut-&gt;clk = <span class="hljs-number">0</span>; dut-&gt;rst_n = <span class="hljs-number">0</span>;<br>        dut-&gt;csr_aenc_enable = <span class="hljs-number">0</span>;<br>        dut-&gt;csr_aenc_cmp_thr = <span class="hljs-number">0</span>;<br>        dut-&gt;csr_aenc_error_int = <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_lit_hist_qvalid = <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_lit_hist_qwrite = <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_lit_hist_qaddr  = <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_lit_hist_qdata  = <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_lit_hist_qstrb  = <span class="hljs-number">0</span>;<br>        dut-&gt;aenc_lit_qready = <span class="hljs-number">0</span>;<br>        dut-&gt;aenc_lit_pvalid = <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_zpke_arith_m_axi_awready = <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_zpke_arith_m_axi_wready  = <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_zpke_arith_m_axi_bvalid  = <span class="hljs-number">0</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; ++i) <span class="hljs-built_in">step</span>();<br>        dut-&gt;rst_n = <span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">step</span><span class="hljs-params">()</span> </span>&#123;<br>        dut-&gt;clk = <span class="hljs-number">0</span>; dut-&gt;<span class="hljs-built_in">eval</span>();<br>        dut-&gt;clk = <span class="hljs-number">1</span>; dut-&gt;<span class="hljs-built_in">eval</span>();<br>        tick++;<br>        <span class="hljs-built_in">monitor</span>();       <span class="hljs-comment">// 在时钟上升沿后抓 AXI 写通道</span><br>    &#125;<br>    ...<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p><strong>关键点</strong>：<code>monitor()</code> 放在 <code>step()</code> 里、每个上升沿后调用，而不是写在 driver 循环里。这样无论 driver 做什么（发激励、等响应、故意停顿），monitor 都不会漏拍——<strong>抓包逻辑与驱动逻辑解耦</strong>是自检平台最重要的结构约束。</p>
+<h3 id="5-2-AXI-monitor：把-256-bit-写数据重组为字节流"><a href="#5-2-AXI-monitor：把-256-bit-写数据重组为字节流" class="headerlink" title="5.2 AXI monitor：把 256-bit 写数据重组为字节流"></a>5.2 AXI monitor：把 256-bit 写数据重组为字节流</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">monitor</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">auto</span>* d = dut;<br>    <span class="hljs-comment">// AW 通道：记录地址（用于描述符校验）</span><br>    <span class="hljs-keyword">if</span> (d-&gt;zcle_zpke_arith_m_axi_awvalid &amp;&amp; d-&gt;zcle_zpke_arith_m_axi_awready) &#123;<br>        <span class="hljs-comment">// 真实设计中 awaddr[25:20] 是 CBID，[19:0] 是块内偏移</span><br>        <span class="hljs-comment">// 这里只校验写地址在合理范围内</span><br>        u32 off = d-&gt;zcle_zpke_arith_m_axi_awaddr &amp; <span class="hljs-number">0xfffff</span>;<br>        <span class="hljs-keyword">if</span> (off &gt; <span class="hljs-number">0x200000</span>) misfires++;<br>    &#125;<br><br>    <span class="hljs-comment">// W 通道：按 wstrb 抽取有效字节，重组码流</span><br>    <span class="hljs-keyword">if</span> (d-&gt;zcle_zpke_arith_m_axi_wvalid &amp;&amp; d-&gt;zcle_zpke_arith_m_axi_wready) &#123;<br>        AxiWrite w;<br>        w.addr = d-&gt;zcle_zpke_arith_m_axi_awaddr &amp; <span class="hljs-number">0xfffff</span>;<br>        w.strb = (u8)(d-&gt;zcle_zpke_arith_m_axi_wstrb &amp; <span class="hljs-number">0xff</span>);<br>        w.last = d-&gt;zcle_zpke_arith_m_axi_wlast;<br>        <span class="hljs-comment">// Verilator 把 256-bit 端口生成成 4 个 64-bit word（小端：word0 是低 64 位）</span><br>        <span class="hljs-type">const</span> u64 word[<span class="hljs-number">4</span>] = &#123;<br>            (u64)d-&gt;zcle_zpke_arith_m_axi_wdata[<span class="hljs-number">0</span>],<br>            (u64)d-&gt;zcle_zpke_arith_m_axi_wdata[<span class="hljs-number">1</span>],<br>            (u64)d-&gt;zcle_zpke_arith_m_axi_wdata[<span class="hljs-number">2</span>],<br>            (u64)d-&gt;zcle_zpke_arith_m_axi_wdata[<span class="hljs-number">3</span>]<br>        &#125;;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> b = <span class="hljs-number">0</span>; b &lt; <span class="hljs-number">32</span>; ++b) &#123;<br>            w.data[b] = (u8)((word[b / <span class="hljs-number">8</span>] &gt;&gt; ((b % <span class="hljs-number">8</span>) * <span class="hljs-number">8</span>)) &amp; <span class="hljs-number">0xff</span>);<br>        &#125;<br>        wq.<span class="hljs-built_in">push_back</span>(w);<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> b = <span class="hljs-number">0</span>; b &lt; <span class="hljs-number">32</span>; ++b) &#123;<br>            <span class="hljs-keyword">if</span> (w.strb &amp; (<span class="hljs-number">1u</span> &lt;&lt; b)) captured.<span class="hljs-built_in">push_back</span>(w.data[b]);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 描述符响应：aenc_descrp_vld 是&quot;本 chunk 完成&quot;的判定信号</span><br>    <span class="hljs-keyword">if</span> (d-&gt;aenc_descrp_vld) descrp_seen = <span class="hljs-literal">true</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>注意这里用的是 <code>zcle_aenc_wrapper.v</code> 里的真实端口：<code>wdata[255:0]</code>、<code>wstrb[31:0]</code>、<code>wlast</code>，地址高 6 位是 CBID。<strong>按 <code>wstrb</code> 抽取有效字节</strong>是关键——AXI 的最后一拍通常不是满 32 字节，直接把 <code>wdata</code> 全部写入会导致 golden 比对错位。</p>
+<h3 id="5-3-Driver：喂-literals-并随机化回压"><a href="#5-3-Driver：喂-literals-并随机化回压" class="headerlink" title="5.3 Driver：喂 literals 并随机化回压"></a>5.3 Driver：喂 literals 并随机化回压</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">drive_stim</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">int</span> LIT_BEATS = <span class="hljs-number">16</span>;   <span class="hljs-comment">// 128-bit 数据 / 8-bit 字节 = 16 字节每拍</span><br>    <span class="hljs-keyword">while</span> (stim_pos &lt; stim.<span class="hljs-built_in">size</span>() || <span class="hljs-built_in">aenc_lit_pending</span>()) &#123;<br>        dut-&gt;zcle_lit_hist_qvalid = (stim_pos &lt; stim.<span class="hljs-built_in">size</span>());<br>        <span class="hljs-keyword">if</span> (dut-&gt;zcle_lit_hist_qvalid &amp;&amp; dut-&gt;zcle_lit_hist_qready) &#123;<br>            u8 buf[<span class="hljs-number">16</span>] = &#123;<span class="hljs-number">0</span>&#125;;<br>            <span class="hljs-type">size_t</span> n = std::<span class="hljs-built_in">min</span>&lt;<span class="hljs-type">size_t</span>&gt;(<span class="hljs-number">16</span>, stim.<span class="hljs-built_in">size</span>() - stim_pos);<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; n; ++i) buf[i] = stim[stim_pos + i];<br>            u128 val = <span class="hljs-number">0</span>;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">15</span>; i &gt;= <span class="hljs-number">0</span>; --i) val = (val &lt;&lt; <span class="hljs-number">8</span>) | buf[i];<br>            dut-&gt;zcle_lit_hist_qdata = val;<br>            dut-&gt;zcle_lit_hist_qstrb = (n == <span class="hljs-number">16</span>) ? <span class="hljs-number">0xffff</span> : (u16)((<span class="hljs-number">1u</span> &lt;&lt; n) - <span class="hljs-number">1</span>);<br>            dut-&gt;zcle_lit_hist_block_last = (stim_pos + n &gt;= stim.<span class="hljs-built_in">size</span>());<br>            dut-&gt;zcle_lit_hist_chunk_last = dut-&gt;zcle_lit_hist_block_last;<br>            dut-&gt;zcle_lit_hist_frame_last = dut-&gt;zcle_lit_hist_block_last;<br>            stim_pos += n;<br>        &#125;<br><br>        <span class="hljs-comment">// 随机化下游 AXI ready，制造真实回压</span><br>        dut-&gt;zcle_zpke_arith_m_axi_awready = (<span class="hljs-built_in">rng</span>() % <span class="hljs-number">4</span>) != <span class="hljs-number">0</span>;<br>        dut-&gt;zcle_zpke_arith_m_axi_wready  = (<span class="hljs-built_in">rng</span>() % <span class="hljs-number">3</span>) != <span class="hljs-number">0</span>;<br>        <span class="hljs-built_in">step</span>();<br>    &#125;<br>    dut-&gt;zcle_lit_hist_qvalid = <span class="hljs-number">0</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">aenc_lit_pending</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>&#123;<br>    <span class="hljs-comment">// aenc_lit_qvalid/qwrite 是 DUT 输出，代表它要向我们发起的 literals 搬运</span><br>    <span class="hljs-keyword">return</span> dut-&gt;aenc_lit_qvalid || dut-&gt;aenc_lit_pvalid;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>回压随机化不是可选项</strong>。如果 <code>awready/wready</code> 恒为 1，AXI 写通道永远不反压，DUT 内部 store 状态机与 FIFO 的”暂停&#x2F;恢复”分支就完全没被激励到。这里用 <code>(rng()%4)!=0</code> 和 <code>(rng()%3)!=0</code> 制造不同概率的反压，能在回归中触发大量平时遇不到的状态组合。</p>
+<h3 id="5-4-Scoreboard：自检判定"><a href="#5-4-Scoreboard：自检判定" class="headerlink" title="5.4 Scoreboard：自检判定"></a>5.4 Scoreboard：自检判定</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">check</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> errs = <span class="hljs-number">0</span>;<br>    <span class="hljs-comment">// ① 码流逐字节比对</span><br>    <span class="hljs-keyword">if</span> (captured.<span class="hljs-built_in">size</span>() != gold.<span class="hljs-built_in">size</span>()) &#123;<br>        std::<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[FAIL] size: DUT=%zu GOLD=%zu\n&quot;</span>, captured.<span class="hljs-built_in">size</span>(), gold.<span class="hljs-built_in">size</span>());<br>        errs++;<br>    &#125;<br>    <span class="hljs-type">size_t</span> n = std::<span class="hljs-built_in">min</span>(captured.<span class="hljs-built_in">size</span>(), gold.<span class="hljs-built_in">size</span>());<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> i = <span class="hljs-number">0</span>; i &lt; n; ++i) &#123;<br>        <span class="hljs-keyword">if</span> (captured[i] != gold[i]) &#123;<br>            <span class="hljs-keyword">if</span> (errs &lt; <span class="hljs-number">10</span>)<br>                std::<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[MIS %zu] DUT=%02x GOLD=%02x\n&quot;</span>, i, captured[i], gold[i]);<br>            errs++;<br>        &#125;<br>    &#125;<br>    <span class="hljs-comment">// ② 描述符响应：aenc_descrp_vld 必须出现，且 rsp_data 非零</span><br>    <span class="hljs-keyword">if</span> (!descrp_seen) &#123; std::<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[FAIL] no descriptor response\n&quot;</span>); errs++; &#125;<br>    <span class="hljs-comment">// ③ 错误注入未开启时，error_int 必须为 0</span><br>    <span class="hljs-keyword">if</span> (dut-&gt;aenc_error_int != <span class="hljs-number">0</span>) &#123; std::<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[FAIL] unexpected error_int\n&quot;</span>); errs++; &#125;<br>    <span class="hljs-comment">// ④ 超时/死锁</span><br>    <span class="hljs-keyword">if</span> (tick &gt; <span class="hljs-number">2&#x27;000&#x27;000</span>) &#123; std::<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[FAIL] timeout\n&quot;</span>); errs++; &#125;<br><br>    std::<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[%s] bytes=%zu mismatches=%d ticks=%llu\n&quot;</span>,<br>                errs ? <span class="hljs-string">&quot;FAIL&quot;</span> : <span class="hljs-string">&quot;PASS&quot;</span>, n, errs, (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> <span class="hljs-type">long</span>)tick);<br>    <span class="hljs-keyword">return</span> errs ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>四条检查分别对应四类风险：<strong>数据错误、协议响应缺失、异常误报、死锁</strong>。只有四条全过，平台才打印 PASS 并返回 0——这就是”设计可自检”的含义：<strong>退出码本身就是验证结论</strong>，可以直接接 CI。</p>
+<h3 id="5-5-main：组装四层"><a href="#5-5-main：组装四层" class="headerlink" title="5.5 main：组装四层"></a>5.5 main：组装四层</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>** argv)</span> </span>&#123;<br>    Verilated::<span class="hljs-built_in">commandArgs</span>(argc, argv);<br>    <span class="hljs-keyword">auto</span>* dut = <span class="hljs-keyword">new</span> Vzcle_aenc_wrapper;<br>    <span class="hljs-function">TB <span class="hljs-title">tb</span><span class="hljs-params">(dut)</span></span>;<br><br>    tb.stim = <span class="hljs-built_in">read_bin</span>(<span class="hljs-string">&quot;golden/stimulus.bin&quot;</span>);<br>    tb.gold = <span class="hljs-built_in">read_bin</span>(<span class="hljs-string">&quot;golden/expected.bin&quot;</span>);<br>    <span class="hljs-keyword">if</span> (tb.stim.<span class="hljs-built_in">empty</span>() || tb.gold.<span class="hljs-built_in">empty</span>()) &#123;<br>        std::<span class="hljs-built_in">fprintf</span>(stderr, <span class="hljs-string">&quot;run make_golden.py first\n&quot;</span>);<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">2</span>;<br>    &#125;<br><br>    tb.<span class="hljs-built_in">reset</span>();<br>    dut-&gt;csr_aenc_enable = <span class="hljs-number">1</span>;<br>    dut-&gt;csr_aenc_cmp_thr = <span class="hljs-number">0xffff</span>;<br>    tb.<span class="hljs-built_in">drive_stim</span>();<br><br>    <span class="hljs-comment">// 等待描述符响应与 AXI 事务收尾</span><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">20000</span> &amp;&amp; !tb.descrp_seen; ++i) &#123;<br>        dut-&gt;zcle_zpke_arith_m_axi_awready = <span class="hljs-number">1</span>;<br>        dut-&gt;zcle_zpke_arith_m_axi_wready  = <span class="hljs-number">1</span>;<br>        tb.<span class="hljs-built_in">step</span>();<br>    &#125;<br><br>    <span class="hljs-type">int</span> rc = tb.<span class="hljs-built_in">check</span>();<br>    dut-&gt;<span class="hljs-keyword">final</span>();<br>    <span class="hljs-keyword">delete</span> dut;<br>    <span class="hljs-keyword">return</span> rc;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="6-Makefile-与一键运行"><a href="#6-Makefile-与一键运行" class="headerlink" title="6. Makefile 与一键运行"></a>6. Makefile 与一键运行</h2><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs makefile"><span class="hljs-comment"># Makefile —— Verilator 自检平台</span><br>RTL_DIR ?= ../../RTL/zcle_aenc<br>TB_DIR  ?= ../../tb<br>GOLDEN  ?= golden<br><br>VERILATOR ?= verilator<br>CXX      ?= g++<br>OPT      := -O2 -std=c++17<br>INC      := -I<span class="hljs-variable">$(RTL_DIR)</span>/rtl -I<span class="hljs-variable">$(RTL_DIR)</span>/rtl/zcle_aenc_core_wrapper \<br>            -I<span class="hljs-variable">$(RTL_DIR)</span>/rtl/zcle_aenc_core_wrapper/sfifo_wrapper \<br>            -I<span class="hljs-variable">$(RTL_DIR)</span>/rtl/zcle_aenc_core_wrapper/mem_wrapper \<br>            -I<span class="hljs-variable">$(RTL_DIR)</span>/common -I<span class="hljs-variable">$(RTL_DIR)</span>/mem<br><br><span class="hljs-comment"># Verilator 规范化生成的源文件列表由 --top-module 自动展开</span><br>VL_FLAGS := --cc --exe --build -j 0 -Wno-fatal \<br>            --top-module zcle_aenc_wrapper \<br>            <span class="hljs-variable">$(INC)</span> -CFLAGS <span class="hljs-string">&quot;<span class="hljs-variable">$(OPT)</span>&quot;</span><br><br><span class="hljs-meta"><span class="hljs-keyword">.PHONY</span>: golden sim clean</span><br><span class="hljs-section">golden:</span><br>	python3 make_golden.py --nbytes 4096 --out <span class="hljs-variable">$(GOLDEN)</span><br><br><span class="hljs-section">sim: golden</span><br>	<span class="hljs-variable">$(VERILATOR)</span> <span class="hljs-variable">$(VL_FLAGS)</span> -Mdir obj_dir \<br>	    <span class="hljs-variable">$(RTL_DIR)</span>/rtl/zcle_aenc_wrapper.v \<br>	    <span class="hljs-variable">$(<span class="hljs-built_in">shell</span> find <span class="hljs-variable">$(RTL_DIR)</span>/rtl -name &#x27;*.v&#x27; ! -name &#x27;zcle_aenc_wrapper.v&#x27;)</span> \<br>	    <span class="hljs-variable">$(RTL_DIR)</span>/common/*.v <span class="hljs-variable">$(RTL_DIR)</span>/mem/*.v \<br>	    sim_main.cpp -o sim<br>	./obj_dir/sim<br><br><span class="hljs-section">clean:</span><br>	rm -rf obj_dir sim <span class="hljs-variable">$(GOLDEN)</span><br></code></pre></td></tr></table></figure>
+
+<p>一键运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">make sim      <span class="hljs-comment"># 生成 golden → 编译 Verilator → 跑自检 → 看 PASS/FAIL</span><br><span class="hljs-built_in">echo</span> $?       <span class="hljs-comment"># 0 = 通过，1 = 比对失败，2 = golden 缺失</span><br></code></pre></td></tr></table></figure>
+
+<p>Windows 下把 <code>rm -rf</code> 换成 <code>if exist ... rmdir /s /q</code>，其余逻辑不变；项目原有的 <code>.bat</code> 脚本已经用同样思路做了 iverilog 编译 + <code>findstr &quot;RESULT: PASS&quot;</code> 判定，可以沿用那套批处理风格。</p>
+<h2 id="7-让自检更可靠的四个实践"><a href="#7-让自检更可靠的四个实践" class="headerlink" title="7. 让自检更可靠的四个实践"></a>7. 让自检更可靠的四个实践</h2><h3 id="7-1-错误注入要专门跑一遍"><a href="#7-1-错误注入要专门跑一遍" class="headerlink" title="7.1 错误注入要专门跑一遍"></a>7.1 错误注入要专门跑一遍</h3><p><code>zcle_aenc_wrapper</code> 有 <code>zcle_aenc_par_chk_en</code>、<code>zcle_aenc_err_ins[2:0]</code> 和 <code>csr_aenc_error_int[1:0]</code>。自检平台应该有一个<strong>反向用例</strong>：打开错误注入，确认 <code>aenc_error_int</code> 确实拉起、并且 <code>aenc_descrp_rsp_data</code> 携带了错误码。否则”错误注入功能”在验证里等于不存在。</p>
+<h3 id="7-2-debug-总线做状态断言"><a href="#7-2-debug-总线做状态断言" class="headerlink" title="7.2 debug 总线做状态断言"></a>7.2 debug 总线做状态断言</h3><p><code>aenc_debug_info_bus[164:0]</code> 是内部状态观测口。与其只拿它打印波形，不如在 monitor 里加断言：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 伪代码：debug bus 的某几位代表 loader/core 状态</span><br><span class="hljs-keyword">if</span> (dut-&gt;aenc_debug_info_bus &amp; DEBUG_CORE_BUSY_MASK) core_busy_seen = <span class="hljs-literal">true</span>;<br><span class="hljs-keyword">if</span> (core_busy_seen &amp;&amp; !dut-&gt;csr_aenc_enable) &#123;<br>    std::<span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;[FAIL] core busy while disabled\n&quot;</span>);<br>    errs++;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>断言要围绕<strong>状态一致性</strong>，而不是”某信号等于某值”——后者一旦 RTL 重构就全部失效。</p>
+<h3 id="7-3-golden-与-RTL-用不同实现路径"><a href="#7-3-golden-与-RTL-用不同实现路径" class="headerlink" title="7.3 golden 与 RTL 用不同实现路径"></a>7.3 golden 与 RTL 用不同实现路径</h3><p>项目 plan 里给出三种对齐方法，自检平台应按层次选用：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>方法</th>
+<th>本平台对应</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单元级</td>
+<td>Verilator + DPI 调 cmodel，逐 bit 比对</td>
+<td><code>unit/</code> 子平台</td>
+</tr>
+<tr>
+<td>模块级</td>
+<td>Python golden model，比对中间结果（ctx &#x2F; lane_size &#x2F; stream）</td>
+<td><code>make_golden.py</code> 的元数据扩展</td>
+</tr>
+<tr>
+<td>系统级</td>
+<td>Verilator + cmodel DPI，AXI 输出逐 bit 对比</td>
+<td>本文的 wrapper 平台</td>
+</tr>
+</tbody></table>
+<p><strong>关键是 golden 不能由 RTL 反向生成</strong>。用 Python 独立实现、或从 cmodel 导出，才能形成真正的交叉验证。</p>
+<h3 id="7-4-回归要随机化-seed"><a href="#7-4-回归要随机化-seed" class="headerlink" title="7.4 回归要随机化 seed"></a>7.4 回归要随机化 seed</h3><p>把 <code>--seed</code> 暴露成命令行参数，在 CI 里跑一组 seed：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> 1 2 3 4 5 11 21 42 99 20261121; <span class="hljs-keyword">do</span><br>    python3 make_golden.py --seed <span class="hljs-variable">$s</span> --out golden_<span class="hljs-variable">$s</span> || <span class="hljs-built_in">exit</span> 1<br>    ./obj_dir/sim golden_<span class="hljs-variable">$s</span> || <span class="hljs-built_in">exit</span> 1<br><span class="hljs-keyword">done</span><br></code></pre></td></tr></table></figure>
+
+<p>不同 seed 生成不同数据分布，能覆盖更多压缩比与边界长度组合，比固定一个用例反复跑有效得多。</p>
+<h2 id="8-小结"><a href="#8-小结" class="headerlink" title="8. 小结"></a>8. 小结</h2><p>给一套复杂 RTL 搭 Verilator 平台，真正要解决的问题不是”怎么让波形跑起来”，而是<strong>怎么让平台自己给出可信结论</strong>。本文用 <code>zcle_aenc_wrapper</code> 把这件事拆成四条：</p>
+<ol>
+<li><strong>接口分组决定组件边界</strong>：CSR &#x2F; 输入 &#x2F; AXI 输出 &#x2F; 状态，各对应一个 driver 或 monitor；</li>
+<li><strong>golden 与 stimulus 同源但异构</strong>：Python 独立生成，契约文件固定长度与种子；</li>
+<li><strong>monitor 独立于 driver</strong>：抓包放在 <code>step()</code> 里，保证不漏拍；按 <code>wstrb</code> 抽取有效字节，避免最后一拍错位；</li>
+<li><strong>判定标准化</strong>：退出码 &#x3D; 验证结论，比对、响应、异常、超时四类检查全过才 PASS。</li>
+</ol>
+<p>这样搭出来的平台，不依赖人工看波形，可以直接接 CI；换一个 DUT，只需要替换端口驱动部分，monitor 和 scoreboard 基本可以原样复用。</p>
+<h2 id="相关阅读"><a href="#相关阅读" class="headerlink" title="相关阅读"></a>相关阅读</h2><ul>
+<li><a href="/2026/11/21/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AZSTD-%E7%AE%97%E6%9C%AF%E7%BC%96%E8%A7%A3%E7%A0%81%E7%9A%84%E6%B5%81%E5%BC%8F%E5%90%8E%E7%AB%AF%E8%AE%BE%E8%AE%A1/">项目复盘：ZSTD 算术编解码的完整算法与流式后端架构</a>：本文验证对象 <code>zcle_aenc_wrapper</code> 所在的算法与架构背景</li>
+</ul>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <div class="post-nav-item-left"></div>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2026/11/21/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AZSTD-%E7%AE%97%E6%9C%AF%E7%BC%96%E8%A7%A3%E7%A0%81%E7%9A%84%E6%B5%81%E5%BC%8F%E5%90%8E%E7%AB%AF%E8%AE%BE%E8%AE%A1/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      项目复盘：ZSTD 算术编解码的完整算法与流式后端架构
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  
+  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/Verilator/" class="post-tag">#Verilator</a><a href="/tags/%E9%AA%8C%E8%AF%81%E5%B9%B3%E5%8F%B0/" class="post-tag">#验证平台</a><a href="/tags/%E8%87%AA%E6%A3%80/" class="post-tag">#自检</a><a href="/tags/ZSTD/" class="post-tag">#ZSTD</a>
+
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2026\11\21\项目复盘：ZSTD-算术编解码的流式后端设计\" title="项目复盘：ZSTD 算术编解码的完整算法与流式后端架构" rel="bookmark">项目复盘：ZSTD 算术编解码的完整算法与流式后端架构</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：ISP-图像增强-IP-的架构设计与优化\" title="项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化" rel="bookmark">项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\11\19\项目复盘：VVC-ALF-自适应环路滤波-IP-设计实践\" title="项目复盘：VVC ALF 自适应环路滤波 IP 设计实践" rel="bookmark">项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</a></div></div></div>
+    
+  </div>
+</div>
+
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

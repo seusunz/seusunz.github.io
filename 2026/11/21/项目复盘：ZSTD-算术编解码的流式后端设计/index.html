@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        项目复盘：ZSTD 算术编解码的完整算法与流式后端架构 | 九天之遥
+      
+    </title>
+    <meta name="description" content="聚焦视频编码与数据压缩硬件架构，以及与 AI Infra 相关的系统思考与工程实践。" />
+    <meta name="keywords" content="编码与压缩硬件架构, 视频编解码后端, H.266, VVC, CABAC, ZSTD, ISP, 数据通路, AI Infra, 张量压缩, 技术博客" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner--toc">
+      <div class="post-content__head">
+        <div class="post-title">项目复盘：ZSTD 算术编解码的完整算法与流式后端架构</div>
+        <div class="post-info">
+          
+  
+  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/ZSTD/" class="post-tag">#ZSTD</a><a href="/tags/FSE/" class="post-tag">#FSE</a><a href="/tags/tANS/" class="post-tag">#tANS</a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%8E%8B%E7%BC%A9/" class="post-tag">#数据压缩</a><a href="/tags/%E6%B5%81%E5%BC%8F%E6%8E%A5%E5%8F%A3/" class="post-tag">#流式接口</a>
+
+
+
+          <span class="post-date">2026-11-21</span>
+        </div>
+      </div>
+      
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E9%A1%B9%E7%9B%AE%E7%94%BB%E5%83%8F"><span class="post-toc-text">1. 项目画像</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-%E5%AE%8C%E6%95%B4%E7%AE%97%E6%B3%95%E9%93%BE%E8%B7%AF%EF%BC%9A%E4%BB%8E%E8%BE%93%E5%85%A5%E5%88%B0%E7%A0%81%E6%B5%81"><span class="post-toc-text">2. 完整算法链路：从输入到码流</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1-%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9A%E5%88%86%E5%9D%97%E4%B8%8E%E7%AA%97%E5%8F%A3"><span class="post-toc-text">2.1 阶段一：分块与窗口</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2-%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9A%E5%BA%8F%E5%88%97%E7%94%9F%E6%88%90"><span class="post-toc-text">2.2 阶段二：序列生成</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-3-%E9%98%B6%E6%AE%B5%E4%B8%89%EF%BC%9A%E9%95%BF%E5%BA%A6%E4%B8%8E%E5%81%8F%E7%A7%BB%E8%BD%AC-code"><span class="post-toc-text">2.3 阶段三：长度与偏移转 code</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-4-%E9%98%B6%E6%AE%B5%E5%9B%9B%EF%BC%9A%E5%AD%97%E9%9D%A2%E9%87%8F-Huffman"><span class="post-toc-text">2.4 阶段四：字面量 Huffman</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-5-%E9%98%B6%E6%AE%B5%E4%BA%94%EF%BC%9A%E5%BA%8F%E5%88%97-FSE%EF%BC%88tANS%EF%BC%89%E2%80%94%E2%80%94-%E6%A0%B8%E5%BF%83%E7%AE%97%E6%B3%95"><span class="post-toc-text">2.5 阶段五：序列 FSE（tANS）—— 核心算法</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-6-%E8%A7%A3%E7%A0%81%E9%93%BE%E8%B7%AF"><span class="post-toc-text">2.6 解码链路</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-%E5%90%8E%E7%AB%AF%E6%8E%A5%E5%8F%A3%EF%BC%9A%E4%BB%8E%E6%A0%BC%E5%BC%8F%E7%BB%93%E6%9E%84%E5%80%92%E6%8E%A8"><span class="post-toc-text">3. 后端接口：从格式结构倒推</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E7%A1%AC%E4%BB%B6%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90"><span class="post-toc-text">4. 硬件架构分析</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-1-%E9%A1%B6%E5%B1%82%EF%BC%9A%E6%8E%A7%E5%88%B6%E3%80%81%E8%AE%A1%E7%AE%97%E3%80%81%E8%BE%93%E5%87%BA%E4%B8%89%E5%B1%82%E5%88%86%E6%B2%BB"><span class="post-toc-text">4.1 顶层：控制、计算、输出三层分治</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-2-%E7%BC%96%E7%A0%81%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF%EF%BC%9A%E7%8A%B6%E6%80%81%E7%8E%AF%E4%B8%8E%E6%B5%81%E6%B0%B4%E5%88%87%E5%88%86"><span class="post-toc-text">4.2 编码数据通路：状态环与流水切分</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-3-%E8%A7%A3%E7%A0%81%E6%95%B0%E6%8D%AE%E9%80%9A%E8%B7%AF%EF%BC%9A%E6%9B%B4%E7%9F%AD%E7%9A%84%E7%8E%AF%E3%80%81%E6%9B%B4%E4%B8%A5%E7%9A%84%E5%BA%8F"><span class="post-toc-text">4.3 解码数据通路：更短的环、更严的序</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-4-%E6%B5%81%E5%BC%8F%E6%8E%A5%E5%8F%A3%E4%B8%8E%E5%9B%9E%E5%8E%8B%E6%8E%A7%E5%88%B6"><span class="post-toc-text">4.4 流式接口与回压控制</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-5-%E5%9D%97%E8%BE%B9%E7%95%8C%E5%A4%84%E7%90%86"><span class="post-toc-text">4.5 块边界处理</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-6-%E7%89%87%E5%86%85%E7%BC%93%E5%AD%98%E5%8D%8F%E5%90%8C"><span class="post-toc-text">4.6 片内缓存协同</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-%E5%B7%A5%E7%A8%8B%E6%94%B6%E6%95%9B%EF%BC%9A%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E3%80%81%E9%AA%8C%E8%AF%81%E3%80%81Lint-%E4%B8%8E%E7%BB%BC%E5%90%88"><span class="post-toc-text">5. 工程收敛：详细设计、验证、Lint 与综合</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-%E5%A4%8D%E7%9B%98%EF%BC%9A%E4%BA%94%E6%9D%A1%E5%8E%9F%E5%88%99"><span class="post-toc-text">6. 复盘：五条原则</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-%E5%B8%B8%E8%A2%AB%E9%97%AE%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="post-toc-text">7. 常被问到的问题</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="post-toc-text">参考资料</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <blockquote>
+<p><strong>写在前面</strong>：这是一个与视频编码无关的<strong>全新项目</strong>——面向通用数据压缩的 ZSTD 后端。它有自己独立的格式规范、状态机形态和接口假设，架构设计必须从 ZSTD 本身出发，而不是套用其他熵编码器的经验。文中”算术编解码”按项目里的功能称呼使用；<strong>需要先澄清的是，ZSTD 格式实际采用的是 FSE（tANS）与 Huffman，不是二进制区间算术编码</strong>，这是理解后面所有架构决策的前提。</p>
+<p><strong>口径说明</strong>：本文依据项目期间的个人工作记录整理，不涉及具体产品、工艺与内部代码。文中凡是”我的理解 &#x2F; 取舍分析”，都与项目事实和格式规范分开标注。算法层面的细节对照公开规范与参考实现 <code>docs/ZSTD/cmodel/zstd</code>（FSE 状态机见 <code>lib/common/fse.h</code>）。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="1-项目画像"><a href="#1-项目画像" class="headerlink" title="1. 项目画像"></a>1. 项目画像</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>项目</td>
+<td>腾讯方寸 V1 · ZSTD 算术编解码</td>
+</tr>
+<tr>
+<td>时间</td>
+<td>2025.11 — 至今</td>
+</tr>
+<tr>
+<td>功能</td>
+<td>ZSTD 熵编码（FSE&#x2F;tANS + Huffman）编码与解码链路、码流组织</td>
+</tr>
+<tr>
+<td>定位</td>
+<td>通用压缩后端，面向流式数据通路</td>
+</tr>
+<tr>
+<td>核心工作</td>
+<td>状态更新、码流生成与恢复的算法到 RTL 拆解</td>
+</tr>
+<tr>
+<td>架构重点</td>
+<td>流式接口、回压控制、边界处理、片内缓存协同</td>
+</tr>
+<tr>
+<td>工程闭环</td>
+<td>详细设计、功能验证、Lint、综合分析</td>
+</tr>
+<tr>
+<td>我的角色</td>
+<td>参与算术编解码链路的微架构设计与 RTL 落地</td>
+</tr>
+<tr>
+<td>沉淀方向</td>
+<td>为通用压缩后端沉淀可复用的状态机与流式接口设计经验</td>
+</tr>
+</tbody></table>
+<p>这是一个全新的通用压缩项目，与视频编码平台没有继承关系。ZSTD 有自己的格式规范、FSE&#x2F;tANS 状态机与 Huffman 编码，接口假设和节奏约束都由这套格式决定。本文从 ZSTD 本身出发，把算法链路和硬件架构完整拆一遍。</p>
+<h2 id="2-完整算法链路：从输入到码流"><a href="#2-完整算法链路：从输入到码流" class="headerlink" title="2. 完整算法链路：从输入到码流"></a>2. 完整算法链路：从输入到码流</h2><p>先不讲硬件，把算法走通。ZSTD 的压缩可以拆成五个阶段，后端（本文的主角）是第五阶段。</p>
+<p><img src="/images/posts/zstd/algorithm-pipeline.svg" alt="ZSTD 完整压缩算法链路"></p>
+<h3 id="2-1-阶段一：分块与窗口"><a href="#2-1-阶段一：分块与窗口" class="headerlink" title="2.1 阶段一：分块与窗口"></a>2.1 阶段一：分块与窗口</h3><p>输入被切成若干 block（最大 128 KB）， frame 由多个 block 组成。block 头部 3 bit：<code>last_block</code> 标志 + block 类型（Raw &#x2F; RLE &#x2F; Compressed &#x2F; Reserved）+ 块大小。Raw 块直接存原字节，RLE 块存单字节重复，只有 Compressed 块进入熵编码。</p>
+<p>对硬件来说，这一步的意义是：<strong>块边界就是后端的事务边界</strong>，状态机不能无条件跨块携带。</p>
+<h3 id="2-2-阶段二：序列生成"><a href="#2-2-阶段二：序列生成" class="headerlink" title="2.2 阶段二：序列生成"></a>2.2 阶段二：序列生成</h3><p>Compressed 块内部把数据表示为两类对象：</p>
+<ul>
+<li><strong>字面量（literals）</strong>：未被匹配覆盖的原始字节；</li>
+<li><strong>序列（sequences）</strong>：每个序列是一个三元组 <code>(offset, litLength, matchLength)</code>，表示”跳过 litLength 个字面量后，从 offset 远处复制 matchLength 个字节”。</li>
+</ul>
+<p>序列由 matcher 生成，参考实现按 strategy 分派：<code>zstd_fast.c</code>（哈希表）、<code>zstd_double_fast.c</code>（双哈希表）、<code>zstd_lazy.c</code>（greedy &#x2F; lazy）、<code>zstd_opt.c</code>（最优解析），<code>zstd_ldm.c</code> 负责长距离匹配。这些属于压缩前端，不在本文后端范围内，但决定了后端看到的数据分布。</p>
+<h3 id="2-3-阶段三：长度与偏移转-code"><a href="#2-3-阶段三：长度与偏移转-code" class="headerlink" title="2.3 阶段三：长度与偏移转 code"></a>2.3 阶段三：长度与偏移转 code</h3><p>序列的三个字段不直接编码数值，而是先转成 code + extra bits：<code>ZSTD_seqToCodes()</code>（<code>zstd_compress.c:2709</code>）把 litLength &#x2F; matchLength &#x2F; offset 映射为 LL code &#x2F; ML code &#x2F; OF code，高位部分作为附加位（extra bits）直接写入位流。这样做是为了让分布更集中，提高熵编码效率。</p>
+<h3 id="2-4-阶段四：字面量-Huffman"><a href="#2-4-阶段四：字面量-Huffman" class="headerlink" title="2.4 阶段四：字面量 Huffman"></a>2.4 阶段四：字面量 Huffman</h3><p>字面量用 Huffman 编码（<code>zstd_compress_literals.c:169-178</code>），可选单流（1X）或四流（4X），四流更适合并行解码。Huffman 表逐块自适应：新建表时把描述表写进 literals section header；若与上一块相同则用 <code>set_repeat</code> 模式，只写一个标志位。</p>
+<h3 id="2-5-阶段五：序列-FSE（tANS）——-核心算法"><a href="#2-5-阶段五：序列-FSE（tANS）——-核心算法" class="headerlink" title="2.5 阶段五：序列 FSE（tANS）—— 核心算法"></a>2.5 阶段五：序列 FSE（tANS）—— 核心算法</h3><p>三个 code 流（LL &#x2F; OF &#x2F; ML）各用一张 FSE 表编码（<code>zstd_compress_sequences.c:291</code> 起）。FSE 是 tANS（table-based Asymmetric Numeral Systems）的一种工程实现，状态数取 2 的幂，全部更新都化为查表与移位。</p>
+<p>设当前状态为 <code>state</code>，表中预计算了 <code>deltaNbBits</code> 与 <code>deltaFindState</code>（<code>fse.h:443-451</code> 的 <code>FSE_symbolCompressionTransform</code>）。<strong>编码状态更新</strong>为：</p>
+<div>
+$$nbBitsOut = (state + \delta_{nb}) \gg 16 \tag{1}$$
+</div>
+
+<div>
+$$\text{BIT\_addBits}(state,\ nbBitsOut),\qquad state' = T\big[(state \gg nbBitsOut) + \delta_{find}\big] \tag{2}$$
+</div>
+
+<p>式 (1)(2) 的含义：先把 <code>state</code> 的一部分高位比特输出到码流，再用剩余高位查状态表 <code>T</code> 得到下一状态与对应符号。它的概念形式是 ANSI 状态更新 (state’ &#x3D; (state \ll nbBits) + bit - lowBound)，但 <code>-lowBound</code> 已被预计算进表里，硬件只需一次加法、一次移位、一次查表。</p>
+<p><strong>解码状态更新</strong>是逆过程（<code>fse.h:532-537</code>）：</p>
+<div>
+$$state' = newState + \mathrm{BIT\_readBits}(nbBits),\qquad newState = (nextState \ll nbBits) - tableSize \tag{3}$$
+</div>
+
+<div>
+$$symbol = \mathrm{SymbolTable}[state'] \tag{4}$$
+</div>
+
+<p>式 (3)(4) 中 <code>nbBits</code> 与 <code>newState</code> 来自解码表项，<code>tableSize</code> 是状态数。解码器读 <code>nbBits</code> 位拼到 <code>newState</code> 上得到新状态，再查符号表输出符号。编码端按 LL→ML→OF 逆序 flush 三个状态（<code>zstd_compress_sequences.c:371-376</code>），解码端按相反顺序恢复。</p>
+<p><img src="/images/posts/zstd/fse-state-machine.svg" alt="FSE / tANS 状态机与编解码互逆关系"></p>
+<p>FSE 表同样是逐块自适应：参考实现用 <code>ZSTD_selectEncodingType()</code> 为每张表选择 <code>set_basic</code>（不写表）、<code>set_rle</code>（单符号）或 <code>set_compressed</code>（写 normalized count，<code>zstd_compress.c:2800-2893</code>），并支持 <code>set_repeat</code> 复用前块表。</p>
+<h3 id="2-6-解码链路"><a href="#2-6-解码链路" class="headerlink" title="2.6 解码链路"></a>2.6 解码链路</h3><p>解码是上述过程的逆序：读 block header 判类型 → 恢复 Huffman 表与 FSE 表（或 repeat）→ Huffman 解码字面量 → FSE 解码 LL&#x2F;OF&#x2F;ML code 与附加位 → 按序列重建输出（复制字面量 + 从 offset 复制匹配段）。硬件上更难的是：状态恢复、符号判决、表访问是强串行的，且必须处理”码流何时结束”。</p>
+<h2 id="3-后端接口：从格式结构倒推"><a href="#3-后端接口：从格式结构倒推" class="headerlink" title="3. 后端接口：从格式结构倒推"></a>3. 后端接口：从格式结构倒推</h2><p>ZSTD 的 frame → block → literals&#x2F;sequences 结构不是实现细节，而是<strong>接口设计的输入</strong>。算术编解码后端处在这条链路的末端。</p>
+<p><img src="/images/posts/zstd/frame-backend.svg" alt="ZSTD 帧块结构与后端位置"></p>
+<p>从格式倒推接口，有三个约束必须在架构阶段确定：</p>
+<ol>
+<li><strong>块边界即事务边界</strong>：FSE&#x2F;Huffman 状态不能无条件跨块携带，块结束时必须给出确定的状态 flush 与码流边界；</li>
+<li><strong>流式输入</strong>：上游不会等整帧缓存完，数据以流的方式到达，接口必须支持背压；</li>
+<li><strong>码流组织与局部存储协同</strong>：输出不是裸字节流，要按 block &#x2F; frame 组织并写表头，这部分要和缓冲一起设计。</li>
+</ol>
+<blockquote>
+<p>我的理解：如果等 RTL 写到一半才处理块边界和码流组织，几乎一定要返工。</p>
+</blockquote>
+<h2 id="4-硬件架构分析"><a href="#4-硬件架构分析" class="headerlink" title="4. 硬件架构分析"></a>4. 硬件架构分析</h2><h3 id="4-1-顶层：控制、计算、输出三层分治"><a href="#4-1-顶层：控制、计算、输出三层分治" class="headerlink" title="4.1 顶层：控制、计算、输出三层分治"></a>4.1 顶层：控制、计算、输出三层分治</h3><p>这是整个后端最核心的架构决定。FSE 后端的状态更新逻辑复杂、表访问多、模式切换多，如果把所有逻辑堆在一个大模块里硬顶，时序和验证都会失控。我按三层拆分：</p>
+<p><img src="/images/posts/zstd/top-arch.svg" alt="ZSTD 算术编解码后端顶层架构"></p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>职责</th>
+<th>为什么不合并</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>控制层</td>
+<td>块类型判决、表模式（basic&#x2F;rle&#x2F;compressed&#x2F;repeat）、边界状态机</td>
+<td>状态多、与数据无关，合并会把长控制路径压进数据关键路径</td>
+</tr>
+<tr>
+<td>计算层</td>
+<td>FSE 状态更新、Huffman 编解码、附加位拼装</td>
+<td>串行依赖强，需要独立流水与短关键路径</td>
+</tr>
+<tr>
+<td>输出层</td>
+<td>码流 FIFO、表头写入、block&#x2F;frame 组装、DMA 回写</td>
+<td>节奏与下游消费相关，用 FIFO 解耦才能稳定吞吐</td>
+</tr>
+</tbody></table>
+<p>这套分法是从 ZSTD 自身的复杂度分布推导出来的：表模式、块类型、边界控制属于与数据无关的长状态路径；FSE 状态更新属于强串行的短环；码流输出节奏随下游变化。三者必须拆开，才能同时满足时序与吞吐。</p>
+<h3 id="4-2-编码数据通路：状态环与流水切分"><a href="#4-2-编码数据通路：状态环与流水切分" class="headerlink" title="4.2 编码数据通路：状态环与流水切分"></a>4.2 编码数据通路：状态环与流水切分</h3><p>FSE 编码的关键路径在状态更新环：当前状态要先输出高位、再查表得到下一状态，下一个符号才能继续。我的流水切分是：</p>
+<table>
+<thead>
+<tr>
+<th>流水级</th>
+<th>操作</th>
+<th>关键路径特征</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>S0</td>
+<td>符号&#x2F;表项预取</td>
+<td>与状态无关，可提前</td>
+</tr>
+<tr>
+<td>S1</td>
+<td><code>nbBitsOut</code> 计算 + 位输出</td>
+<td>一次加法 + 移位</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>状态查表跳转</td>
+<td>表访问，组合路径较长</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>位流拼接与缓冲</td>
+<td>与 S1&#x2F;S2 弱耦合，FIFO 解耦</td>
+</tr>
+</tbody></table>
+<p>三个 code 流（LL&#x2F;ML&#x2F;OF）各有独立状态，可以并行推进，最后按格式要求的逆序 flush。三条状态环彼此独立，天然提供了并行度：硬件上可以做三份状态寄存器、共享一套状态更新组合逻辑，用时间复用换取面积效率。</p>
+<h3 id="4-3-解码数据通路：更短的环、更严的序"><a href="#4-3-解码数据通路：更短的环、更严的序" class="headerlink" title="4.3 解码数据通路：更短的环、更严的序"></a>4.3 解码数据通路：更短的环、更严的序</h3><p>解码端的状态恢复是式 (3) 的加法与式 (4) 的表查，组合路径比编码端短，但顺序约束更严：必须先读够位、恢复状态，才能查符号表，进而决定下一符号的码长。因此我把”位缓冲预取”和”状态恢复 + 符号判决”分成两级，让位读取提前进行，缩短主环。</p>
+<h3 id="4-4-流式接口与回压控制"><a href="#4-4-流式接口与回压控制" class="headerlink" title="4.4 流式接口与回压控制"></a>4.4 流式接口与回压控制</h3><p><img src="/images/posts/zstd/stream-backpressure.svg" alt="流式接口与回压控制"></p>
+<p>ZSTD 的输入是流式的，块长可变，数据到达速率随内容分布变化。接口不能假设”每拍都有数据”，也不能假设”下游每拍都能收”，这决定了入口 FIFO 与出口节流必须作为主架构的一部分设计。</p>
+<ul>
+<li>入口 FIFO 吸收上游突发，避免直接背压到上游；</li>
+<li>出口按码流消费能力控制输出，避免堆积；</li>
+<li>中间级用 valid&#x2F;ready 握手，让回压逐级同步传播。</li>
+</ul>
+<blockquote>
+<p>我的理解：回压控制不是加 FIFO 就解决了。真正要解决的是<strong>状态一致性</strong>——流水因回压暂停时，FSE 状态、位缓冲指针、FIFO 指针要停在同一拍，否则恢复时状态错位。</p>
+</blockquote>
+<h3 id="4-5-块边界处理"><a href="#4-5-块边界处理" class="headerlink" title="4.5 块边界处理"></a>4.5 块边界处理</h3><p>块边界是 FSE&#x2F;Huffman 后端最容易出错的地方：</p>
+<table>
+<thead>
+<tr>
+<th>边界类型</th>
+<th>风险</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>状态跨块</td>
+<td>上一块状态误带入下一块</td>
+<td>块结束强制 flush，状态显式复位&#x2F;保存</td>
+</tr>
+<tr>
+<td>表复用</td>
+<td>repeat 标志与实际表不匹配</td>
+<td>表模式单独状态机管理，与块边界对齐</td>
+</tr>
+<tr>
+<td>码流对齐</td>
+<td>残差字节处理错导致后续全错</td>
+<td>按格式要求做字节对齐与边界标记</td>
+</tr>
+<tr>
+<td>部分块</td>
+<td>数据不足一个完整块</td>
+<td>单独路径处理，避免污染主流水</td>
+</tr>
+</tbody></table>
+<p>验证阶段我把块边界作为<strong>重点风险点</strong>单独建用例。边界错误不会在出错那一刻暴露，而是在后续以”码流完全错位”的形式出现，定位成本很高——这也正是状态机型编码器的典型验证难点。</p>
+<h3 id="4-6-片内缓存协同"><a href="#4-6-片内缓存协同" class="headerlink" title="4.6 片内缓存协同"></a>4.6 片内缓存协同</h3><p>ZSTD 的码流组织涉及大量小块搬运。我把片内缓存当主架构的一部分设计：</p>
+<ol>
+<li><strong>块级缓冲复用</strong>：字面量与序列的临时存储复用同一组 SRAM，通过时隙划分避免冲突；</li>
+<li><strong>码流输出配合</strong>：编码输出先进入片内缓冲，按 block &#x2F; frame 组织后批量写出，避免零散小访问；</li>
+<li><strong>表存储</strong>：FSE&#x2F;Huffman 表放片上，按块更新，repeat 模式避免重复搬运。</li>
+</ol>
+<p>结论是：<strong>片上存储不是附属细节，而是吞吐能否成立的前提</strong>。ZSTD 的块大小不固定、表逐块自适应，缓冲组织必须比固定块大小的场景更灵活。</p>
+<h2 id="5-工程收敛：详细设计、验证、Lint-与综合"><a href="#5-工程收敛：详细设计、验证、Lint-与综合" class="headerlink" title="5. 工程收敛：详细设计、验证、Lint 与综合"></a>5. 工程收敛：详细设计、验证、Lint 与综合</h2><table>
+<thead>
+<tr>
+<th>环节</th>
+<th>做法</th>
+<th>为什么重要</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C cmodel 比对</td>
+<td>与官方参考实现做 bit-true 对齐</td>
+<td>FSE 状态机对 1 bit 错误零容忍</td>
+</tr>
+<tr>
+<td>定向用例</td>
+<td>块边界、表模式切换、长序列压力</td>
+<td>随机用例覆盖不到边界组合</td>
+</tr>
+<tr>
+<td>回压验证</td>
+<td>人为制造上下游速率差</td>
+<td>验证状态在暂停&#x2F;恢复时的一致性</td>
+</tr>
+<tr>
+<td>Lint &#x2F; 综合</td>
+<td>早期介入，不等 RTL 写完</td>
+<td>流式接口时序问题要早发现</td>
+</tr>
+</tbody></table>
+<p>熵编解码的验证特点是<strong>错误会传播</strong>：一个状态跳错，后面的码流全部错位。比对粒度越细越好——在状态级、符号级定位”第一个错误”，比只做码流级比对高效得多。</p>
+<h2 id="6-复盘：五条原则"><a href="#6-复盘：五条原则" class="headerlink" title="6. 复盘：五条原则"></a>6. 复盘：五条原则</h2><ol>
+<li><strong>先看清算法形态再谈架构</strong>：ZSTD 是 tANS + Huffman，状态更新是”输出高位 + 查表跳转”，不是区间除法。架构必须从这套状态机形态推导出来；</li>
+<li><strong>格式结构决定后端接口</strong>：frame &#x2F; block 结构与表模式是接口设计的输入，块边界必须在架构阶段处理；</li>
+<li><strong>按稳定吞吐设计，不按峰值吞吐设计</strong>：通用压缩输入分布变化大，最坏分布下仍要保持流水稳定推进；</li>
+<li><strong>回压控制的核心是状态一致性</strong>：暂停&#x2F;恢复时，状态、位缓冲指针、FIFO 指针要停在同一拍；</li>
+<li><strong>边界错误要单独验证</strong>：块边界、表复用、码流对齐都要有定向用例，不能只靠随机码流。</li>
+</ol>
+<h2 id="7-常被问到的问题"><a href="#7-常被问到的问题" class="headerlink" title="7. 常被问到的问题"></a>7. 常被问到的问题</h2><p><strong>Q1：ZSTD 的熵编码后端到底做什么？</strong></p>
+<p>两件事：字面量用 Huffman 编码（1X &#x2F; 4X 流），序列的 LL &#x2F; ML &#x2F; OF 三个 code 用 FSE（tANS）状态机编码。后端负责把字面量与序列变成符合 frame &#x2F; block 格式的码流，以及反向恢复；核心是 tANS 状态更新、表逐块自适应和块边界收尾。</p>
+<p><strong>Q2：FSE 的状态更新为什么能只用查表和移位？</strong></p>
+<p>因为 tANS 把 (state - lowBound) 预计算进状态表（<code>deltaNbBits</code> &#x2F; <code>deltaFindState</code>），硬件只需”输出高位 + 查表跳状态”，避开了通用算术编码里的乘法与除法。</p>
+<p><strong>Q3：为什么块边界要单独处理？</strong></p>
+<p>因为状态机有记忆，块结束必须 flush；表还可能 repeat 前块。边界处理错了不会立刻暴露，而是后续以码流完全错位的形式出现，定位成本很高。</p>
+<p><strong>Q4：ZSTD 有两条 Huffman 流和三条 FSE 流，硬件要各做一套吗？</strong></p>
+<p>不必。编码器侧多路状态可以共享同一套状态更新数据通路，按时间复用；解码器侧同理。关键是把”状态寄存器组”做成多份、”状态更新组合逻辑”做成一份，用面积换时序的代价最小。</p>
+<p><strong>Q5：这个项目对后续设计有什么沉淀？</strong></p>
+<p>两条：一是为通用压缩后端沉淀了可复用的”tANS 状态机 + 流式接口”骨架；二是把”表逐块自适应 + 流式输入 + 块边界收尾”这套约束下的架构方法固定下来，为后续类似的压缩后端设计提供直接参考。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li>Zstandard 官方压缩格式规范：<code>docs/ZSTD/cmodel/zstd/doc/zstd_compression_format.md</code></li>
+<li>FSE 状态机实现：<code>docs/ZSTD/cmodel/zstd/lib/common/fse.h</code>、<code>fse_decompress.c</code></li>
+<li>熵与概率模型的理论起点：<a href="/2026/11/21/H-266-VVC%E6%A0%B8%E5%BF%83%E5%85%AC%E5%BC%8F%E4%BD%93%E7%B3%BB%EF%BC%9A%E4%BB%8E%E4%BF%A1%E6%81%AF%E8%AE%BA%E6%A8%A1%E5%9E%8B%E5%88%B0%E6%95%B4%E6%95%B0%E5%8C%96%E5%AE%9E%E7%8E%B0/">H.266&#x2F;VVC 核心公式体系：从信息论模型到整数化实现</a></li>
+</ul>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2026/11/21/%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5%EF%BC%9A%E5%9F%BA%E4%BA%8E-Verilator-%E6%90%AD%E5%BB%BA%E5%8F%AF%E8%87%AA%E6%A3%80%E7%9A%84%E9%AA%8C%E8%AF%81%E5%B9%B3%E5%8F%B0/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>工程实践：基于 Verilator 搭建"设计可自检"的验证平台——以 zcle_aenc_wrapper 为例</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2026/11/21/H-266-VVC%E6%A0%B8%E5%BF%83%E5%85%AC%E5%BC%8F%E4%BD%93%E7%B3%BB%EF%BC%9A%E4%BB%8E%E4%BF%A1%E6%81%AF%E8%AE%BA%E6%A8%A1%E5%9E%8B%E5%88%B0%E6%95%B4%E6%95%B0%E5%8C%96%E5%AE%9E%E7%8E%B0/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      H.266/VVC 核心公式体系：从信息论模型到整数化实现
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  
+  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/ZSTD/" class="post-tag">#ZSTD</a><a href="/tags/FSE/" class="post-tag">#FSE</a><a href="/tags/tANS/" class="post-tag">#tANS</a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%8E%8B%E7%BC%A9/" class="post-tag">#数据压缩</a><a href="/tags/%E6%B5%81%E5%BC%8F%E6%8E%A5%E5%8F%A3/" class="post-tag">#流式接口</a>
+
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2026\11\21\工程实践：基于-Verilator-搭建可自检的验证平台\" title="工程实践：基于 Verilator 搭建"设计可自检"的验证平台——以 zcle_aenc_wrapper 为例" rel="bookmark">工程实践：基于 Verilator 搭建"设计可自检"的验证平台——以 zcle_aenc_wrapper 为例</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：ISP-图像增强-IP-的架构设计与优化\" title="项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化" rel="bookmark">项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\11\19\项目复盘：VVC-ALF-自适应环路滤波-IP-设计实践\" title="项目复盘：VVC ALF 自适应环路滤波 IP 设计实践" rel="bookmark">项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</a></div></div></div>
+    
+  </div>
+</div>
+
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

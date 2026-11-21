@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 430" width="800" height="430">
+  <rect width="800" height="430" fill="#ffffff"/>
+  <text x="20" y="28" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#1f2933" text-anchor="start" font-weight="bold">基于 Verilator 的可自检验证平台：以 zcle_aenc_wrapper 为例</text>
+
+  <rect x="30" y="48" width="220" height="64" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="140" y="70" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="middle" font-weight="bold">① golden 层（Python）</text>
+  <text x="140" y="90" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">make_golden.py</text>
+  <text x="140" y="105" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">stimulus.bin / expected.bin / meta.txt</text>
+
+  <line x1="250" y1="80" x2="288" y2="80" stroke="#1f2933" stroke-width="1.6"/><polygon points="288,80 279,83.9 279,76.1" fill="#1f2933"/>
+  <text x="269" y="74" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">同源</text>
+
+  <rect x="290" y="48" width="480" height="64" rx="6" fill="#f8fafc" stroke="#9aa5b1" stroke-width="1.2"/>
+  <text x="304" y="70" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">② driver 层（C++）</text>
+  <text x="304" y="90" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="start">CSR 配置 → literals 输入（128-bit 分拍）→ 随机化 AXI ready 制造回压</text>
+  <text x="304" y="105" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="start">对应端口：csr_* / zcle_lit_hist_* / aenc_lit_*</text>
+
+  <path d="M530,112 L530,142" fill="none" stroke="#1f2933" stroke-width="1.6"/>
+  <polygon points="530,142 526,133 534,133" fill="#1f2933"/>
+  <text x="544" y="132" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="start">驱动 DUT</text>
+
+  <rect x="230" y="148" width="600" height="120" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="244" y="170" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">DUT：zcle_aenc_wrapper</text>
+  <text x="244" y="192" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="start">zcle_aenc_lit_loader（三通道 literals 分发）</text>
+  <text x="244" y="212" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="start">zcle_aenc_core_wrapper（8 lane 算术编码 + 3 核并行）</text>
+  <text x="244" y="232" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="start">AXI 主接口输出（256-bit wdata / 32-bit wstrb / wlast）</text>
+  <text x="244" y="254" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#059669" text-anchor="start" font-weight="bold">状态输出：aenc_descrp_vld/rsp_data[63:0]、debug_bus[164:0]、error_int[1:0]</text>
+
+  <path d="M530,268 L530,296" fill="none" stroke="#1f2933" stroke-width="1.6"/>
+  <polygon points="530,296 526,287 534,287" fill="#1f2933"/>
+  <text x="544" y="286" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="start">AXI W 通道抓包</text>
+
+  <rect x="290" y="302" width="480" height="64" rx="6" fill="#dbeafe" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="304" y="324" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">③ monitor 层（C++）</text>
+  <text x="304" y="344" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="start">每个上升沿后调用，独立于 driver；按 wstrb 抽取有效字节重组 captured[]</text>
+  <text x="304" y="359" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="start">记录 descriptor、error_int、debug 状态用于断言</text>
+
+  <path d="M530,366 L530,392" fill="none" stroke="#1f2933" stroke-width="1.6"/>
+  <polygon points="530,392 526,383 534,383" fill="#1f2933"/>
+
+  <rect x="290" y="398" width="480" height="26" rx="6" fill="#fde2e1" stroke="#c0392b" stroke-width="1.4"/>
+  <text x="530" y="415" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#c0392b" text-anchor="middle" font-weight="bold">④ check 层：码流 bit-exact + 描述符 + 异常 + 超时 → 退出码 = 验证结论</text>
+</svg>

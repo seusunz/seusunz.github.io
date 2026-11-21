@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" width="800" height="380">
+  <rect width="800" height="380" fill="#ffffff"/>
+  <text x="20" y="28" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#1f2933" text-anchor="start" font-weight="bold">FSE / tANS 状态机：编码与解码互逆</text>
+
+  <text x="20" y="58" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">编码路径（公式 1-2）</text>
+  <rect x="30" y="72" width="120" height="52" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="90" y="92" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle" font-weight="bold">当前 state</text>
+  <text x="90" y="110" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="middle">符号 + 状态</text>
+  <line x1="150" y1="98" x2="188" y2="98" stroke="#1f2933" stroke-width="1.6"/><polygon points="188,98 179,101.9 179,94.1" fill="#1f2933"/>
+  <rect x="190" y="72" width="160" height="52" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="270" y="92" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle" font-weight="bold">nbBitsOut 计算</text>
+  <text x="270" y="110" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="middle">(state + δnb) ≫ 16</text>
+  <line x1="350" y1="98" x2="388" y2="98" stroke="#1f2933" stroke-width="1.6"/><polygon points="388,98 379,101.9 379,94.1" fill="#1f2933"/>
+  <rect x="390" y="72" width="160" height="52" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="470" y="92" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle" font-weight="bold">输出高位 + 查表</text>
+  <text x="470" y="110" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="middle">state' = T[…+δfind]</text>
+  <line x1="550" y1="98" x2="588" y2="98" stroke="#1f2933" stroke-width="1.6"/><polygon points="588,98 579,101.9 579,94.1" fill="#1f2933"/>
+  <rect x="590" y="72" width="180" height="52" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="680" y="92" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle" font-weight="bold">下一 state</text>
+  <text x="680" y="110" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="middle">bitstream FIFO</text>
+
+  <text x="20" y="160" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">解码路径（公式 3-4）</text>
+  <rect x="30" y="174" width="120" height="52" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="90" y="194" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle" font-weight="bold">当前 state</text>
+  <text x="90" y="212" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="middle">来自解码表</text>
+  <line x1="150" y1="200" x2="188" y2="200" stroke="#1f2933" stroke-width="1.6"/><polygon points="188,200 179,203.9 179,196.1" fill="#1f2933"/>
+  <rect x="190" y="174" width="160" height="52" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="270" y="194" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle" font-weight="bold">读 nbBits 位</text>
+  <text x="270" y="212" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="middle">state' = newState + bits</text>
+  <line x1="350" y1="200" x2="388" y2="200" stroke="#1f2933" stroke-width="1.6"/><polygon points="388,200 379,203.9 379,196.1" fill="#1f2933"/>
+  <rect x="390" y="174" width="160" height="52" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="470" y="194" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle" font-weight="bold">查符号表</text>
+  <text x="470" y="212" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="middle">symbol = S[state']</text>
+  <line x1="550" y1="200" x2="588" y2="200" stroke="#1f2933" stroke-width="1.6"/><polygon points="588,200 579,203.9 579,196.1" fill="#1f2933"/>
+  <rect x="590" y="174" width="180" height="52" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="680" y="194" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle" font-weight="bold">符号 + 下一 state</text>
+  <text x="680" y="212" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="middle">进入下一符号</text>
+
+  <rect x="30" y="252" width="740" height="112" rx="6" fill="#fafafa" stroke="#9aa5b1" stroke-width="1"/>
+  <text x="44" y="274" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="start" font-weight="bold">为什么硬件只需查表与移位</text>
+  <text x="44" y="296" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#52606d" text-anchor="start">tANS 把 −lowBound 预计算进状态表：编码端 δnb / δfind，解码端 newState = (nextState ≪ nbBits) − tableSize。</text>
+  <text x="44" y="318" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#52606d" text-anchor="start">避开了通用算术编码中的乘法与除法，关键路径缩为「加法 + 移位 + 查表」。</text>
+  <text x="44" y="344" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#059669" text-anchor="start" font-weight="bold">三路状态（LL / ML / OF）彼此独立 → 共享一套状态更新数据通路，多份状态寄存器，时间复用。</text>
+</svg>

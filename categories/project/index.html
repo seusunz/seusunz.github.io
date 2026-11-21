@@ -156,7 +156,7 @@
       </div>
       <div class="wall-category-description">
         
-        <span class="wall-category-count">· 共 3 篇内容</span>
+        <span class="wall-category-count">· 共 5 篇内容</span>
       </div>
       
     </div>
@@ -164,6 +164,62 @@
   <div class="post-list">
     
       
+  
+  <div class="post-card">
+    <div class="post__head">
+      <div class="post-meta">
+        <span class="post-date">2026-11-21</span>
+        
+      </div>
+      <a href="/2026/11/21/%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5%EF%BC%9A%E5%9F%BA%E4%BA%8E-Verilator-%E6%90%AD%E5%BB%BA%E5%8F%AF%E8%87%AA%E6%A3%80%E7%9A%84%E9%AA%8C%E8%AF%81%E5%B9%B3%E5%8F%B0/" class="post-title hover-line">工程实践：基于 Verilator 搭建"设计可自检"的验证平台——以 zcle_aenc_wrapper 为例</a>
+    </div>
+    <div class="post__body">
+      
+        <a href="/2026/11/21/%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5%EF%BC%9A%E5%9F%BA%E4%BA%8E-Verilator-%E6%90%AD%E5%BB%BA%E5%8F%AF%E8%87%AA%E6%A3%80%E7%9A%84%E9%AA%8C%E8%AF%81%E5%B9%B3%E5%8F%B0/"
+           class="post-cover"
+           style="background-image: url(/images/image/Bing472.jpg)"></a>
+      
+      <div class="post-excerpt">以一个真实的算术编码顶层 zcle_aenc_wrapper 为例，说明如何用 Verilator 搭一套「设计自己就能判定 Pass/Fail」的验证平台：golden 从 Python 生成、C++ testbench 驱动真实端口、AXI monitor 重组码流、scoreboard 做 bit-exact 比对，并用回压随机化、错误注入与断言把「跑完不崩」变成「结果自证」。给出可直接复用的目录结构、Makefile、C++ harness 与 golden 脚本。</div>
+    </div>
+    <div class="post__foot">
+      <div class="post-tags">
+  
+  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/Verilator/" class="post-tag">#Verilator</a><a href="/tags/%E9%AA%8C%E8%AF%81%E5%B9%B3%E5%8F%B0/" class="post-tag">#验证平台</a><a href="/tags/%E8%87%AA%E6%A3%80/" class="post-tag">#自检</a><a href="/tags/ZSTD/" class="post-tag">#ZSTD</a>
+
+
+</div>
+      <a href="/2026/11/21/%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5%EF%BC%9A%E5%9F%BA%E4%BA%8E-Verilator-%E6%90%AD%E5%BB%BA%E5%8F%AF%E8%87%AA%E6%A3%80%E7%9A%84%E9%AA%8C%E8%AF%81%E5%B9%B3%E5%8F%B0/" class="post-more text-link">继续阅读</a>
+    </div>
+  </div>
+
+  
+  <div class="post-card">
+    <div class="post__head">
+      <div class="post-meta">
+        <span class="post-date">2026-11-21</span>
+        
+      </div>
+      <a href="/2026/11/21/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AZSTD-%E7%AE%97%E6%9C%AF%E7%BC%96%E8%A7%A3%E7%A0%81%E7%9A%84%E6%B5%81%E5%BC%8F%E5%90%8E%E7%AB%AF%E8%AE%BE%E8%AE%A1/" class="post-title hover-line">项目复盘：ZSTD 算术编解码的完整算法与流式后端架构</a>
+    </div>
+    <div class="post__body">
+      
+        <a href="/2026/11/21/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AZSTD-%E7%AE%97%E6%9C%AF%E7%BC%96%E8%A7%A3%E7%A0%81%E7%9A%84%E6%B5%81%E5%BC%8F%E5%90%8E%E7%AB%AF%E8%AE%BE%E8%AE%A1/"
+           class="post-cover"
+           style="background-image: url(/images/image/Bing474.jpg)"></a>
+      
+      <div class="post-excerpt">一个全新的通用压缩项目：把 ZSTD 的熵编码后端从算法到硬件完整拆一遍。先沿参考实现走通「序列生成 → 字面量 Huffman → 序列 FSE/tANS → 帧块组装」的全链路，给出 tANS 状态更新的精确公式；再逐层分析硬件架构——三层分治的顶层、编解码数据通路的流水切分、流式接口与回压、块边界与片内缓存，并配上架构图。</div>
+    </div>
+    <div class="post__foot">
+      <div class="post-tags">
+  
+  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/ZSTD/" class="post-tag">#ZSTD</a><a href="/tags/FSE/" class="post-tag">#FSE</a><a href="/tags/tANS/" class="post-tag">#tANS</a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%8E%8B%E7%BC%A9/" class="post-tag">#数据压缩</a><a href="/tags/%E6%B5%81%E5%BC%8F%E6%8E%A5%E5%8F%A3/" class="post-tag">#流式接口</a>
+
+
+</div>
+      <a href="/2026/11/21/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AZSTD-%E7%AE%97%E6%9C%AF%E7%BC%96%E8%A7%A3%E7%A0%81%E7%9A%84%E6%B5%81%E5%BC%8F%E5%90%8E%E7%AB%AF%E8%AE%BE%E8%AE%A1/" class="post-more text-link">继续阅读</a>
+    </div>
+  </div>
+
   
   <div class="post-card--sticky">
     <div class="post__head">
@@ -240,7 +296,7 @@
     <div class="post__foot">
       <div class="post-tags">
   
-  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/HEVC/" class="post-tag">#HEVC</a><a href="/tags/CABAC/" class="post-tag">#CABAC</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/PPA%E4%BC%98%E5%8C%96/" class="post-tag">#PPA优化</a>
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/HEVC/" class="post-tag">#HEVC</a><a href="/tags/CABAC/" class="post-tag">#CABAC</a><a href="/tags/PPA%E4%BC%98%E5%8C%96/" class="post-tag">#PPA优化</a>
 
 
 </div>

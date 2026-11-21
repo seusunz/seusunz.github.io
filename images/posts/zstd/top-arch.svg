@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420">
+  <rect width="800" height="420" fill="#ffffff"/>
+  <text x="20" y="28" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#1f2933" text-anchor="start" font-weight="bold">ZSTD 熵编码后端顶层架构：控制 / 计算 / 输出三层分治</text>
+
+  <rect x="30" y="48" width="740" height="72" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="44" y="70" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">控制层</text>
+  <rect x="120" y="60" width="140" height="46" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="190" y="78" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">块类型判决</text>
+  <text x="190" y="94" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">Raw / RLE / Compressed</text>
+  <rect x="276" y="60" width="160" height="46" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="356" y="78" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">表模式状态机</text>
+  <text x="356" y="94" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">basic / rle / comp / repeat</text>
+  <rect x="452" y="60" width="150" height="46" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="527" y="78" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">块边界控制</text>
+  <text x="527" y="94" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">状态 flush / 复位</text>
+  <rect x="618" y="60" width="138" height="46" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="687" y="78" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">回压仲裁</text>
+  <text x="687" y="94" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">暂停 / 恢复同步</text>
+
+  <path d="M400,120 L400,140" fill="none" stroke="#52606d" stroke-width="1.6"/>
+  <polygon points="400,140 396,131 404,131" fill="#52606d"/>
+  <text x="414" y="136" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="start">控制字下发</text>
+
+  <rect x="30" y="146" width="740" height="120" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="44" y="168" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">计算层</text>
+  <rect x="44" y="180" width="150" height="70" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="119" y="200" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">FSE 状态更新</text>
+  <text x="119" y="216" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">LL / ML / OF</text>
+  <text x="119" y="232" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">三份状态寄存器</text>
+  <text x="119" y="246" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#059669" text-anchor="middle" font-weight="bold">共享组合逻辑</text>
+  <line x1="194" y1="215" x2="222" y2="215" stroke="#1f2933" stroke-width="1.6"/><polygon points="222,215 213,218.9 213,211.1" fill="#1f2933"/>
+  <rect x="224" y="180" width="150" height="70" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="299" y="200" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">Huffman 编解码</text>
+  <text x="299" y="216" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">1X / 4X 流</text>
+  <text x="299" y="232" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">码长/码字查表</text>
+  <line x1="374" y1="215" x2="402" y2="215" stroke="#1f2933" stroke-width="1.6"/><polygon points="402,215 393,218.9 393,211.1" fill="#1f2933"/>
+  <rect x="404" y="180" width="160" height="70" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="484" y="200" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">附加位拼装</text>
+  <text x="484" y="216" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">LL_bits / ML_bits / OF_bits</text>
+  <text x="484" y="232" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">extra bits 直写</text>
+  <line x1="564" y1="215" x2="592" y2="215" stroke="#1f2933" stroke-width="1.6"/><polygon points="592,215 583,218.9 583,211.1" fill="#1f2933"/>
+  <rect x="594" y="180" width="162" height="70" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="675" y="200" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">表存储与更新</text>
+  <text x="675" y="216" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">FSE 表 / Huffman 表</text>
+  <text x="675" y="232" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">逐块更新 / repeat 保持</text>
+
+  <path d="M400,266 L400,286" fill="none" stroke="#52606d" stroke-width="1.6"/>
+  <polygon points="400,286 396,277 404,277" fill="#52606d"/>
+  <text x="414" y="282" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#52606d" text-anchor="start">码流经 FIFO 解耦</text>
+
+  <rect x="30" y="292" width="740" height="88" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="44" y="314" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">输出层</text>
+  <rect x="120" y="304" width="150" height="60" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="195" y="324" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">码流 FIFO</text>
+  <text x="195" y="342" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">吸收速率波动</text>
+  <line x1="270" y1="334" x2="298" y2="334" stroke="#1f2933" stroke-width="1.6"/><polygon points="298,334 289,337.9 289,330.1" fill="#1f2933"/>
+  <rect x="300" y="304" width="200" height="60" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="400" y="324" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">表头 / 块头写入</text>
+  <text x="400" y="342" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">frame / block 组织</text>
+  <line x1="500" y1="334" x2="528" y2="334" stroke="#1f2933" stroke-width="1.6"/><polygon points="528,334 519,337.9 519,330.1" fill="#1f2933"/>
+  <rect x="530" y="304" width="220" height="60" rx="5" fill="#ffffff" stroke="#1f2933" stroke-width="1.2"/>
+  <text x="640" y="324" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#1f2933" text-anchor="middle" font-weight="bold">DMA 回写 / 下游消费</text>
+  <text x="640" y="342" font-family="Helvetica, Arial, sans-serif" font-size="9.5" fill="#52606d" text-anchor="middle">按消费能力输出</text>
+
+  <text x="20" y="404" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#52606d" text-anchor="start">分治理由：控制层状态多、与数据无关；计算层串行依赖强、需短关键路径；输出层节奏随下游变化、用 FIFO 解耦。三者分开才能同时收敛时序与吞吐。</text>
+</svg>
