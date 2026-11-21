@@ -238,6 +238,7 @@
 <li>静态语义由 I 帧提供；</li>
 <li>时序变化由 P 帧的压缩域基元提供。</li>
 </ul>
+<p><img src="/images/posts/paper-cope/iframe-pframe.svg" alt="CoPE 的 I 帧与 P 帧分工处理"></p>
 <h3 id="2-2-Δ-Encoder-的角色"><a href="#2-2-Δ-Encoder-的角色" class="headerlink" title="2.2 Δ-Encoder 的角色"></a>2.2 Δ-Encoder 的角色</h3><p>论文设计了一个轻量级的 Δ-Encoder，用来处理 P 帧变化量。它不需要像标准视觉编码器那样对整张图做高成本特征提取，而是只关注“变化本身”，最终把一帧或多帧变化压缩成极少量 Token。</p>
 <p>这里最关键的收益有两个：</p>
 <ul>
@@ -252,6 +253,7 @@
 <li>第二阶段再把它接入基础 VideoLM 做端到端微调。</li>
 </ul>
 <p>这样一来，模型既保留了压缩域表示的高效率，又尽量避免语义空间不一致带来的性能损失。</p>
+<p><img src="/images/posts/paper-cope/two-stage-training.svg" alt="CoPE 的两阶段训练流程"></p>
 <h2 id="3-实验结果说明了什么"><a href="#3-实验结果说明了什么" class="headerlink" title="3. 实验结果说明了什么"></a>3. 实验结果说明了什么</h2><p>论文在多类视频理解任务上验证了 CoPE-VideoLM，结果里最值得关注的不是单一分数，而是下面三点：</p>
 <h3 id="3-1-用更少-Token-换来更强时序覆盖"><a href="#3-1-用更少-Token-换来更强时序覆盖" class="headerlink" title="3.1 用更少 Token 换来更强时序覆盖"></a>3.1 用更少 Token 换来更强时序覆盖</h3><p>相比纯 RGB 抽帧方案，CoPE-VideoLM 用极少量 Δ-Tokens 就能表达更多视频帧的信息。这意味着模型不必在“多看几帧”和“控制上下文长度”之间二选一。</p>
 <h3 id="3-2-对强时序任务尤其有利"><a href="#3-2-对强时序任务尤其有利" class="headerlink" title="3.2 对强时序任务尤其有利"></a>3.2 对强时序任务尤其有利</h3><p>因为 P 帧本来就显式刻画了运动变化，模型在时序推理类任务上往往更有优势。对 VideoLM 来说，这比单纯增加关键帧数量更贴近问题本质。</p>
@@ -314,6 +316,7 @@
 <p><strong>1. 硬件解码器通常不“吐”运动矢量。</strong> 论文用到的 MV 与残差在解码过程中本来就存在，但 NVDEC 这类硬件解码器的输出通常只有重建帧。要拿到压缩域信息，要么在软件中只做<strong>码流解析</strong>（熵解码 + 语法解析，跳过运动补偿与重建），要么让硬件解码器增加一个“块级元数据导出”接口。</p>
 <p><strong>2. 只做解析也不是免费的。</strong> 熵解码（CABAC）是严格串行的，高码率码流的解析本身有吞吐上限。不过相比“完整解码 + RGB 送入视觉编码器”，只解析的计算量要小得多，这正是方案能显著降低 TTFT 的根源。</p>
 <p><strong>3. 元数据导出在硬件上很便宜。</strong> 对编解码 IP 来说，导出 MV 场、块划分、预测模式、QP 图这类块级信息，只需要一条额外的 DMA 通路和规整的数据格式，面积代价远小于整个解码器。编码器内部本来就有类似的块级信息通路（预测信息从模式决策流向熵编码）。如果 codec-aware 的视频大模型成为主流，<strong>“面向 AI 的压缩域元数据接口”很可能成为下一代编解码 IP 的标配功能</strong>。</p>
+<p><img src="/images/posts/paper-cope/metadata-interface.svg" alt="面向 AI 的压缩域元数据导出接口"></p>
 <p><strong>4. 新标准的 MV 场更复杂。</strong> H.264&#x2F;H.265 的 MV 基本是块级平移；VVC 引入了仿射运动（子块 MV）、GPM 几何划分、DMVR&#x2F;BDOF 解码端细化，码流中的 MV 与最终用于补偿的 MV 不再一一对应。直接把 VVC 码流中的 MV 当作“运动语义”使用，需要考虑这些工具带来的偏差（帧间工具细节见 <a href="/2024/07/21/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81/">深度解析H.266&#x2F;VVC帧间编码</a>）。</p>
 <h2 id="相关阅读"><a href="#相关阅读" class="headerlink" title="相关阅读"></a>相关阅读</h2><ul>
 <li><a href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</a></li>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 280" width="800" height="280">
+  <rect width="800" height="280" fill="#ffffff"/>
+  <text x="20" y="28" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#1f2933" text-anchor="start" font-weight="bold">100 Gbps 吞吐目标下的编码器面积对比（论文硬件综合结果）</text>
+
+  <text x="20" y="80" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">H.265 全功能编码器</text>
+  <rect x="230" y="62" width="500" height="40" rx="4" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <rect x="230" y="62" width="500" height="40" rx="4" fill="#fde2e1" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="480" y="87" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#c0392b" text-anchor="middle" font-weight="bold">约 11.7 mm²</text>
+
+  <text x="20" y="148" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">专用张量编码器</text>
+  <rect x="230" y="130" width="103" height="40" rx="4" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="375" y="155" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#059669" text-anchor="start" font-weight="bold">约 2.4 mm²（约为 1/5）</text>
+
+  <rect x="230" y="130" width="500" height="40" rx="4" fill="none" stroke="#9aa5b1" stroke-width="1" stroke-dasharray="5,4"/>
+
+  <rect x="20" y="194" width="760" height="70" rx="6" fill="#fafafa" stroke="#9aa5b1" stroke-width="1"/>
+  <text x="34" y="216" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="start" font-weight="bold">差异来源：运动估计 / 运动补偿是视频编码器面积与带宽的最大头，而论文已证明帧间预测对张量无效。</text>
+  <text x="34" y="236" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="start" font-weight="bold">启示：专用张量编解码 IP 可整块删除帧间预测，把面积预算转给并行熵编码与上下文存储。</text>
+  <text x="34" y="256" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#52606d" text-anchor="start">注：数值来自论文硬件综合结果，不同工艺与频率下绝对值会有差异，结论重点在相对比例。</text>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" width="800" height="340">
+  <rect width="800" height="340" fill="#ffffff"/>
+  <text x="20" y="28" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#1f2933" text-anchor="start" font-weight="bold">VcLLM 推理侧：三类张量进入同一条压缩通路</text>
+
+  <text x="20" y="72" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">权重</text>
+  <rect x="95" y="50" width="140" height="48" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="165" y="70" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">LLaMA-3-70B</text>
+  <text x="165" y="88" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">FP16 权重</text>
+  <line x1="235" y1="74" x2="268" y2="74" stroke="#1f2933" stroke-width="1.6"/><polygon points="268,74 259,77.9 259,70.1" fill="#1f2933"/>
+  <rect x="270" y="50" width="130" height="48" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="335" y="70" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">基础量化</text>
+  <text x="335" y="88" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">先做粗粒度量化</text>
+  <line x1="400" y1="74" x2="433" y2="74" stroke="#1f2933" stroke-width="1.6"/><polygon points="433,74 424,77.9 424,70.1" fill="#1f2933"/>
+  <rect x="435" y="50" width="150" height="48" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="510" y="70" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">VcLLM / NVENC</text>
+  <text x="510" y="88" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">视频编码通路压到 2.88 bit</text>
+  <line x1="585" y1="74" x2="618" y2="74" stroke="#1f2933" stroke-width="1.6"/><polygon points="618,74 609,77.9 609,70.1" fill="#1f2933"/>
+  <rect x="620" y="50" width="160" height="48" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="700" y="70" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">显存 / 设备加载</text>
+  <text x="700" y="88" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">解码时按块恢复</text>
+
+  <text x="20" y="152" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">KV 缓存</text>
+  <rect x="95" y="130" width="140" height="48" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="165" y="150" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">128k 上下文</text>
+  <text x="165" y="168" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">KV cache 约 40 GB</text>
+  <line x1="235" y1="154" x2="268" y2="154" stroke="#1f2933" stroke-width="1.6"/><polygon points="268,154 259,157.9 259,150.1" fill="#1f2933"/>
+  <rect x="270" y="130" width="130" height="48" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="335" y="150" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">分块重排</text>
+  <text x="335" y="168" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">按 2D 块当作帧</text>
+  <line x1="400" y1="154" x2="433" y2="154" stroke="#1f2933" stroke-width="1.6"/><polygon points="433,154 424,157.9 424,150.1" fill="#1f2933"/>
+  <rect x="435" y="130" width="150" height="48" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="510" y="150" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">VcLLM / NVENC</text>
+  <text x="510" y="168" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">压到约 2.9 bit</text>
+  <line x1="585" y1="154" x2="618" y2="154" stroke="#1f2933" stroke-width="1.6"/><polygon points="618,154 609,157.9 609,150.1" fill="#1f2933"/>
+  <rect x="620" y="130" width="160" height="48" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="700" y="150" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">显存占用约 7.2 GB</text>
+  <text x="700" y="168" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#059669" text-anchor="middle" font-weight="bold">40 GB → 7.2 GB</text>
+
+  <text x="20" y="232" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">激活</text>
+  <rect x="95" y="210" width="140" height="48" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="165" y="230" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">设备间激活</text>
+  <text x="165" y="248" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">跨卡传输带宽瓶颈</text>
+  <line x1="235" y1="234" x2="268" y2="234" stroke="#1f2933" stroke-width="1.6"/><polygon points="268,234 259,237.9 259,230.1" fill="#1f2933"/>
+  <rect x="270" y="210" width="130" height="48" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="335" y="230" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">张量→伪图像</text>
+  <text x="335" y="248" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">满足 8/10 bit 格式</text>
+  <line x1="400" y1="234" x2="433" y2="234" stroke="#1f2933" stroke-width="1.6"/><polygon points="433,234 424,237.9 424,230.1" fill="#1f2933"/>
+  <rect x="435" y="210" width="150" height="48" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="510" y="230" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">VcLLM / NVENC</text>
+  <text x="510" y="248" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">通信压到 3.5 bit</text>
+  <line x1="585" y1="234" x2="618" y2="234" stroke="#1f2933" stroke-width="1.6"/><polygon points="618,234 609,237.9 609,230.1" fill="#1f2933"/>
+  <rect x="620" y="210" width="160" height="48" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="700" y="230" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">接收端解码恢复</text>
+  <text x="700" y="248" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">进入下一层计算</text>
+
+  <rect x="20" y="284" width="760" height="40" rx="6" fill="#fafafa" stroke="#9aa5b1" stroke-width="1"/>
+  <text x="400" y="302" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">同一个视频编解码器同时服务权重、KV 缓存与激活，三类张量共用一套码流与硬件通路</text>
+  <text x="400" y="318" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">结果：4 × 8 GB 设备即可推理 128k 上下文的 LLaMA-3-70B</text>
+</svg>

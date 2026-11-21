@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" width="800" height="320">
+  <rect width="800" height="320" fill="#ffffff"/>
+  <text x="20" y="28" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#1f2933" text-anchor="start" font-weight="bold">VcLLM 训练侧：压缩进入通信主链路</text>
+
+  <rect x="20" y="48" width="760" height="104" rx="6" fill="#f8fafc" stroke="#9aa5b1" stroke-width="1.2"/>
+  <text x="34" y="70" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">流水线并行：压缩前向激活</text>
+  <rect x="40" y="84" width="130" height="48" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="105" y="104" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">Stage i 前向</text>
+  <text x="105" y="122" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">输出激活值</text>
+  <line x1="170" y1="108" x2="208" y2="108" stroke="#1f2933" stroke-width="1.6"/><polygon points="208,108 199,111.9 199,104.1" fill="#1f2933"/>
+  <rect x="210" y="84" width="150" height="48" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="285" y="104" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">VcLLM 编码</text>
+  <text x="285" y="122" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">低比特压缩激活</text>
+  <line x1="360" y1="108" x2="398" y2="108" stroke="#1f2933" stroke-width="1.6"/><polygon points="398,108 389,111.9 389,104.1" fill="#1f2933"/>
+  <rect x="400" y="84" width="150" height="48" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="475" y="104" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">设备间传输</text>
+  <text x="475" y="122" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">通信量显著下降</text>
+  <line x1="550" y1="108" x2="588" y2="108" stroke="#1f2933" stroke-width="1.6"/><polygon points="588,108 579,111.9 579,104.1" fill="#1f2933"/>
+  <rect x="590" y="84" width="170" height="48" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="675" y="104" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">解码 → Stage i+1</text>
+  <text x="675" y="122" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">恢复后继续前向</text>
+
+  <rect x="20" y="164" width="760" height="104" rx="6" fill="#f8fafc" stroke="#9aa5b1" stroke-width="1.2"/>
+  <text x="34" y="186" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">数据并行：压缩梯度 + 残差补偿</text>
+  <rect x="40" y="200" width="130" height="48" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="105" y="220" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">本地梯度</text>
+  <text x="105" y="238" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">Pythia-160M</text>
+  <line x1="170" y1="224" x2="208" y2="224" stroke="#1f2933" stroke-width="1.6"/><polygon points="208,224 199,227.9 199,220.1" fill="#1f2933"/>
+  <rect x="210" y="200" width="150" height="48" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="285" y="220" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">VcLLM 编码</text>
+  <text x="285" y="238" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">平均 2.6 bit</text>
+  <line x1="360" y1="224" x2="398" y2="224" stroke="#1f2933" stroke-width="1.6"/><polygon points="398,224 389,227.9 389,220.1" fill="#1f2933"/>
+  <rect x="400" y="200" width="150" height="48" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="475" y="220" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">残差补偿 + AllReduce</text>
+  <text x="475" y="238" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">稳定训练收敛</text>
+  <line x1="550" y1="224" x2="588" y2="224" stroke="#1f2933" stroke-width="1.6"/><polygon points="588,224 579,227.9 579,220.1" fill="#1f2933"/>
+  <rect x="590" y="200" width="170" height="48" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="675" y="220" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">参数更新</text>
+  <text x="675" y="238" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#059669" text-anchor="middle" font-weight="bold">困惑度优于 1-bit Adam，无需预热</text>
+
+  <text x="20" y="300" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#52606d" text-anchor="start">关键点：VcLLM 从训练一开始就能工作，不依赖长预热期；压缩从后处理变成训练数据面的一部分。</text>
+</svg>

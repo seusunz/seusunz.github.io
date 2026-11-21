@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" width="800" height="340">
+  <rect width="800" height="340" fill="#ffffff"/>
+  <text x="20" y="28" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#1f2933" text-anchor="start" font-weight="bold">HOPE：自修改序列模型 + 连续记忆系统 CMS</text>
+
+  <rect x="30" y="56" width="740" height="100" rx="6" fill="#f8fafc" stroke="#9aa5b1" stroke-width="1.2"/>
+  <text x="44" y="78" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">Self-Modifying Titans：学习“如何更新自己”</text>
+  <rect x="44" y="92" width="150" height="48" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="119" y="112" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">输入 token</text>
+  <text x="119" y="130" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">当前上下文</text>
+  <line x1="194" y1="116" x2="232" y2="116" stroke="#1f2933" stroke-width="1.6"/><polygon points="232,116 223,119.9 223,112.1" fill="#1f2933"/>
+  <rect x="234" y="92" width="200" height="48" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="334" y="112" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">自修改更新规则</text>
+  <text x="334" y="130" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">基于误差动态调整更新策略</text>
+  <line x1="434" y1="116" x2="472" y2="116" stroke="#1f2933" stroke-width="1.6"/><polygon points="472,116 463,119.9 463,112.1" fill="#1f2933"/>
+  <rect x="474" y="92" width="160" height="48" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="554" y="112" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">快速状态更新</text>
+  <text x="554" y="130" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">在线适应</text>
+  <path d="M554,140 L554,168 L660,168 L660,176" fill="none" stroke="#52606d" stroke-width="1.2" stroke-dasharray="4,3"/>
+
+  <rect x="30" y="178" width="740" height="112" rx="6" fill="#f8fafc" stroke="#9aa5b1" stroke-width="1.2"/>
+  <text x="44" y="200" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">Continuum Memory System：把“短期/长期”二分法变成连续频谱</text>
+  <rect x="44" y="214" width="220" height="52" rx="6" fill="#fde2e1" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="154" y="234" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">高频记忆</text>
+  <text x="154" y="252" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">捕捉短时变化</text>
+  <line x1="264" y1="240" x2="292" y2="240" stroke="#1f2933" stroke-width="1.6"/><polygon points="292,240 283,243.9 283,236.1" fill="#1f2933"/>
+  <rect x="294" y="214" width="220" height="52" rx="6" fill="#dbeafe" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="404" y="234" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">中频记忆</text>
+  <text x="404" y="252" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">平滑过渡与知识蒸馏</text>
+  <line x1="514" y1="240" x2="542" y2="240" stroke="#1f2933" stroke-width="1.6"/><polygon points="542,240 533,243.9 533,236.1" fill="#1f2933"/>
+  <rect x="544" y="214" width="206" height="52" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="647" y="234" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">低频记忆</text>
+  <text x="647" y="252" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">稳定、抽象的知识</text>
+
+  <text x="20" y="316" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="start" font-weight="bold">HOPE = 自修改 Titans + CMS：既有多时间尺度记忆，又能自适应地修改更新规则。</text>
+</svg>

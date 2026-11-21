@@ -246,6 +246,7 @@
 <li>FFN 参数则更像慢速稳定更新的长期知识载体。</li>
 </ul>
 <p>于是，Adam 不再只是一个固定公式，而是一个已经隐含多层记忆与优化状态的系统。NL 只是把这种事实显式化，并进一步推动它走向更深、更强、更可学习的版本。</p>
+<p><img src="/images/posts/paper-nl/nested-levels.svg" alt="Nested Learning 的多层嵌套优化视图"></p>
 <h2 id="3-NL-框架下的三项核心落地"><a href="#3-NL-框架下的三项核心落地" class="headerlink" title="3. NL 框架下的三项核心落地"></a>3. NL 框架下的三项核心落地</h2><h3 id="3-1-Deep-Optimizers：把优化器从公式变成可学习模块"><a href="#3-1-Deep-Optimizers：把优化器从公式变成可学习模块" class="headerlink" title="3.1 Deep Optimizers：把优化器从公式变成可学习模块"></a>3.1 Deep Optimizers：把优化器从公式变成可学习模块</h3><p>论文首先对优化器做了重新解释：像 Adam、Momentum SGD 这样的优化器，本质上是在用有限状态压缩历史梯度信息。既然如此，就没有必要把优化器限制在人工设计的线性更新规则里。</p>
 <p>作者提出 <strong>Deep Optimizers</strong> 的思路：</p>
 <ul>
@@ -271,6 +272,7 @@
 <li>中间频率模块承担平滑过渡与知识蒸馏的作用。</li>
 </ul>
 <p>在此基础上，作者提出 <strong>HOPE</strong> 架构，把自修改序列模型和 CMS 结合起来，形成一个具有多时间尺度记忆与自适应更新能力的统一学习系统。HOPE 不是论文里唯一重要的东西，但它证明了 NL 不只是概念，而是能落到可训练、可评估的模型上。</p>
+<p><img src="/images/posts/paper-nl/hope-arch.svg" alt="HOPE 架构：自修改 Titans 与连续记忆系统 CMS"></p>
 <h2 id="4-实验结果说明了什么"><a href="#4-实验结果说明了什么" class="headerlink" title="4. 实验结果说明了什么"></a>4. 实验结果说明了什么</h2><p>论文在语言建模、常识推理、长上下文检索与持续学习几类任务上验证了 HOPE，对比对象包括 Transformer，以及 Titans、Samba、TTT、Mamba2 等近期的循环&#x2F;线性注意力类序列模型：</p>
 <table>
 <thead>
@@ -359,6 +361,7 @@
 </tr>
 </tbody></table>
 <p>这和存储层次的设计思路天然对应：<strong>更新越频繁的状态，越应该离计算越近</strong>。如果这类模型走向主流，推理芯片可能需要三个变化：</p>
+<p><img src="/images/posts/paper-nl/memory-hw-map.svg" alt="更新频率到存储层次的映射"></p>
 <ol>
 <li><strong>推理通路里出现“小规模训练”</strong>：至少要支持快速记忆部分的梯度或更新规则计算，而不只是矩阵乘；</li>
 <li><strong>可写片上存储的比例上升</strong>：快速状态的容量和读写带宽会成为新的设计指标，类似今天的 KV 缓存；</li>

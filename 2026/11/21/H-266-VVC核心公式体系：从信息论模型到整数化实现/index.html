@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        H.266/VVC 核心公式体系：从信息论模型到整数化实现 | 九天之遥
+      
+    </title>
+    <meta name="description" content="聚焦视频编码与数据压缩硬件架构，以及与 AI Infra 相关的系统思考与工程实践。" />
+    <meta name="keywords" content="编码与压缩硬件架构, 视频编解码后端, H.266, VVC, CABAC, ZSTD, ISP, 数据通路, AI Infra, 张量压缩, 技术博客" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner--toc">
+      <div class="post-content__head">
+        <div class="post-title">H.266/VVC 核心公式体系：从信息论模型到整数化实现</div>
+        <div class="post-info">
+          
+  
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/H-266/" class="post-tag">#H.266</a><a href="/tags/%E5%85%AC%E5%BC%8F%E9%80%9F%E6%9F%A5/" class="post-tag">#公式速查</a><a href="/tags/%E6%95%B4%E6%95%B0%E5%8C%96%E5%AE%9E%E7%8E%B0/" class="post-tag">#整数化实现</a>
+
+
+
+          <span class="post-date">2026-11-21</span>
+        </div>
+      </div>
+      
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#0-%E5%BC%95%E8%A8%80"><span class="post-toc-text">0. 引言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E4%BF%A1%E6%81%AF%E8%AE%BA%E5%9F%BA%E7%A1%80%EF%BC%9A%E7%86%B5%E4%B8%8E%E6%A6%82%E7%8E%87%E7%8A%B6%E6%80%81%E6%A8%A1%E5%9E%8B"><span class="post-toc-text">1. 信息论基础：熵与概率状态模型</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-1-%E4%BF%A1%E6%BA%90%E7%86%B5"><span class="post-toc-text">1.1 信源熵</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-2-%E4%B8%8A%E4%B8%8B%E6%96%87%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%A6%82%E7%8E%87%E6%BC%94%E5%8C%96"><span class="post-toc-text">1.2 上下文模型的概率演化</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-%E7%A9%BA%E9%97%B4%E5%9F%9F%E9%A2%84%E6%B5%8B%EF%BC%9A%E5%B8%A7%E5%86%85%E7%BC%96%E7%A0%81%E7%9A%84%E5%8A%A0%E6%9D%83%E6%A8%A1%E5%9E%8B"><span class="post-toc-text">2. 空间域预测：帧内编码的加权模型</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1-%E4%BD%8D%E7%BD%AE%E4%BE%9D%E8%B5%96%E9%A2%84%E6%B5%8B%EF%BC%88PDPC"><span class="post-toc-text">2.1 位置依赖预测（PDPC)</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2-%E6%9D%83%E9%87%8D%E8%87%AA%E9%80%82%E5%BA%94"><span class="post-toc-text">2.2 权重自适应</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-3-%E8%B7%A8%E5%88%86%E9%87%8F%E7%BA%BF%E6%80%A7%E9%A2%84%E6%B5%8B%EF%BC%88CCLM-%E7%B1%BB%EF%BC%89"><span class="post-toc-text">2.3 跨分量线性预测（CCLM 类）</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-%E6%97%B6%E9%97%B4%E5%9F%9F%E9%A2%84%E6%B5%8B%EF%BC%9A%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81%E7%9A%84%E8%BF%90%E5%8A%A8%E4%B8%8E%E8%9E%8D%E5%90%88"><span class="post-toc-text">3. 时间域预测：帧间编码的运动与融合</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-1-%E5%B8%A7%E9%97%B4-%E5%B8%A7%E5%86%85%E8%9E%8D%E5%90%88%EF%BC%88CIIP%EF%BC%89"><span class="post-toc-text">3.1 帧间&#x2F;帧内融合（CIIP）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-2-%E4%BB%BF%E5%B0%84%E8%BF%90%E5%8A%A8%E5%9C%BA"><span class="post-toc-text">3.2 仿射运动场</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-3-%E8%A7%A3%E7%A0%81%E7%AB%AF%E8%BF%90%E5%8A%A8%E7%BB%86%E5%8C%96%EF%BC%88DMVR-BDOF%EF%BC%89"><span class="post-toc-text">3.3 解码端运动细化（DMVR &#x2F; BDOF）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-4-%E5%87%A0%E4%BD%95%E5%88%92%E5%88%86%E9%A2%84%E6%B5%8B%EF%BC%88GPM-%E7%B1%BB%EF%BC%89%E7%9A%84%E5%8A%A0%E6%9D%83%E8%9E%8D%E5%90%88"><span class="post-toc-text">3.4 几何划分预测（GPM 类）的加权融合</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E9%87%8D%E5%BB%BA%E5%9F%9F%E5%A4%84%E7%90%86%EF%BC%9A%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2%E7%9A%84%E5%B7%AE%E5%88%86%E4%B8%8E%E6%9C%80%E4%BC%98%E5%8C%96"><span class="post-toc-text">4. 重建域处理：环路滤波的差分与最优化</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-1-%E5%8E%BB%E5%9D%97%E6%BB%A4%E6%B3%A2%EF%BC%9A%E6%A3%80%E6%B5%8B%E3%80%81%E8%B0%83%E6%95%B4%E4%B8%8E%E6%BB%A4%E6%B3%A2"><span class="post-toc-text">4.1 去块滤波：检测、调整与滤波</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-2-%E8%87%AA%E9%80%82%E5%BA%94%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2%EF%BC%9A%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98%E8%A7%A3"><span class="post-toc-text">4.2 自适应环路滤波：最小二乘解</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-3-%E9%99%90%E5%B9%85%E4%BF%AE%E6%AD%A3%E4%B8%8E%E6%96%B9%E5%90%91%E6%A2%AF%E5%BA%A6%E5%88%86%E7%B1%BB"><span class="post-toc-text">4.3 限幅修正与方向梯度分类</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-%E5%85%B1%E6%80%A7%E8%8C%83%E5%BC%8F%EF%BC%9A%E6%95%B4%E6%95%B0%E5%8C%96%E5%AE%9E%E7%8E%B0%E7%9A%84%E7%BB%9F%E4%B8%80%E8%A7%86%E8%A7%92"><span class="post-toc-text">5. 共性范式：整数化实现的统一视角</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-%E7%BB%93%E8%AE%BA"><span class="post-toc-text">6. 结论</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%E4%B8%8E%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="post-toc-text">参考文献与延伸阅读</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <blockquote>
+<p><strong>本文定位</strong>：公式速查 × 方法论综述。前面四篇 <code>深度解析H.266</code> 系列按模块展开，公式散落在各节；本文把它们抽出、统一编号，便于引用与对照实现。</p>
+<p><strong>符号约定</strong>：文中 <code>≫</code> 表示算术右移（等价除以 2 的幂后取整），<code>≪</code> 表示左移；<code>Clip3(a, b, x)</code> 表示把 <code>x</code> 限幅到区间 <code>[a, b]</code>；<code>R(·)</code> 为参考样点，<code>I(·)</code> 为重建样点，<code>p_i</code> &#x2F; <code>q_i</code> 为滤波边界两侧的样点。全部公式以 VTM 9.3 为准。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="0-引言"><a href="#0-引言" class="headerlink" title="0. 引言"></a>0. 引言</h2><p>H.266&#x2F;VVC 的编码增益来自大量预测与滤波工具的叠加，而这些工具在标准文本中几乎都以数学表达式定义。然而在具体编码器里，它们必须被改写成<strong>定点整数运算</strong>：除法变成移位，浮点权重变成整数权重，概率估计变成状态查表。于是出现一个常被忽略的现象——同一个工具，标准写的是连续域模型，源码写的是整数近似，而两者之间的转换规律很少被单独讨论。</p>
+<p>本文把帧内、帧间、CABAC、环路滤波四个模块中的核心公式集中起来，按式 (1)–(25) 统一编号，目标有三：</p>
+<ol>
+<li><strong>可引用</strong>：讨论某个工具时直接引用编号，不必在长文中翻找；</li>
+<li><strong>可对照</strong>：把理论形式与整数实现并排放置，看清近似发生在哪一步；</li>
+<li><strong>可归纳</strong>：在第 5 节提炼出跨模块共有的整数化范式。</li>
+</ol>
+<p>全文组织如下：第 1 节给出信息论基础，第 2、3 节分别讨论空间域与时间域预测，第 4 节讨论重建后的环路滤波，第 5 节做共性提炼，第 6 节总结。</p>
+<hr>
+<h2 id="1-信息论基础：熵与概率状态模型"><a href="#1-信息论基础：熵与概率状态模型" class="headerlink" title="1. 信息论基础：熵与概率状态模型"></a>1. 信息论基础：熵与概率状态模型</h2><h3 id="1-1-信源熵"><a href="#1-1-信源熵" class="headerlink" title="1.1 信源熵"></a>1.1 信源熵</h3><p>CABAC 的理论起点是香农熵。对离散信源 <code>X</code>，其符号概率为 <code>p_i</code>，则</p>
+<div>
+$$H(X) = -\sum_i p_i \log_2 p_i \tag{1}$$
+</div>
+
+<p>式 (1) 给出了无损编码的平均码长下界。算术编码器要做的，就是让每个二值符号 <code>bin</code> 的实际码长尽量逼近 <code>-log₂ p</code>，其中 <code>p</code> 由上下文模型动态估计。</p>
+<h3 id="1-2-上下文模型的概率演化"><a href="#1-2-上下文模型的概率演化" class="headerlink" title="1.2 上下文模型的概率演化"></a>1.2 上下文模型的概率演化</h3><p>VVC 的上下文模型采用有限状态机：每个上下文对应一个状态索引 <code>σ ∈ [0, 63]</code>，状态每更新一次，概率按固定比例向 0.5 或 0 收缩：</p>
+<div>
+$$p_\sigma = 0.5\cdot\alpha^{\sigma},\qquad \alpha = \left(\frac{0.01875}{0.5}\right)^{1/63} \approx 0.9492 \tag{2}$$
+</div>
+
+<p>式 (2) 的意义在于把概率估计<strong>完全离线化</strong>：64 个状态对应的概率与区间宽度可预计算成查表，编码端无需任何浮点或除法运算。这正是 CABAC 能以 1 bin&#x2F;cycle 流水实现的前提。</p>
+<hr>
+<h2 id="2-空间域预测：帧内编码的加权模型"><a href="#2-空间域预测：帧内编码的加权模型" class="headerlink" title="2. 空间域预测：帧内编码的加权模型"></a>2. 空间域预测：帧内编码的加权模型</h2><h3 id="2-1-位置依赖预测（PDPC"><a href="#2-1-位置依赖预测（PDPC" class="headerlink" title="2.1 位置依赖预测（PDPC)"></a>2.1 位置依赖预测（PDPC)</h3><p>帧内角度预测只沿单一方向外推，远离参考边界的像素误差会累积。PDPC 按当前像素到两侧参考边界的距离做双向加权：</p>
+<div>
+$$P_V(x,y) = (H-1-y)\cdot R(x,-1) + (y+1)\cdot R(-1,H) \tag{3}$$
+</div>
+
+<div>
+$$P_H(x,y) = (W-1-x)\cdot R(-1,y) + (x+1)\cdot R(W,-1) \tag{4}$$
+</div>
+
+<div>
+$$P(x,y) = \big(P_V\cdot W + P_H\cdot H + W\cdot H\big) \gg (\log_2 W + \log_2 H + 1) \tag{5}$$
+</div>
+
+<p>式 (3)(4) 分别是垂直、水平方向的加权插值；式 (5) 把两者按块宽 <code>W</code>、块高 <code>H</code> 合并。注意分母 <code>2·W·H</code> 被写成移位量 <code>log₂W + log₂H + 1</code>，因为 <code>W</code>、<code>H</code> 都是 2 的幂，除法退化为移位。</p>
+<h3 id="2-2-权重自适应"><a href="#2-2-权重自适应" class="headerlink" title="2.2 权重自适应"></a>2.2 权重自适应</h3><p>固定权重对纹理方向不敏感，因此 VVC 进一步按块尺寸与像素位置调整权重：</p>
+<div>
+$$\text{scale} = (\log_2 W + \log_2 H - 2) \gg 2 \tag{6}$$
+</div>
+
+<div>
+$$w_T(y) = 32 \gg \big((y \ll 1) \gg \text{scale}\big),\qquad w_L(x) = 32 \gg \big((x \ll 1) \gg \text{scale}\big) \tag{7}$$
+</div>
+
+<div>
+$$P'(x,y) = P(x,y) + \Big(w_L\,\big(R(-1,y)-P\big) + w_T\,\big(R(x,-1)-P\big) + 32\Big) \gg 6 \tag{8}$$
+</div>
+
+<p>式 (7) 让权重随距离按 2 的幂衰减；式 (8) 以 6 位移位完成除以 64，常量 32 提供四舍五入。这也是全文最典型的整数化写法。</p>
+<h3 id="2-3-跨分量线性预测（CCLM-类）"><a href="#2-3-跨分量线性预测（CCLM-类）" class="headerlink" title="2.3 跨分量线性预测（CCLM 类）"></a>2.3 跨分量线性预测（CCLM 类）</h3><p>色度与亮度纹理高度相关，色度预测可写成亮度的线性缩放：</p>
+<div>
+$$\text{pred}_C(i,j) = \big(\alpha \cdot \text{rec}'_L(i,j)\big) \gg k + \beta \tag{9}$$
+</div>
+
+<p>其中 <code>α</code> 由上下采样后的亮度&#x2F;色度回归得到，<code>k</code> 为定点缩放位移，<code>β</code> 为截距。式 (9) 说明：即使模型是线性回归，落到解码端仍然只包含整数乘法、移位与加法。</p>
+<hr>
+<h2 id="3-时间域预测：帧间编码的运动与融合"><a href="#3-时间域预测：帧间编码的运动与融合" class="headerlink" title="3. 时间域预测：帧间编码的运动与融合"></a>3. 时间域预测：帧间编码的运动与融合</h2><h3 id="3-1-帧间-帧内融合（CIIP）"><a href="#3-1-帧间-帧内融合（CIIP）" class="headerlink" title="3.1 帧间&#x2F;帧内融合（CIIP）"></a>3.1 帧间&#x2F;帧内融合（CIIP）</h3><p>当前块的帧间预测与帧内预测可线性融合：</p>
+<div>
+$$P_{\text{CIIP}} = \big(w_{\text{inter}}\cdot P_{\text{inter}} + w_{\text{intra}}\cdot P_{\text{intra}} + 2\big) \gg 2 \tag{10}$$
+</div>
+
+<p>式 (10) 中两路权重之和为 4，分母 4 由右移 2 位实现，常量 2 完成四舍五入。<code>w_inter</code> 由 Merge 标志导出，不需要额外传输。</p>
+<h3 id="3-2-仿射运动场"><a href="#3-2-仿射运动场" class="headerlink" title="3.2 仿射运动场"></a>3.2 仿射运动场</h3><p>平移运动用一个 MV 描述，仿射运动用两个或三个控制点 MV 描述。4 参数模型（双控制点）给出逐像素运动矢量：</p>
+<div>
+$$\begin{cases}
+mv_x(x,y) = \dfrac{v_{1x}-v_{0x}}{W}\,x - \dfrac{v_{1y}-v_{0y}}{W}\,y + v_{0x}\\[2mm]
+mv_y(x,y) = \dfrac{v_{1y}-v_{0y}}{W}\,x + \dfrac{v_{1x}-v_{0x}}{W}\,y + v_{0y}
+\end{cases}\tag{11}$$
+</div>
+
+<p>6 参数模型（三控制点）在 <code>y</code> 方向增加第三组差分项：</p>
+<div>
+$$\begin{cases}
+mv_x(x,y) = \dfrac{v_{1x}-v_{0x}}{W}\,x + \dfrac{v_{2x}-v_{0x}}{H}\,y + v_{0x}\\[2mm]
+mv_y(x,y) = \dfrac{v_{1y}-v_{0y}}{W}\,x + \dfrac{v_{2y}-v_{0y}}{H}\,y + v_{0y}
+\end{cases}\tag{12}$$
+</div>
+
+<p>式 (11)(12) 的几何含义是：运动矢量场由控制点 MV 的线性组合张成。实现时 <code>1/W</code>、<code>1/H</code> 以定点精度表示，逐像素 MV 通过累加器递推，避免逐像素做除法。</p>
+<h3 id="3-3-解码端运动细化（DMVR-BDOF）"><a href="#3-3-解码端运动细化（DMVR-BDOF）" class="headerlink" title="3.3 解码端运动细化（DMVR &#x2F; BDOF）"></a>3.3 解码端运动细化（DMVR &#x2F; BDOF）</h3><p>双向预测的两条参考路径可能存在亚像素偏差，需在解码端搜索对称偏移：</p>
+<div>
+$$\Delta^{*} = \arg\min_{\Delta}\ \mathrm{SAD}\big(P_0(\mathbf{mv}_0+\Delta),\ P_1(\mathbf{mv}_1-\Delta)\big) \tag{13}$$
+</div>
+
+<p>式 (13) 的对称性约束是关键：两条路径偏移相反，解码端无需传输任何附加信息。BDOF 在此基础上用光流法逐像素修正预测值：</p>
+<div>
+$$P_{\text{BDOF}} = \Big( I^{(0)} + I^{(1)} + \tfrac{1}{2}\big[v_x\,(g_x^{(1)}-g_x^{(0)}) + v_y\,(g_y^{(1)}-g_y^{(0)})\big] \Big) / 2 \tag{14}$$
+</div>
+
+<p>其理论依据是亮度恒定假设，即沿运动轨迹的亮度变化满足一阶线性近似：</p>
+<div>
+$$\Delta I(i,j) = g_x(i,j)\cdot\Delta v_x(i,j) + g_y(i,j)\cdot\Delta v_y(i,j) \tag{15}$$
+</div>
+
+<p>式 (15) 中 <code>g_x</code>、<code>g_y</code> 由相邻像素差分得到，整个修正过程只有加法与移位，无需乘法器阵列。</p>
+<h3 id="3-4-几何划分预测（GPM-类）的加权融合"><a href="#3-4-几何划分预测（GPM-类）的加权融合" class="headerlink" title="3.4 几何划分预测（GPM 类）的加权融合"></a>3.4 几何划分预测（GPM 类）的加权融合</h3><p>两个预测器按位置相关的权重混合，权重取自一个很小的集合：</p>
+<div>
+$$P = \big((8-w)\cdot P_0 + w\cdot P_1 + 4\big) \gg 3,\qquad w \in \{-2,\ 3,\ 4,\ 5,\ 10\} \tag{16}$$
+</div>
+
+<p>式 (16) 的权重可为负或大于 8，因此融合更像外推而非简单平均；分母 8 用右移 3 位实现，常量 4 提供舍入。</p>
+<hr>
+<h2 id="4-重建域处理：环路滤波的差分与最优化"><a href="#4-重建域处理：环路滤波的差分与最优化" class="headerlink" title="4. 重建域处理：环路滤波的差分与最优化"></a>4. 重建域处理：环路滤波的差分与最优化</h2><h3 id="4-1-去块滤波：检测、调整与滤波"><a href="#4-1-去块滤波：检测、调整与滤波" class="headerlink" title="4.1 去块滤波：检测、调整与滤波"></a>4.1 去块滤波：检测、调整与滤波</h3><p>去块滤波分三步。首先用二阶差分检测边界两侧的平坦度：</p>
+<div>
+$$d = \sum_{k\in\{0,3\}} \Big( |p_{2,k} - 2p_{1,k} + p_{0,k}| + |q_{2,k} - 2q_{1,k} + q_{0,k}| \Big) \tag{17}$$
+</div>
+
+<p><code>d</code> 越小说明边界两侧越平坦，越可能需要强滤波。其次由边界两侧样点差导出调整量：</p>
+<div>
+$$\Delta = \big(9\,(q_0 - p_0) - 3\,(q_1 - p_1) + 8\big) \gg 4 \tag{18}$$
+</div>
+
+<p>弱滤波直接用 5 抽头均值：</p>
+<div>
+$$p_0' = \big(p_2 + 2p_1 + 2p_0 + 2q_0 + q_1 + 4\big) \gg 3 \tag{19}$$
+</div>
+
+<p>强滤波则把每个样点向边界均值与侧内插值的混合结果靠拢，并施加限幅：</p>
+<div>
+$$p_i' = \mathrm{Clip3}\big(p_i - tc_i,\ p_i + tc_i,\ (f_i \cdot \text{Middle} + (64 - f_i)\cdot P_s + 32) \gg 6\big) \tag{20}$$
+</div>
+
+<p>式 (20) 中 <code>tc_i</code> 是随量化参数变化的限幅阈值，<code>f_i</code> 为位置权重；限幅保证滤波不会过度平滑，从而保留真实边缘。</p>
+<h3 id="4-2-自适应环路滤波：最小二乘解"><a href="#4-2-自适应环路滤波：最小二乘解" class="headerlink" title="4.2 自适应环路滤波：最小二乘解"></a>4.2 自适应环路滤波：最小二乘解</h3><p>ALF 把滤波问题表述为最小均方误差估计。设输入样点 <code>s(x)</code>、重建样点 <code>r_i(x)</code>、滤波系数 <code>c_i</code>，则</p>
+<div>
+$$E = \sum_{x} \Big( s(x) - \sum_{i} c_i\, r_i(x) \Big)^2 \tag{21}$$
+</div>
+
+<p>对 <code>c_j</code> 求偏导并令其为零，得到 Wiener–Hopf 正规方程：</p>
+<div>
+$$\sum_i c_i \underbrace{\sum_x r_i(x)\,r_j(x)}_{R_{ij}} = \underbrace{\sum_x s(x)\,r_j(x)}_{p_j}
+\quad\Longleftrightarrow\quad \mathbf{R}\,\mathbf{c} = \mathbf{p} \tag{22}$$
+</div>
+
+<p>式 (22) 是全文唯一的”求解型”公式。实际实现中 <code>R</code> 与 <code>p</code> 由训练序列离线统计得到，系数 <code>c_i</code> 定点化后写入码流，解码端只执行乘加，不求解方程。</p>
+<h3 id="4-3-限幅修正与方向梯度分类"><a href="#4-3-限幅修正与方向梯度分类" class="headerlink" title="4.3 限幅修正与方向梯度分类"></a>4.3 限幅修正与方向梯度分类</h3><p>ALF 的非线性部分用相邻样点差分对重建值做限幅修正：</p>
+<div>
+$$\tilde{I}(x) = I(x) + \Big(\sum_{i} c_i \cdot \mathrm{Clip3}\big(-k_i,\ k_i,\ I(x+\Delta_i) - I(x)\big) + 64\Big) \gg 7 \tag{23}$$
+</div>
+
+<p>式 (23) 的关键在于先限幅再累加：它把修正幅度限制在 <code>±k_i</code> 内，避免振铃被放大。滤波器分类则依赖四个方向的二阶差分：</p>
+<div>
+$$\begin{aligned}
+V_{k,l} &= |2R(k,l) - R(k,l-1) - R(k,l+1)|, &\quad H_{k,l} &= |2R(k,l) - R(k-1,l) - R(k+1,l)|\\
+D0_{k,l} &= |2R(k,l) - R(k-1,l-1) - R(k+1,l+1)|, &\quad D1_{k,l} &= |2R(k,l) - R(k-1,l+1) - R(k+1,l-1)|
+\end{aligned}\tag{24}$$
+</div>
+
+<p>分类结果被量化为 25 种模式之一：</p>
+<div>
+$$C = 5D + \hat{A},\qquad C \in [0, 24] \tag{25}$$
+</div>
+
+<p>其中 <code>D</code> 为方向性索引，<code>Â</code> 为活动性索引；式 (25) 把二维分类压成一个标量，便于编码与查表。</p>
+<hr>
+<h2 id="5-共性范式：整数化实现的统一视角"><a href="#5-共性范式：整数化实现的统一视角" class="headerlink" title="5. 共性范式：整数化实现的统一视角"></a>5. 共性范式：整数化实现的统一视角</h2><p>把式 (1)–(25) 横向对比可以发现，跨模块的数学工具其实高度收敛，可归纳为五类范式：</p>
+<table>
+<thead>
+<tr>
+<th>范式</th>
+<th>一般形式</th>
+<th>对应公式</th>
+<th>工程意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>移位舍入</td>
+<td>((a + 2^{n-1}) \gg n)</td>
+<td>(5)(8)(9)(10)(16)(18)(19)(20)(23)</td>
+<td>用加法常量替代浮点舍入，除法定点化</td>
+</tr>
+<tr>
+<td>整数加权融合</td>
+<td>(P &#x3D; (w_0P_0 + w_1P_1 + r) \gg n)</td>
+<td>(5)(10)(16)(19)(20)</td>
+<td>权重之和取 2 的幂，一次移位完成归一化</td>
+</tr>
+<tr>
+<td>梯度与差分</td>
+<td>(g_x)、(2R - R_{-1} - R_{+1})</td>
+<td>(14)(15)(17)(24)</td>
+<td>只用加减法提取纹理与边缘信息</td>
+</tr>
+<tr>
+<td>限幅</td>
+<td>(\mathrm{Clip3}(lo, hi, x))</td>
+<td>(20)(23)</td>
+<td>抑制振铃，防止误差传播到后续帧</td>
+</tr>
+<tr>
+<td>概率与最优化</td>
+<td>(-\sum p\log_2 p)、(\mathbf{Rc}&#x3D;\mathbf{p})</td>
+<td>(1)(2)(21)(22)</td>
+<td>浮点部分全部离线化，解码端只做查表与乘加</td>
+</tr>
+</tbody></table>
+<p>三点观察：</p>
+<p><strong>第一，移位是出现频率最高的运算。</strong> 25 个公式中有 9 个直接以 <code>≫ n</code> 收尾，且几乎都伴随一个 <code>2^&#123;n-1&#125;</code> 型常量。这提醒实现者：舍入误差不是附属细节，而是标准的一部分——少加这个常量，重建值会系统性偏小 1，在长 GOP 中累积成可见的画面偏暗。</p>
+<p><strong>第二，”权重之和为 2 的幂”是贯穿全书的设计约束。</strong> 式 (5) 的 <code>2WH</code>、式 (10) 的 4、式 (16) 的 8、式 (19) 的 8，都让加权平均的分母恰好是移位量。选权重时优先满足这一约束，可以省掉整个除法器。</p>
+<p><strong>第三，连续域模型只出现在编码器侧或离线阶段。</strong> 式 (2) 的概率、式 (22) 的方程求解、式 (9) 的回归系数，都在编码端或训练阶段完成；解码端接到的永远是量化后的参数。这是”标准描述连续、实现专注整数”这一分工的根本原因。</p>
+<hr>
+<h2 id="6-结论"><a href="#6-结论" class="headerlink" title="6. 结论"></a>6. 结论</h2><p>本文把 VVC 四个核心模块中的 25 个公式统一编号，按信息论、空间预测、时间预测、重建后处理四条线索组织，并在第 5 节归纳出移位舍入、整数加权、梯度差分、限幅与最小二乘五类范式。可以认为，VVC 的整数化实现遵循一条简单原则：<strong>把除法变成移位、把浮点变成定点查表、把求解变成预计算</strong>，而舍入常量与限幅阈值作为标准的组成部分必须逐位对齐。对于需要对照源码或做 RTL 实现的读者，建议把本文作为索引，回到对应模块的长文查看数据流与源码位置。</p>
+<hr>
+<h2 id="参考文献与延伸阅读"><a href="#参考文献与延伸阅读" class="headerlink" title="参考文献与延伸阅读"></a>参考文献与延伸阅读</h2><p>[1] 《深度解析H.266&#x2F;VVC帧内编码：从参考像素到硬件重建环路》，本博客，2024&#x2F;2026 修订。</p>
+<p>[2] 《深度解析H.266&#x2F;VVC帧间编码：从 MV 预测到运动补偿与带宽》，本博客，2024&#x2F;2026 修订。</p>
+<p>[3] 《深度解析H.266&#x2F;VVC 熵编码CABAC：从规范公式到RTL实现》，本博客，2024&#x2F;2026 修订。</p>
+<p>[4] 《深度解析H.266&#x2F;VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF》，本博客，2024&#x2F;2026 修订。</p>
+<p>[5] ITU-T Recommendation H.266 (V1) &#x2F; ISO&#x2F;IEC 23090-3, <em>Versatile video coding</em>, 2020.</p>
+<p>[6] VVC Reference Software VTM 9.3, Fraunhofer HHI.</p>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <div class="post-nav-item-left"></div>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2026/11/19/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AVVC-ALF-%E8%87%AA%E9%80%82%E5%BA%94%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2-IP-%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      项目复盘：VVC ALF 自适应环路滤波 IP 设计实践
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/H-266/" class="post-tag">#H.266</a><a href="/tags/%E5%85%AC%E5%BC%8F%E9%80%9F%E6%9F%A5/" class="post-tag">#公式速查</a><a href="/tags/%E6%95%B4%E6%95%B0%E5%8C%96%E5%AE%9E%E7%8E%B0/" class="post-tag">#整数化实现</a>
+
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF" rel="bookmark">深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现" rel="bookmark">深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div></div>
+    
+  </div>
+</div>
+
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

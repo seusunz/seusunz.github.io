@@ -351,10 +351,10 @@
 <h3 id="2-4-滤波开关与强弱决策"><a href="#2-4-滤波开关与强弱决策" class="headerlink" title="2.4 滤波开关与强弱决策"></a>2.4 滤波开关与强弱决策</h3><p>阈值 β 和 tC 由边界两侧的平均 QP（加上 Slice 级偏移）查表得到（<code>LoopFilter.cpp:66-75</code>），Bs &#x3D; 2 时 tC 的查表索引额外加 2。VVC 还支持按亮度水平调整 QP 的 LADF，让暗区和亮区使用不同的滤波强度。</p>
 <p>对每段 4 行（或 4 列）的边界，只取第 0 行和第 3 行做决策：</p>
 <div>
-$$d = \sum_{k\in\{0,3\}} \Big( |p_{2,k} - 2p_{1,k} + p_{0,k}| + |q_{2,k} - 2q_{1,k} + q_{0,k}| \Big)$$
+$$d = \sum_{k\in\{0,3\}} \Big( |p_{2,k} - 2p_{1,k} + p_{0,k}| + |q_{2,k} - 2q_{1,k} + q_{0,k}| \Big) \tag{1}$$
 </div>
 
-<p>d 衡量的是边界两侧的平坦程度：<strong>d &lt; β 才滤波</strong>，否则认为这里是真实的纹理或边缘。然后按以下条件选择滤波器：</p>
+<p>式 (1) 的 d 衡量的是边界两侧的平坦程度：<strong>d &lt; β 才滤波</strong>，否则认为这里是真实的纹理或边缘。然后按以下条件选择滤波器：</p>
 <table>
 <thead>
 <tr>
@@ -381,20 +381,20 @@ $$d = \sum_{k\in\{0,3\}} \Big( |p_{2,k} - 2p_{1,k} + p_{0,k}| + |q_{2,k} - 2q_{1
 </tbody></table>
 <p><img src="/images/posts/vvc-loopfilter/dbf-samples.svg" alt="去块滤波的边界样点 p7~p0 与 q0~q7，以及弱、强、长三种滤波器的最大修改范围"></p>
 <p>每侧的最大滤波长度由块尺寸预先确定（<code>LoopFilter.cpp:491-535</code>）：任一侧尺寸不超过 4 时只改 1 个样点；一侧尺寸达到 32 时，该侧可用长滤波器（最多 7 个）；其余为 3 个。两侧的长度可以不同，例如大块与小块相邻时，只在大块一侧做长滤波。</p>
-<h3 id="2-5-三种亮度滤波器"><a href="#2-5-三种亮度滤波器" class="headerlink" title="2.5 三种亮度滤波器"></a>2.5 三种亮度滤波器</h3><p><strong>弱滤波器</strong>沿用 HEVC：</p>
+<h3 id="2-5-三种亮度滤波器"><a href="#2-5-三种亮度滤波器" class="headerlink" title="2.5 三种亮度滤波器"></a>2.5 三种亮度滤波器</h3><p><strong>弱滤波器</strong>沿用 HEVC，按式 (2) 求调整量：</p>
 <div>
-$$\Delta = \big(9\,(q_0 - p_0) - 3\,(q_1 - p_1) + 8\big) \gg 4$$
+$$\Delta = \big(9\,(q_0 - p_0) - 3\,(q_1 - p_1) + 8\big) \gg 4 \tag{2}$$
 </div>
 
 <p>若 |Δ| &lt; 10 tC，则把 Δ 限幅到 [−tC, tC]，令 p0′ &#x3D; p0 + Δ、q0′ &#x3D; q0 − Δ；当某一侧足够平坦时，再以更小的幅度修正 p1 或 q1。|Δ| ≥ 10 tC 说明这里很可能是真实边缘，不做修改。</p>
-<p><strong>强滤波器</strong>用 5 抽头低通重新计算两侧 3 个样点，例如：</p>
+<p><strong>强滤波器</strong>用 5 抽头低通重新计算两侧 3 个样点，例如式 (3)：</p>
 <div>
-$$p_0' = \big(p_2 + 2p_1 + 2p_0 + 2q_0 + q_1 + 4\big) \gg 3$$
+$$p_0' = \big(p_2 + 2p_1 + 2p_0 + 2q_0 + q_1 + 4\big) \gg 3 \tag{3}$$
 </div>
 
-<p><strong>长滤波器</strong>是 VVC 新增的。它在边界两侧之间做双线性插值：先求出两侧的“中值” Middle 和各自远端的参考值 P_s、Q_s，再按位置加权：</p>
+<p><strong>长滤波器</strong>是 VVC 新增的。它在边界两侧之间做双线性插值：先求出两侧的“中值” Middle 和各自远端的参考值 P_s、Q_s，再按式 (4) 按位置加权：</p>
 <div>
-$$p_i' = \mathrm{Clip3}\big(p_i - tc_i,\ p_i + tc_i,\ (f_i \cdot \text{Middle} + (64 - f_i)\cdot P_s + 32) \gg 6\big)$$
+$$p_i' = \mathrm{Clip3}\big(p_i - tc_i,\ p_i + tc_i,\ (f_i \cdot \text{Middle} + (64 - f_i)\cdot P_s + 32) \gg 6\big) \tag{4}$$
 </div>
 
 <p>权重 f_i 随离边界的距离递减。所有滤波结果都会被限幅在原值附近的 tC 相关范围内，防止过度平滑。</p>
@@ -449,15 +449,15 @@ $$p_i' = \mathrm{Clip3}\big(p_i - tc_i,\ p_i + tc_i,\ (f_i \cdot \text{Middle} +
 <h3 id="3-3-边带补偿（BO）"><a href="#3-3-边带补偿（BO）" class="headerlink" title="3.3 边带补偿（BO）"></a>3.3 边带补偿（BO）</h3><p>把像素值范围均匀分成 32 个带（取像素值的高 5 位），码流中指定<strong>连续 4 个带</strong>的起始位置及各自的补偿值，落在这 4 个带内的像素加上对应补偿。BO 适合处理平坦区域中某一亮度段的整体偏差。</p>
 <h3 id="3-4-参数传输"><a href="#3-4-参数传输" class="headerlink" title="3.4 参数传输"></a>3.4 参数传输</h3><p>补偿幅度上限为 <code>(1 &lt;&lt; (Min(bitDepth, 10) − 5)) − 1</code>，8 bit 时为 7、10 bit 时为 31。当前 CTB 可以直接复用左侧或上方 CTB 的全部 SAO 参数（<code>sao_merge_left_flag</code> &#x2F; <code>sao_merge_up_flag</code>），以节省码率。</p>
 <hr>
-<h2 id="4-ALF：自适应环路滤波"><a href="#4-ALF：自适应环路滤波" class="headerlink" title="4. ALF：自适应环路滤波"></a>4. ALF：自适应环路滤波</h2><h3 id="4-1-维纳滤波：最小化均方误差"><a href="#4-1-维纳滤波：最小化均方误差" class="headerlink" title="4.1 维纳滤波：最小化均方误差"></a>4.1 维纳滤波：最小化均方误差</h3><p>ALF 的出发点是维纳滤波：找一组滤波系数，使滤波后的重建图像与原始图像的均方误差最小。设原始像素为 s(x)，滤波器的第 i 个输入为 r_i(x)，系数为 c_i：</p>
+<h2 id="4-ALF：自适应环路滤波"><a href="#4-ALF：自适应环路滤波" class="headerlink" title="4. ALF：自适应环路滤波"></a>4. ALF：自适应环路滤波</h2><h3 id="4-1-维纳滤波：最小化均方误差"><a href="#4-1-维纳滤波：最小化均方误差" class="headerlink" title="4.1 维纳滤波：最小化均方误差"></a>4.1 维纳滤波：最小化均方误差</h3><p>ALF 的出发点是维纳滤波：找一组滤波系数，使滤波后的重建图像与原始图像的均方误差最小。设原始像素为 s(x)，滤波器的第 i 个输入为 r_i(x)，系数为 c_i，则均方误差如式 (5)：</p>
 <div>
-$$E = \sum_{x} \Big( s(x) - \sum_{i} c_i\, r_i(x) \Big)^2$$
+$$E = \sum_{x} \Big( s(x) - \sum_{i} c_i\, r_i(x) \Big)^2 \tag{5}$$
 </div>
 
-<p>对每个 c_j 求偏导并令其为零，得到线性方程组：</p>
+<p>对每个 c_j 求偏导并令其为零，得到式 (6) 的线性方程组：</p>
 <div>
 $$\sum_i c_i \underbrace{\sum_x r_i(x)\,r_j(x)}_{R_{ij}} = \underbrace{\sum_x s(x)\,r_j(x)}_{p_j}
-\quad\Longleftrightarrow\quad \mathbf{R}\,\mathbf{c} = \mathbf{p}$$
+\quad\Longleftrightarrow\quad \mathbf{R}\,\mathbf{c} = \mathbf{p} \tag{6}$$
 </div>
 
 <p>R 是输入的自相关矩阵，p 是输入与原始像素的互相关向量。R 对称正定，可以用 Cholesky 分解求解，VTM 中对应 <code>gnsSolveByChol</code>。由于原始图像只有编码器知道，<strong>系数必须由编码器求出并写入码流</strong>，这也是 ALF 的滤波器尺寸不能太大的原因。</p>
@@ -485,9 +485,9 @@ $$\sum_i c_i \underbrace{\sum_x r_i(x)\,r_j(x)}_{R_{ij}} = \underbrace{\sum_x s(
 </tr>
 </tbody></table>
 <p>系数精度为 7 bit（所有系数之和为 128），非中心系数的取值范围为 [−128, 127]，中心系数不传输，由归一化条件推出。</p>
-<h3 id="4-3-非线性-clipping"><a href="#4-3-非线性-clipping" class="headerlink" title="4.3 非线性 clipping"></a>4.3 非线性 clipping</h3><p>VVC 的 ALF 不是纯线性滤波。每个邻点先与中心像素做差，再按 clipping 门限截断，然后才参与加权：</p>
+<h3 id="4-3-非线性-clipping"><a href="#4-3-非线性-clipping" class="headerlink" title="4.3 非线性 clipping"></a>4.3 非线性 clipping</h3><p>VVC 的 ALF 不是纯线性滤波。每个邻点先与中心像素做差，再按 clipping 门限截断，然后按式 (7) 参与加权：</p>
 <div>
-$$\tilde{I}(x) = I(x) + \Big(\sum_{i} c_i \cdot \mathrm{Clip3}\big(-k_i,\ k_i,\ I(x+\Delta_i) - I(x)\big) + 64\Big) \gg 7$$
+$$\tilde{I}(x) = I(x) + \Big(\sum_{i} c_i \cdot \mathrm{Clip3}\big(-k_i,\ k_i,\ I(x+\Delta_i) - I(x)\big) + 64\Big) \gg 7 \tag{7}$$
 </div>
 
 <p>clipping 的作用是<strong>限制与中心差异过大的邻点的影响</strong>：真实边缘两侧的像素差很大，被截断后就不会把边缘抹平。每个系数位置可以从 4 个门限中选一个，门限只取决于位深（<code>AdaptiveLoopFilter.cpp:745-756</code>）：</p>
@@ -518,19 +518,19 @@ $$\tilde{I}(x) = I(x) + \Big(\sum_{i} c_i \cdot \mathrm{Clip3}\big(-k_i,\ k_i,\ 
 </tbody></table>
 <p>clipIdx &#x3D; 0 时门限等于整个取值范围，相当于不截断。</p>
 <h3 id="4-4-亮度-4×4-块分类"><a href="#4-4-亮度-4×4-块分类" class="headerlink" title="4.4 亮度 4×4 块分类"></a>4.4 亮度 4×4 块分类</h3><p>一帧里不同区域的纹理差异很大，一组系数难以兼顾。ALF 对亮度按 <strong>4×4 块</strong>分类，每类使用自己的滤波器。</p>
-<p><strong>1. 计算梯度</strong>：在 4×4 块周围的 8×8 窗口内隔点取 32 个位置，计算水平、垂直和两个对角方向的一维拉普拉斯值，并分别累加：</p>
+<p><strong>1. 计算梯度</strong>：在 4×4 块周围的 8×8 窗口内隔点取 32 个位置，按式 (8) 计算水平、垂直和两个对角方向的一维拉普拉斯值，并分别累加：</p>
 <div>
 $$\begin{aligned}
 V_{k,l} &= |2R(k,l) - R(k,l-1) - R(k,l+1)|, &\quad H_{k,l} &= |2R(k,l) - R(k-1,l) - R(k+1,l)|\\
 D0_{k,l} &= |2R(k,l) - R(k-1,l-1) - R(k+1,l+1)|, &\quad D1_{k,l} &= |2R(k,l) - R(k-1,l+1) - R(k+1,l-1)|
-\end{aligned}$$
+\end{aligned}\tag{8}$$
 </div>
 
 <p><strong>2. 方向性 D（0~4）</strong>：比较水平&#x2F;垂直梯度之比与两个对角梯度之比。两者都小于阈值 2 时为无明显方向的纹理（D &#x3D; 0）；否则取比值较大的一组作为主方向，再按比值是否超过 4.5 区分弱方向（D &#x3D; 1 或 3）和强方向（D &#x3D; 2 或 4）。</p>
 <p><strong>3. 活动性 A（0~4）</strong>：水平与垂直梯度之和经量化得到，量化表见 <code>AdaptiveLoopFilter.cpp:865</code>。</p>
-<p><strong>4. 类别</strong>：</p>
+<p><strong>4. 类别</strong>：按式 (9) 把方向性 D 与活动性 Â 合成为类别索引：</p>
 <div>
-$$C = 5D + \hat{A},\qquad C \in [0, 24]$$
+$$C = 5D + \hat{A},\qquad C \in [0, 24] \tag{9}$$
 </div>
 
 <p>此外，按梯度的大小关系，对滤波器系数做 4 种几何变换之一（不变、对角翻转、垂直翻转、旋转）。这样方向相反或相互转置的纹理可以共用一组系数，相当于在不增加码率的前提下扩充了滤波器种类。</p>

@@ -353,10 +353,10 @@
 </tr>
 </tbody></table>
 <div>
-$$P_{\text{CIIP}} = \big(w_{\text{inter}}\cdot P_{\text{inter}} + w_{\text{intra}}\cdot P_{\text{intra}} + 2\big) \gg 2$$
+$$P_{\text{CIIP}} = \big(w_{\text{inter}}\cdot P_{\text{inter}} + w_{\text{intra}}\cdot P_{\text{intra}} + 2\big) \gg 2 \tag{1}$$
 </div>
 
-<p>CIIP 只用于样点数不少于 64、宽高都小于 128 的 CU。</p>
+<p>式 (1) 的 CIIP 只用于样点数不少于 64、宽高都小于 128 的 CU。</p>
 <h3 id="2-6-GPM：几何划分"><a href="#2-6-GPM：几何划分" class="headerlink" title="2.6 GPM：几何划分"></a>2.6 GPM：几何划分</h3><p>GPM（Geometric Partitioning Mode）用一条直线把 CU 分成两部分，两部分各自使用一个<strong>单向预测</strong> MV，沿分割线混合。</p>
 <p><img src="/images/posts/vvc-inter/gpm.svg" alt="GPM 几何划分：分区 0 和分区 1 分别来自不同 Merge 候选的单向 MV，沿分割线有渐变混合带"></p>
 <table>
@@ -458,7 +458,7 @@ $$P_{\text{CIIP}} = \big(w_{\text{inter}}\cdot P_{\text{inter}} + w_{\text{intra
 $$\begin{cases}
 mv_x(x,y) = \dfrac{v_{1x}-v_{0x}}{W}\,x - \dfrac{v_{1y}-v_{0y}}{W}\,y + v_{0x}\\[2mm]
 mv_y(x,y) = \dfrac{v_{1y}-v_{0y}}{W}\,x + \dfrac{v_{1x}-v_{0x}}{W}\,y + v_{0y}
-\end{cases}$$
+\end{cases}\tag{2}$$
 </div>
 
 <p>6 参数模型增加左下角 v2，x、y 两个方向的系数各自独立：</p>
@@ -466,10 +466,10 @@ mv_y(x,y) = \dfrac{v_{1y}-v_{0y}}{W}\,x + \dfrac{v_{1x}-v_{0x}}{W}\,y + v_{0y}
 $$\begin{cases}
 mv_x(x,y) = \dfrac{v_{1x}-v_{0x}}{W}\,x + \dfrac{v_{2x}-v_{0x}}{H}\,y + v_{0x}\\[2mm]
 mv_y(x,y) = \dfrac{v_{1y}-v_{0y}}{W}\,x + \dfrac{v_{2y}-v_{0y}}{H}\,y + v_{0y}
-\end{cases}$$
+\end{cases}\tag{3}$$
 </div>
 
-<p>每个 4×4 子块取其中心点代入上式得到子块 MV，然后做普通平移运动补偿。W、H 都是 2 的幂，除法都是移位。</p>
+<p>每个 4×4 子块取其中心点代入式 (2)(3) 得到子块 MV，然后做普通平移运动补偿。W、H 都是 2 的幂，除法都是移位。</p>
 <table>
 <thead>
 <tr>
@@ -490,9 +490,9 @@ mv_y(x,y) = \dfrac{v_{1y}-v_{0y}}{W}\,x + \dfrac{v_{2y}-v_{0y}}{H}\,y + v_{0y}
 <hr>
 <h2 id="5-解码端细化：不花码率的-MV-与样点修正"><a href="#5-解码端细化：不花码率的-MV-与样点修正" class="headerlink" title="5. 解码端细化：不花码率的 MV 与样点修正"></a>5. 解码端细化：不花码率的 MV 与样点修正</h2><p>这一类工具的共同点是：<strong>解码器用已有的参考数据自行推导修正量，码流中不传任何额外信息</strong>。</p>
 <h3 id="5-1-DMVR：解码端-MV-细化"><a href="#5-1-DMVR：解码端-MV-细化" class="headerlink" title="5.1 DMVR：解码端 MV 细化"></a>5.1 DMVR：解码端 MV 细化</h3><p><img src="/images/posts/vvc-inter/dmvr.svg" alt="DMVR 双边匹配：在 L0 和 L1 参考帧中做镜像偏移，寻找 SAD 最小的位置"></p>
-<p>对满足条件的双向 Merge 块，DMVR 在两个初始 MV 周围做<strong>双边匹配</strong>：L0 的 MV 加偏移 Δ、L1 的 MV 减同样的 Δ，比较两个参考块的 SAD，取最小者：</p>
+<p>对满足条件的双向 Merge 块，DMVR 在两个初始 MV 周围做<strong>双边匹配</strong>：如式 (4) 所示，L0 的 MV 加偏移 Δ、L1 的 MV 减同样的 Δ，比较两个参考块的 SAD，取最小者：</p>
 <div>
-$$\Delta^{*} = \arg\min_{\Delta}\ \mathrm{SAD}\big(P_0(\mathbf{mv}_0+\Delta),\ P_1(\mathbf{mv}_1-\Delta)\big)$$
+$$\Delta^{*} = \arg\min_{\Delta}\ \mathrm{SAD}\big(P_0(\mathbf{mv}_0+\Delta),\ P_1(\mathbf{mv}_1-\Delta)\big) \tag{4}$$
 </div>
 
 <table>
@@ -548,23 +548,23 @@ $$\Delta^{*} = \arg\min_{\Delta}\ \mathrm{SAD}\big(P_0(\mathbf{mv}_0+\Delta),\ P
 <td>简化实现</td>
 </tr>
 </tbody></table>
-<h3 id="5-2-BDOF：双向光流"><a href="#5-2-BDOF：双向光流" class="headerlink" title="5.2 BDOF：双向光流"></a>5.2 BDOF：双向光流</h3><p>BDOF（Bi-Directional Optical Flow）不修改 MV，而是在<strong>样点级</strong>修正双向预测值。它假设物体在两个参考帧之间匀速运动，用两个预测块的梯度估计每个 4×4 子块的残余运动 (v_x, v_y)，再对每个样点加一个修正项：</p>
+<h3 id="5-2-BDOF：双向光流"><a href="#5-2-BDOF：双向光流" class="headerlink" title="5.2 BDOF：双向光流"></a>5.2 BDOF：双向光流</h3><p>BDOF（Bi-Directional Optical Flow）不修改 MV，而是在<strong>样点级</strong>修正双向预测值。它假设物体在两个参考帧之间匀速运动，用两个预测块的梯度估计每个 4×4 子块的残余运动 (v_x, v_y)，再按式 (5) 对每个样点加一个修正项：</p>
 <div>
-$$P_{\text{BDOF}} = \Big( I^{(0)} + I^{(1)} + \tfrac{1}{2}\big[v_x\,(g_x^{(1)}-g_x^{(0)}) + v_y\,(g_y^{(1)}-g_y^{(0)})\big] \Big) / 2$$
+$$P_{\text{BDOF}} = \Big( I^{(0)} + I^{(1)} + \tfrac{1}{2}\big[v_x\,(g_x^{(1)}-g_x^{(0)}) + v_y\,(g_y^{(1)}-g_y^{(0)})\big] \Big) / 2 \tag{5}$$
 </div>
 
 <p>其中 I 为两个预测块的样点，g 为其水平、垂直梯度。(v_x, v_y) 由 4×4 子块周围 6×6 窗口内的梯度相关量求出，只需移位和比较，没有真正的除法。</p>
 <p>启用条件（<code>InterPrediction.cpp:527-565</code>）与 DMVR 类似：前后对称、等距离的双向预测，宽、高 ≥ 8 且样点数 ≥ 128，非仿射&#x2F;子块、非 CIIP、非 SMVD，BCW 等权重且无 WP。BDOF 只作用于亮度，按不超过 16×16 的区域处理（<code>MAX_BDOF_APPLICATION_REGION</code>，<code>CommonDef.h:201</code>）。</p>
-<h3 id="5-3-PROF：仿射的光流修正"><a href="#5-3-PROF：仿射的光流修正" class="headerlink" title="5.3 PROF：仿射的光流修正"></a>5.3 PROF：仿射的光流修正</h3><p>仿射模式把 CU 切成 4×4 子块，子块内部所有像素共用一个 MV，这是一种近似。PROF（Prediction Refinement with Optical Flow）用光流补偿这部分误差：</p>
+<h3 id="5-3-PROF：仿射的光流修正"><a href="#5-3-PROF：仿射的光流修正" class="headerlink" title="5.3 PROF：仿射的光流修正"></a>5.3 PROF：仿射的光流修正</h3><p>仿射模式把 CU 切成 4×4 子块，子块内部所有像素共用一个 MV，这是一种近似。PROF（Prediction Refinement with Optical Flow）用光流补偿这部分误差，如式 (6)：</p>
 <div>
-$$\Delta I(i,j) = g_x(i,j)\cdot\Delta v_x(i,j) + g_y(i,j)\cdot\Delta v_y(i,j)$$
+$$\Delta I(i,j) = g_x(i,j)\cdot\Delta v_x(i,j) + g_y(i,j)\cdot\Delta v_y(i,j) \tag{6}$$
 </div>
 
 <p>其中 Δv 是像素 (i, j) 的“真实”仿射 MV 与子块中心 MV 之差。由于仿射模型是线性的，Δv 只取决于像素在子块内的相对位置，<strong>对所有子块都相同</strong>，只需计算一次。PROF 只作用于亮度；CPMV 全部相同（实际是平移）或子块 MV 发散超限时不启用（<code>InterPrediction.cpp:909-914</code>）。</p>
 <hr>
-<h2 id="6-加权预测"><a href="#6-加权预测" class="headerlink" title="6. 加权预测"></a>6. 加权预测</h2><h3 id="6-1-BCW：CU-级双向加权"><a href="#6-1-BCW：CU-级双向加权" class="headerlink" title="6.1 BCW：CU 级双向加权"></a>6.1 BCW：CU 级双向加权</h3><p>HEVC 的双向预测是两个预测块等权平均。VVC 的 BCW（Bi-prediction with CU-level Weights）允许为每个 CU 选择权重：</p>
+<h2 id="6-加权预测"><a href="#6-加权预测" class="headerlink" title="6. 加权预测"></a>6. 加权预测</h2><h3 id="6-1-BCW：CU-级双向加权"><a href="#6-1-BCW：CU-级双向加权" class="headerlink" title="6.1 BCW：CU 级双向加权"></a>6.1 BCW：CU 级双向加权</h3><p>HEVC 的双向预测是两个预测块等权平均。VVC 的 BCW（Bi-prediction with CU-level Weights）按式 (7) 允许为每个 CU 选择权重：</p>
 <div>
-$$P = \big( (8-w)\cdot P_0 + w\cdot P_1 + 4 \big) \gg 3,\qquad w \in \{-2,\ 3,\ 4,\ 5,\ 10\}$$
+$$P = \big( (8-w)\cdot P_0 + w\cdot P_1 + 4 \big) \gg 3,\qquad w \in \{-2,\ 3,\ 4,\ 5,\ 10\} \tag{7}$$
 </div>
 
 <p>权重表见 <code>Rom.cpp:190</code>。低延迟配置下 5 种权重都可用，其余配置只用 {3, 4, 5}。BCW 只用于样点数不少于 256 的 CU；Merge 模式会继承邻块的权重索引。</p>

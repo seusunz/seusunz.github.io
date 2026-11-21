@@ -187,10 +187,10 @@
 <hr>
 <h2 id="1-为什么是算术编码"><a href="#1-为什么是算术编码" class="headerlink" title="1. 为什么是算术编码"></a>1. 为什么是算术编码</h2><h3 id="1-1-Huffman-的整数码长天花板"><a href="#1-1-Huffman-的整数码长天花板" class="headerlink" title="1.1 Huffman 的整数码长天花板"></a>1.1 Huffman 的整数码长天花板</h3><p>信源熵给出了无损压缩的下限：</p>
 <div>
-$$H(X) = -\sum_i p_i \log_2 p_i$$
+$$H(X) = -\sum_i p_i \log_2 p_i \tag{1}$$
 </div>
 
-<p>Huffman 编码给每个符号分配<strong>整数</strong>个比特。视频编码里有大量“高度偏斜”的二元事件，这个限制的代价非常大。以一个 <code>P(0)=0.95</code> 的标志位为例：</p>
+<p>式 (1) 说明：算术编码器要让每个 bin 的实际码长尽量逼近 −log₂ p。Huffman 编码给每个符号分配<strong>整数</strong>个比特。视频编码里有大量“高度偏斜”的二元事件，这个限制的代价非常大。以一个 <code>P(0)=0.95</code> 的标志位为例：</p>
 <table>
 <thead>
 <tr>
@@ -326,9 +326,9 @@ $$H(X) = -\sum_i p_i \log_2 p_i$$
 <hr>
 <h2 id="4-概率估计：从-64-状态机到双速率估计器"><a href="#4-概率估计：从-64-状态机到双速率估计器" class="headerlink" title="4. 概率估计：从 64 状态机到双速率估计器"></a>4. 概率估计：从 64 状态机到双速率估计器</h2><p>这是 HEVC → VVC 变化最大的部分。</p>
 <p><img src="/images/posts/vvc-cabac/prob-models.svg" alt="HEVC 与 VVC 概率模型对比"></p>
-<h3 id="4-1-HEVC：64-状态有限状态机"><a href="#4-1-HEVC：64-状态有限状态机" class="headerlink" title="4.1 HEVC：64 状态有限状态机"></a>4.1 HEVC：64 状态有限状态机</h3><p>HEVC 用 6 bit 的 <code>pStateIdx</code>（0~63）加 1 bit 的 <code>valMps</code> 表示概率。状态 σ 对应的 LPS 概率近似为：</p>
+<h3 id="4-1-HEVC：64-状态有限状态机"><a href="#4-1-HEVC：64-状态有限状态机" class="headerlink" title="4.1 HEVC：64 状态有限状态机"></a>4.1 HEVC：64 状态有限状态机</h3><p>HEVC 用 6 bit 的 <code>pStateIdx</code>（0~63）加 1 bit 的 <code>valMps</code> 表示概率。状态 σ 对应的 LPS 概率近似为式 (2)：</p>
 <div>
-$$p_\sigma = 0.5\cdot\alpha^{\sigma},\qquad \alpha = \left(\frac{0.01875}{0.5}\right)^{1/63} \approx 0.9492$$
+$$p_\sigma = 0.5\cdot\alpha^{\sigma},\qquad \alpha = \left(\frac{0.01875}{0.5}\right)^{1/63} \approx 0.9492 \tag{2}$$
 </div>
 
 <p>更新完全查表：编码 MPS 后 <code>pStateIdx = transIdxMps[pStateIdx]</code>，编码 LPS 后 <code>pStateIdx = transIdxLps[pStateIdx]</code>；若 <code>pStateIdx==0</code> 时出现 LPS，则翻转 <code>valMps</code>。它近似等价于窗口约 1&#x2F;(1−α) ≈ 20 个 bin 的指数滑动平均，<strong>所有上下文共用同一个速率</strong>。</p>

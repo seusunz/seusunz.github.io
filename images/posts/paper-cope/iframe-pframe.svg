@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" width="800" height="340">
+  <rect width="800" height="340" fill="#ffffff"/>
+  <text x="20" y="28" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#1f2933" text-anchor="start" font-weight="bold">CoPE-VideoLM：I 帧与 P 帧分工处理</text>
+
+  <text x="20" y="62" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">I 帧路径：完整 RGB 编码</text>
+  <rect x="30" y="76" width="130" height="52" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="95" y="96" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">I 帧</text>
+  <text x="95" y="114" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">少量关键帧</text>
+  <line x1="160" y1="102" x2="198" y2="102" stroke="#1f2933" stroke-width="1.6"/><polygon points="198,102 189,105.9 189,98.1" fill="#1f2933"/>
+  <rect x="200" y="76" width="180" height="52" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="290" y="96" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">标准视觉编码器</text>
+  <text x="290" y="114" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">完整图像特征提取</text>
+  <line x1="380" y1="102" x2="418" y2="102" stroke="#1f2933" stroke-width="1.6"/><polygon points="418,102 409,105.9 409,98.1" fill="#1f2933"/>
+  <rect x="420" y="76" width="150" height="52" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="495" y="96" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">视觉 Token</text>
+  <text x="495" y="114" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">静态语义</text>
+
+  <text x="20" y="172" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="start" font-weight="bold">P 帧路径：压缩域直接建模</text>
+  <rect x="30" y="186" width="130" height="52" rx="6" fill="#fef9c3" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="95" y="206" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">P 帧</text>
+  <text x="95" y="224" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">大量预测帧</text>
+  <line x1="160" y1="212" x2="198" y2="212" stroke="#1f2933" stroke-width="1.6"/><polygon points="198,212 189,215.9 189,208.1" fill="#1f2933"/>
+  <rect x="200" y="186" width="180" height="52" rx="6" fill="#f8fafc" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="290" y="206" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">运动矢量 + 残差</text>
+  <text x="290" y="224" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">码流里的变化量基元</text>
+  <line x1="380" y1="212" x2="418" y2="212" stroke="#1f2933" stroke-width="1.6"/><polygon points="418,212 409,215.9 409,208.1" fill="#1f2933"/>
+  <rect x="420" y="186" width="150" height="52" rx="6" fill="#d1fae5" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="495" y="206" font-family="Helvetica, Arial, sans-serif" font-size="11.5" fill="#1f2933" text-anchor="middle" font-weight="bold">Δ-Tokens</text>
+  <text x="495" y="224" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">极少量，时序变化</text>
+
+  <path d="M495,238 L495,252 L400,252 L400,258" fill="none" stroke="#52606d" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <path d="M495,128 L495,144 L400,144 L400,152" fill="none" stroke="#52606d" stroke-width="1.2" stroke-dasharray="4,3"/>
+
+  <rect x="230" y="262" width="340" height="52" rx="6" fill="#f1f5f9" stroke="#1f2933" stroke-width="1.4"/>
+  <text x="400" y="282" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#1f2933" text-anchor="middle" font-weight="bold">VideoLM</text>
+  <text x="400" y="302" font-family="Helvetica, Arial, sans-serif" font-size="10.5" fill="#52606d" text-anchor="middle">静态语义 + 时序变化 → 统一建模</text>
+
+  <text x="590" y="96" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#059669" text-anchor="start" font-weight="bold">保留语义质量</text>
+  <text x="590" y="212" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#059669" text-anchor="start" font-weight="bold">Token 用量 ↓93%</text>
+  <text x="590" y="232" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#059669" text-anchor="start" font-weight="bold">TTFT ↓86%</text>
+</svg>

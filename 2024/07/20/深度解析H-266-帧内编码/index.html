@@ -333,10 +333,10 @@ $$\begin{aligned}
 P_V(x,y) &= (H-1-y)\cdot R(x,-1) + (y+1)\cdot R(-1,H)\\
 P_H(x,y) &= (W-1-x)\cdot R(-1,y) + (x+1)\cdot R(W,-1)\\
 P(x,y) &= \big( P_V \cdot W + P_H \cdot H + W\cdot H \big) \gg (\log_2 W + \log_2 H + 1)
-\end{aligned}$$
+\end{aligned}\tag{1}$$
 </div>
 
-<p>其中 R(−1, H) 为左下角参考样点，R(W, −1) 为右上角参考样点。所有乘除都是移位，硬件实现很规整（<code>IntraPrediction.cpp:294</code>）。</p>
+<p>其中 R(−1, H) 为左下角参考样点，R(W, −1) 为右上角参考样点。式 (1) 中所有乘除都是移位，硬件实现很规整（<code>IntraPrediction.cpp:294</code>）。</p>
 <h3 id="2-2-DC（模式-1）：非方块只用长边"><a href="#2-2-DC（模式-1）：非方块只用长边" class="headerlink" title="2.2 DC（模式 1）：非方块只用长边"></a>2.2 DC（模式 1）：非方块只用长边</h3><p>DC 用参考像素均值填满整块。HEVC 的块都是方块，W + H 是 2 的幂，除法可以用移位实现。VVC 有矩形块，W + H 不一定是 2 的幂，于是规定（<code>IntraPrediction.cpp:153-182</code>）：</p>
 <table>
 <thead>
@@ -467,10 +467,10 @@ $$\begin{aligned}
 \text{scale} &= (\log_2 W + \log_2 H - 2) \gg 2\\
 w_T(y) &= 32 \gg \big((y \ll 1) \gg \text{scale}\big),\qquad w_L(x) = 32 \gg \big((x \ll 1) \gg \text{scale}\big)\\
 P'(x,y) &= P(x,y) + \Big( w_L\,\big(R(-1,y)-P\big) + w_T\,\big(R(x,-1)-P\big) + 32 \Big) \gg 6
-\end{aligned}$$
+\end{aligned}\tag{2}$$
 </div>
 
-<p>权重从边界处的 32&#x2F;64 开始按指数衰减，只影响靠近左边界和上边界的几行几列。对角度模式（<code>IntraPrediction.cpp:614-627</code>），沿预测方向的反方向在另一侧参考上找对应样点，用 w_L 混入。</p>
+<p>式 (2) 的权重从边界处的 32&#x2F;64 开始按指数衰减，只影响靠近左边界和上边界的几行几列。对角度模式（<code>IntraPrediction.cpp:614-627</code>），沿预测方向的反方向在另一侧参考上找对应样点，用 w_L 混入。</p>
 <p>适用条件（<code>IntraPrediction.cpp:373, 393-404</code>）：</p>
 <table>
 <thead>
@@ -522,10 +522,10 @@ P'(x,y) &= P(x,y) + \Big( w_L\,\big(R(-1,y)-P\big) + w_T\,\big(R(x,-1)-P\big) + 
 <p>ISP 的代价是<strong>把一个块的预测-重建拆成多次串行</strong>，对硬件吞吐的影响见第 5 节。</p>
 <h3 id="3-3-CCLM：跨分量线性模型（色度）"><a href="#3-3-CCLM：跨分量线性模型（色度）" class="headerlink" title="3.3 CCLM：跨分量线性模型（色度）"></a>3.3 CCLM：跨分量线性模型（色度）</h3><p>色度编码时，同位置的亮度已经重建完成。CCLM 假设色度与（降采样后的）亮度之间存在局部线性关系：</p>
 <div>
-$$\text{pred}_C(i,j) = \big(\alpha \cdot \text{rec}'_L(i,j)\big) \gg k + \beta$$
+$$\text{pred}_C(i,j) = \big(\alpha \cdot \text{rec}'_L(i,j)\big) \gg k + \beta \tag{3}$$
 </div>
 
-<p>模型参数不传输，而是由编解码两端从<strong>相邻参考像素</strong>中各自推导（<code>IntraPrediction.cpp:1580</code> 起）：</p>
+<p>式 (3) 中的模型参数不传输，而是由编解码两端从<strong>相邻参考像素</strong>中各自推导（<code>IntraPrediction.cpp:1580</code> 起）：</p>
 <p><img src="/images/posts/vvc-intra/cclm-derive.svg" alt="CCLM 参数推导三步"></p>
 <ol>
 <li><strong>选 4 个样点对</strong>：从上方和&#x2F;或左侧模板中等间隔选 4 个“降采样亮度 + 色度”样点对（<code>IntraPrediction.cpp:1689-1730</code>）；</li>
