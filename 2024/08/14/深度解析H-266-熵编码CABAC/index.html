@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现 | 九天之遥
+      
+    </title>
+    <meta name="description" content="聚焦视频编码与数据压缩硬件架构，以及与 AI Infra 相关的系统思考与工程实践。" />
+    <meta name="keywords" content="编码与压缩硬件架构, 视频编解码后端, H.266, VVC, CABAC, ZSTD, ISP, 数据通路, AI Infra, 张量压缩, 技术博客" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner--toc">
+      <div class="post-content__head">
+        <div class="post-title">深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现</div>
+        <div class="post-info">
+          
+  
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/HEVC/" class="post-tag">#HEVC</a><a href="/tags/CABAC/" class="post-tag">#CABAC</a><a href="/tags/%E7%86%B5%E7%BC%96%E7%A0%81/" class="post-tag">#熵编码</a>
+
+
+
+          <span class="post-date">2024-08-14</span>
+        </div>
+      </div>
+      
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#0-%E5%85%88%E7%9C%8B%E5%85%A8%E6%99%AF%EF%BC%9ACABAC-%E5%9C%A8%E7%BC%96%E7%A0%81%E5%99%A8%E9%87%8C%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="post-toc-text">0. 先看全景：CABAC 在编码器里的位置</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E7%AE%97%E6%9C%AF%E7%BC%96%E7%A0%81"><span class="post-toc-text">1. 为什么是算术编码</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-1-Huffman-%E7%9A%84%E6%95%B4%E6%95%B0%E7%A0%81%E9%95%BF%E5%A4%A9%E8%8A%B1%E6%9D%BF"><span class="post-toc-text">1.1 Huffman 的整数码长天花板</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1-2-%E7%AE%97%E6%9C%AF%E7%BC%96%E7%A0%81%E7%9A%84%E6%80%9D%E8%B7%AF"><span class="post-toc-text">1.2 算术编码的思路</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-%E4%BA%8C%E5%80%BC%E5%8C%96%EF%BC%9A%E6%8A%8A%E8%AF%AD%E6%B3%95%E5%85%83%E7%B4%A0%E5%8F%98%E6%88%90-bin-%E4%B8%B2"><span class="post-toc-text">2. 二值化：把语法元素变成 bin 串</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1-%E5%9B%9B%E7%A7%8D%E5%9F%BA%E7%A1%80%E4%BA%8C%E5%80%BC%E5%8C%96"><span class="post-toc-text">2.1 四种基础二值化</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2-bin-%E7%9A%84%E4%B8%89%E7%A7%8D%E2%80%9C%E5%8E%BB%E5%90%91%E2%80%9D"><span class="post-toc-text">2.2 bin 的三种“去向”</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-3-VVC-%E7%9A%84%E4%B8%80%E4%B8%AA%E5%85%B3%E9%94%AE%E5%8F%98%E5%8C%96%EF%BC%9A%E5%B8%B8%E8%A7%84-bin-%E9%A2%84%E7%AE%97"><span class="post-toc-text">2.3 VVC 的一个关键变化：常规 bin 预算</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-%E4%B8%8A%E4%B8%8B%E6%96%87%E5%BB%BA%E6%A8%A1%EF%BC%9A%E4%B8%BA%E6%AF%8F%E4%B8%AA-bin-%E9%80%89%E4%B8%80%E4%B8%AA%E6%A6%82%E7%8E%87%E6%A8%A1%E5%9E%8B"><span class="post-toc-text">3. 上下文建模：为每个 bin 选一个概率模型</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-1-ctxIdx-%E7%9A%84%E6%9E%84%E6%88%90"><span class="post-toc-text">3.1 ctxIdx 的构成</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-2-%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%88%E8%A7%84%E8%8C%83-9-3-2-2%EF%BC%89"><span class="post-toc-text">3.2 上下文初始化（规范 9.3.2.2）</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E6%A6%82%E7%8E%87%E4%BC%B0%E8%AE%A1%EF%BC%9A%E4%BB%8E-64-%E7%8A%B6%E6%80%81%E6%9C%BA%E5%88%B0%E5%8F%8C%E9%80%9F%E7%8E%87%E4%BC%B0%E8%AE%A1%E5%99%A8"><span class="post-toc-text">4. 概率估计：从 64 状态机到双速率估计器</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-1-HEVC%EF%BC%9A64-%E7%8A%B6%E6%80%81%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="post-toc-text">4.1 HEVC：64 状态有限状态机</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-2-VVC%EF%BC%9A%E4%B8%A4%E4%B8%AA%E4%B8%8D%E5%90%8C%E9%80%9F%E7%8E%87%E7%9A%84%E4%BC%B0%E8%AE%A1%E5%99%A8%E5%8F%96%E5%B9%B3%E5%9D%87"><span class="post-toc-text">4.2 VVC：两个不同速率的估计器取平均</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-3-%E5%AF%B9%E7%A1%AC%E4%BB%B6%E5%BE%88%E9%87%8D%E8%A6%81%E7%9A%84%E8%A7%82%E5%AF%9F%EF%BC%9A%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%B0%E5%BA%95%E8%A6%81%E5%AD%98%E5%A4%9A%E5%B0%91%E4%BD%8D"><span class="post-toc-text">4.3 对硬件很重要的观察：上下文到底要存多少位</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-%E7%AE%97%E6%9C%AF%E7%BC%96%E7%A0%81%E5%BC%95%E6%93%8E%EF%BC%9ARange%E3%80%81Low-%E4%B8%8E%E8%BF%9B%E4%BD%8D"><span class="post-toc-text">5. 算术编码引擎：Range、Low 与进位</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-1-%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F"><span class="post-toc-text">5.1 状态变量</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-2-LPS-%E5%8C%BA%E9%97%B4%E8%AE%A1%E7%AE%97"><span class="post-toc-text">5.2 LPS 区间计算</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-3-%E5%B8%B8%E8%A7%84-bin-%E7%BC%96%E7%A0%81%EF%BC%88VTM-BinEncoder-cpp-354-391%EF%BC%89"><span class="post-toc-text">5.3 常规 bin 编码（VTM BinEncoder.cpp:354-391）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-4-Bypass-%E4%B8%8E-Terminate"><span class="post-toc-text">5.4 Bypass 与 Terminate</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-5-%E8%BF%9B%E4%BD%8D%EF%BC%9A%E6%9C%80%E5%AE%B9%E6%98%93%E8%A2%AB%E5%BF%BD%E7%95%A5%E7%9A%84%E4%B8%80%E7%8E%AF"><span class="post-toc-text">5.5 进位：最容易被忽略的一环</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-%E7%A1%AC%E4%BB%B6%E5%AE%9E%E7%8E%B0%EF%BC%9A%E9%9A%BE%E7%82%B9%E4%B8%8E%E5%B8%B8%E7%94%A8%E8%A7%A3%E6%B3%95"><span class="post-toc-text">6. 硬件实现：难点与常用解法</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-1-%E5%85%B3%E9%94%AE%E7%8E%AF%E8%B7%AF%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88-1-bin-cycle-%E5%BE%88%E9%9A%BE"><span class="post-toc-text">6.1 关键环路：为什么 1 bin&#x2F;cycle 很难</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-2-Range-%E7%8E%AF%E7%9A%84%E5%B8%B8%E7%94%A8%E4%BC%98%E5%8C%96"><span class="post-toc-text">6.2 Range 环的常用优化</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-3-%E4%B8%8A%E4%B8%8B%E6%96%87%E7%8E%AF%EF%BC%9Aforwarding-%E4%B8%8E%E8%AF%BB%E5%86%99%E5%86%B2%E7%AA%81"><span class="post-toc-text">6.3 上下文环：forwarding 与读写冲突</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-4-Bypass-%E5%A4%9A-bin-%E5%B9%B6%E8%A1%8C"><span class="post-toc-text">6.4 Bypass 多 bin 并行</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-5-HEVC-VVC-%E5%8F%8C%E5%8D%8F%E8%AE%AE%EF%BC%9A%E5%93%AA%E4%BA%9B%E8%83%BD%E5%85%B1%E4%BA%AB"><span class="post-toc-text">6.5 HEVC&#x2F;VVC 双协议：哪些能共享</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-6-WPP%EF%BC%9A%E5%B9%B6%E8%A1%8C%E5%B8%A6%E6%9D%A5%E7%9A%84%E4%B8%8A%E4%B8%8B%E6%96%87%E5%90%8C%E6%AD%A5"><span class="post-toc-text">6.6 WPP：并行带来的上下文同步</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-HEVC-%E4%B8%8E-VVC-CABAC-%E5%AF%B9%E6%AF%94%E9%80%9F%E6%9F%A5"><span class="post-toc-text">7. HEVC 与 VVC CABAC 对比速查</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#8-%E5%B0%8F%E7%BB%93"><span class="post-toc-text">8. 小结</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E7%9B%B8%E5%85%B3%E9%98%85%E8%AF%BB"><span class="post-toc-text">相关阅读</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="post-toc-text">参考资料</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <blockquote>
+<p><strong>本文定位</strong>：标准解读 × 硬件实现。前半部分讲清 CABAC 每一步“规范怎么写”，后半部分回答“硬件为什么难做、怎么做”。文中公式均与 VTM 参考软件源码逐行核对，代码位置以 <code>文件:行号</code> 标注，便于对照。</p>
+<p><strong>2026-11 重写说明</strong>：初版（2024-08）偏入门科普，且部分数据混用了 H.264 的口径，本次全文重写。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="0-先看全景：CABAC-在编码器里的位置"><a href="#0-先看全景：CABAC-在编码器里的位置" class="headerlink" title="0. 先看全景：CABAC 在编码器里的位置"></a>0. 先看全景：CABAC 在编码器里的位置</h2><p>CABAC（Context-based Adaptive Binary Arithmetic Coding）位于编码器流水的最末端：预测、变换、量化产生的所有<strong>语法元素</strong>（划分标志、预测模式、MVD、量化系数……）最终都要经过它变成码流。</p>
+<p><img src="/images/posts/vvc-cabac/pipeline.svg" alt="CABAC 编码管线全景"></p>
+<p>①② 决定“用哪个概率去编码”，③④⑤ 构成一个<strong>逐 bin 的强反馈环</strong>：下一个 bin 的编码依赖上一个 bin 更新后的 <code>Range</code> 和上下文状态。这个反馈环是 CABAC 硬件吞吐的根本瓶颈，第 6 节会专门展开。</p>
+<hr>
+<h2 id="1-为什么是算术编码"><a href="#1-为什么是算术编码" class="headerlink" title="1. 为什么是算术编码"></a>1. 为什么是算术编码</h2><h3 id="1-1-Huffman-的整数码长天花板"><a href="#1-1-Huffman-的整数码长天花板" class="headerlink" title="1.1 Huffman 的整数码长天花板"></a>1.1 Huffman 的整数码长天花板</h3><p>信源熵给出了无损压缩的下限：</p>
+<div>
+$$H(X) = -\sum_i p_i \log_2 p_i \tag{1}$$
+</div>
+
+<p>式 (1) 说明：算术编码器要让每个 bin 的实际码长尽量逼近 −log₂ p。Huffman 编码给每个符号分配<strong>整数</strong>个比特。视频编码里有大量“高度偏斜”的二元事件，这个限制的代价非常大。以一个 <code>P(0)=0.95</code> 的标志位为例：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>信源熵</td>
+<td>−0.95·log₂0.95 − 0.05·log₂0.05 ≈ <strong>0.286</strong> bit&#x2F;符号</td>
+</tr>
+<tr>
+<td>Huffman（逐符号）</td>
+<td><strong>1</strong> bit&#x2F;符号（二元信源最少 1 bit）</td>
+</tr>
+<tr>
+<td>冗余</td>
+<td>约 <strong>3.5 倍</strong></td>
+</tr>
+</tbody></table>
+<h3 id="1-2-算术编码的思路"><a href="#1-2-算术编码的思路" class="headerlink" title="1.2 算术编码的思路"></a>1.2 算术编码的思路</h3><p>算术编码不再给“单个符号”分配码字，而是给<strong>整个符号序列</strong>分配一个落在 <code>[0,1)</code> 内的子区间：每编码一个符号，就按其概率把当前区间按比例切小。最终区间宽度等于序列概率之积，输出约 −log₂∏pᵢ 个比特，平均到每个符号上可以<strong>小于 1 bit</strong>，从而逼近熵。</p>
+<p>CABAC 在此基础上做了两个工程化约束：</p>
+<ol>
+<li><strong>只编码二元符号（bin）</strong>：概率模型只需维护一个数 <code>P(LPS)</code>，区间切分只有两种情况，硬件极简；</li>
+<li><strong>定点有限精度</strong>：区间宽度 <code>Range</code> 用 9 bit 表示并保持在 <code>[256, 510]</code>。每当它小于 256 就左移（重归一化），同时把高位比特“推出”到码流。</li>
+</ol>
+<hr>
+<h2 id="2-二值化：把语法元素变成-bin-串"><a href="#2-二值化：把语法元素变成-bin-串" class="headerlink" title="2. 二值化：把语法元素变成 bin 串"></a>2. 二值化：把语法元素变成 bin 串</h2><h3 id="2-1-四种基础二值化"><a href="#2-1-四种基础二值化" class="headerlink" title="2.1 四种基础二值化"></a>2.1 四种基础二值化</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>适用场景</th>
+<th>示例（值 → bin 串）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定长 FL（cMax）</td>
+<td>取值范围小且分布均匀</td>
+<td>cMax&#x3D;7：5 → <code>101</code></td>
+</tr>
+<tr>
+<td>截断一元 TR（cRice&#x3D;0）</td>
+<td>小值概率高</td>
+<td>cMax&#x3D;3：0→<code>0</code>，1→<code>10</code>，2→<code>110</code>，3→<code>111</code></td>
+</tr>
+<tr>
+<td>截断 Rice TR（cRice&gt;0）</td>
+<td>系数幅度</td>
+<td>前缀为 <code>v &gt;&gt; cRice</code> 的截断一元码，后缀为 cRice 位定长</td>
+</tr>
+<tr>
+<td>k 阶指数哥伦布 EGk</td>
+<td>无界&#x2F;大值（MVD、系数余量）</td>
+<td>EG0：0→<code>0</code>，1→<code>100</code>，2→<code>101</code>，3→<code>11000</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>初版文中“8 → <code>111111110</code>”是纯一元码（Unary）的例子。它在 CABAC 中几乎只以“截断一元”的形式出现，到达 cMax 时省略结尾的 <code>0</code>。</p>
+</blockquote>
+<h3 id="2-2-bin-的三种“去向”"><a href="#2-2-bin-的三种“去向”" class="headerlink" title="2.2 bin 的三种“去向”"></a>2.2 bin 的三种“去向”</h3><p>二值化后，每个 bin 会被指定一种编码方式，这一点对硬件至关重要：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>是否需要上下文</th>
+<th>典型来源</th>
+<th>硬件特征</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Regular</strong>（常规）</td>
+<td>是</td>
+<td>各类 flag、系数 sig&#x2F;gt1&#x2F;par&#x2F;gt3</td>
+<td>读上下文 → 算 LPS → 更新区间 → 写回，最慢</td>
+</tr>
+<tr>
+<td><strong>Bypass</strong>（旁路）</td>
+<td>否，P&#x3D;0.5</td>
+<td>符号位、EGk 后缀、Rice 后缀</td>
+<td><code>Range</code> 不变，<code>Low</code> 左移后加 bin×Range，可多 bin 并行</td>
+</tr>
+<tr>
+<td><strong>Terminate</strong>（终止）</td>
+<td>否，LPS 固定为 2</td>
+<td><code>end_of_slice_segment_flag</code> 等</td>
+<td>只在 slice&#x2F;tile&#x2F;WPP 行尾出现，频次极低</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-VVC-的一个关键变化：常规-bin-预算"><a href="#2-3-VVC-的一个关键变化：常规-bin-预算" class="headerlink" title="2.3 VVC 的一个关键变化：常规 bin 预算"></a>2.3 VVC 的一个关键变化：常规 bin 预算</h3><p>VVC 的系数编码为每个变换块设定了上下文编码 bin 的预算（规范变量 <code>remBinsPass1</code>）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">remBinsPass1 = ((1 &lt;&lt; (log2TbWidth + log2TbHeight)) * 7) &gt;&gt; 2    // 平均每个系数 1.75 个常规 bin<br></code></pre></td></tr></table></figure>
+
+<p>预算耗尽后，剩余系数不再编码 <code>sig/gt1/par/gt3</code>，而是整体用 <code>dec_abs_level</code> 以 Bypass 方式编码。</p>
+<p><strong>对硬件的意义</strong>：常规 bin 是吞吐瓶颈。HEVC 中最坏情况的常规 bin 数上界很松；VVC 的预算机制让<strong>最坏情况吞吐可以精确计算</strong>，这直接决定了 CABAC 的频率与并行度规格能否做得“刚好够用”。</p>
+<hr>
+<h2 id="3-上下文建模：为每个-bin-选一个概率模型"><a href="#3-上下文建模：为每个-bin-选一个概率模型" class="headerlink" title="3. 上下文建模：为每个 bin 选一个概率模型"></a>3. 上下文建模：为每个 bin 选一个概率模型</h2><h3 id="3-1-ctxIdx-的构成"><a href="#3-1-ctxIdx-的构成" class="headerlink" title="3.1 ctxIdx 的构成"></a>3.1 ctxIdx 的构成</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">ctxIdx = ctxOffset(语法元素, 初始化类型 initType) + ctxInc(邻域 / bin 位置 / 已编码信息)<br></code></pre></td></tr></table></figure>
+
+<p><code>ctxInc</code> 的推导是 CABAC“自适应”的来源，常见三类：</p>
+<table>
+<thead>
+<tr>
+<th>推导依据</th>
+<th>例子</th>
+<th>硬件需要的信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>左&#x2F;上邻块</td>
+<td><code>split_cu_flag</code>：比较左、上邻块深度与当前深度</td>
+<td>左邻列缓存 + 上邻行缓存（line buffer）</td>
+</tr>
+<tr>
+<td>bin 位置</td>
+<td>MVD 前缀的第 0&#x2F;1 个 bin 用不同上下文</td>
+<td>仅需 bin 计数器</td>
+</tr>
+<tr>
+<td>已编码系数模板</td>
+<td><code>sig_coeff_flag</code>：局部模板内已编码系数的幅度和，并结合依赖量化状态</td>
+<td>系数缓存 + 模板求和电路，ctxInc 计算中最重的一类</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-上下文初始化（规范-9-3-2-2）"><a href="#3-2-上下文初始化（规范-9-3-2-2）" class="headerlink" title="3.2 上下文初始化（规范 9.3.2.2）"></a>3.2 上下文初始化（规范 9.3.2.2）</h3><p>每个 slice 开始（以及 WPP 行起点，见 6.6 节）时，所有上下文按 <code>SliceQpY</code> 初始化。HEVC 与 VVC 公式不同：</p>
+<p><strong>HEVC</strong>（initValue 为 8 bit）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">slopeIdx  = initValue &gt;&gt; 4,            offsetIdx = initValue &amp; 15<br>m = slopeIdx * 5 - 45,                 n = (offsetIdx &lt;&lt; 3) - 16<br>preCtxState = Clip3(1, 126, ((m * Clip3(0, 51, SliceQpY)) &gt;&gt; 4) + n)<br>valMps    = (preCtxState &lt;= 63) ? 0 : 1<br>pStateIdx = valMps ? (preCtxState - 64) : (63 - preCtxState)<br></code></pre></td></tr></table></figure>
+
+<p><strong>VVC</strong>（initValue 为 6 bit，另有 4 bit 的 <code>shiftIdx</code> 表示自适应速率）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">slopeIdx  = initValue &gt;&gt; 3,            offsetIdx = initValue &amp; 7<br>m = slopeIdx - 4,                      n = offsetIdx * 18 + 1<br>preCtxState = Clip3(1, 127, ((m * (Clip3(0, 63, SliceQpY) - 16)) &gt;&gt; 1) + n)<br>pStateIdx0 = preCtxState &lt;&lt; 3          // 10 bit<br>pStateIdx1 = preCtxState &lt;&lt; 7          // 14 bit<br></code></pre></td></tr></table></figure>
+
+<p>VTM 实现见 <code>Contexts.cpp:123-131</code>（<code>BinProbModel_Std::init</code>），与上式一致。</p>
+<blockquote>
+<p><strong>硬件提示</strong>：初始化是“对全部上下文各做一次乘加”的批量操作。上下文数量在数百量级，若每拍只初始化 1 个，slice 开头就要停顿数百拍。常见做法是把初始化表按 bank 拆开并行计算，或在上一 slice 末尾预先计算。</p>
+</blockquote>
+<hr>
+<h2 id="4-概率估计：从-64-状态机到双速率估计器"><a href="#4-概率估计：从-64-状态机到双速率估计器" class="headerlink" title="4. 概率估计：从 64 状态机到双速率估计器"></a>4. 概率估计：从 64 状态机到双速率估计器</h2><p>这是 HEVC → VVC 变化最大的部分。</p>
+<p><img src="/images/posts/vvc-cabac/prob-models.svg" alt="HEVC 与 VVC 概率模型对比"></p>
+<h3 id="4-1-HEVC：64-状态有限状态机"><a href="#4-1-HEVC：64-状态有限状态机" class="headerlink" title="4.1 HEVC：64 状态有限状态机"></a>4.1 HEVC：64 状态有限状态机</h3><p>HEVC 用 6 bit 的 <code>pStateIdx</code>（0~63）加 1 bit 的 <code>valMps</code> 表示概率。状态 σ 对应的 LPS 概率近似为式 (2)：</p>
+<div>
+$$p_\sigma = 0.5\cdot\alpha^{\sigma},\qquad \alpha = \left(\frac{0.01875}{0.5}\right)^{1/63} \approx 0.9492 \tag{2}$$
+</div>
+
+<p>更新完全查表：编码 MPS 后 <code>pStateIdx = transIdxMps[pStateIdx]</code>，编码 LPS 后 <code>pStateIdx = transIdxLps[pStateIdx]</code>；若 <code>pStateIdx==0</code> 时出现 LPS，则翻转 <code>valMps</code>。它近似等价于窗口约 1&#x2F;(1−α) ≈ 20 个 bin 的指数滑动平均，<strong>所有上下文共用同一个速率</strong>。</p>
+<h3 id="4-2-VVC：两个不同速率的估计器取平均"><a href="#4-2-VVC：两个不同速率的估计器取平均" class="headerlink" title="4.2 VVC：两个不同速率的估计器取平均"></a>4.2 VVC：两个不同速率的估计器取平均</h3><p>VVC 改用两个定点概率估计器，分别以“快”“慢”两种速率跟踪统计特性，最终概率取两者之和（规范 9.3.4.3.2 中的状态转移过程）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">shift0 = (shiftIdx &gt;&gt; 2) + 2<br>shift1 = (shiftIdx &amp; 3) + 3 + shift0<br>pStateIdx0 = pStateIdx0 - (pStateIdx0 &gt;&gt; shift0) + ((1023  * binVal) &gt;&gt; shift0)<br>pStateIdx1 = pStateIdx1 - (pStateIdx1 &gt;&gt; shift1) + ((16383 * binVal) &gt;&gt; shift1)<br></code></pre></td></tr></table></figure>
+
+<p>VTM 为了让两个估计器对齐到同一个 15 bit 定点格式，用掩码实现（<code>Contexts.h:46-50, 100-111</code>）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">int</span> PROB_BITS   = <span class="hljs-number">15</span>;<br><span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">int</span> PROB_BITS_0 = <span class="hljs-number">10</span>;   <span class="hljs-comment">// 快估计器有效位宽</span><br><span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">int</span> PROB_BITS_1 = <span class="hljs-number">14</span>;   <span class="hljs-comment">// 慢估计器有效位宽</span><br><span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">int</span> MASK_0 = ~(~<span class="hljs-number">0u</span> &lt;&lt; PROB_BITS_0) &lt;&lt; (PROB_BITS - PROB_BITS_0);  <span class="hljs-comment">// 0x7FE0</span><br><span class="hljs-type">static</span> <span class="hljs-keyword">constexpr</span> <span class="hljs-type">int</span> MASK_1 = ~(~<span class="hljs-number">0u</span> &lt;&lt; PROB_BITS_1) &lt;&lt; (PROB_BITS - PROB_BITS_1);  <span class="hljs-comment">// 0x7FFE</span><br><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">update</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> bin)</span> </span>&#123;<br>  <span class="hljs-type">int</span> rate0 = m_rate &gt;&gt; <span class="hljs-number">4</span>, rate1 = m_rate &amp; <span class="hljs-number">15</span>;<br>  m_state[<span class="hljs-number">0</span>] -= (m_state[<span class="hljs-number">0</span>] &gt;&gt; rate0) &amp; MASK_0;<br>  m_state[<span class="hljs-number">1</span>] -= (m_state[<span class="hljs-number">1</span>] &gt;&gt; rate1) &amp; MASK_1;<br>  <span class="hljs-keyword">if</span> (bin) &#123;<br>    m_state[<span class="hljs-number">0</span>] += (<span class="hljs-number">0x7fffu</span> &gt;&gt; rate0) &amp; MASK_0;<br>    m_state[<span class="hljs-number">1</span>] += (<span class="hljs-number">0x7fffu</span> &gt;&gt; rate1) &amp; MASK_1;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>为什么这样设计</strong>：快估计器（窗口约 2^shift0）对内容突变响应快，慢估计器（窗口约 2^shift1）在平稳区域估计更准；<code>shiftIdx</code> 按上下文离线训练，让不同语法元素拥有不同的“学习速率”。这是 VVC 熵编码增益的主要来源之一。</p>
+<h3 id="4-3-对硬件很重要的观察：上下文到底要存多少位"><a href="#4-3-对硬件很重要的观察：上下文到底要存多少位" class="headerlink" title="4.3 对硬件很重要的观察：上下文到底要存多少位"></a>4.3 对硬件很重要的观察：上下文到底要存多少位</h3><table>
+<thead>
+<tr>
+<th>表示方式</th>
+<th>字段</th>
+<th>每个上下文位宽</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HEVC</td>
+<td><code>pStateIdx</code>(6) + <code>valMps</code>(1)</td>
+<td><strong>7 bit</strong></td>
+</tr>
+<tr>
+<td>VTM 软件表示</td>
+<td><code>m_state[0]</code>(15) + <code>m_state[1]</code>(15) + <code>m_rate</code>(8)</td>
+<td>38 bit</td>
+</tr>
+<tr>
+<td>VVC 规范有效位宽</td>
+<td><code>pStateIdx0</code>(10) + <code>pStateIdx1</code>(14) + <code>shiftIdx</code>(4)</td>
+<td><strong>28 bit</strong></td>
+</tr>
+</tbody></table>
+<p>VTM 的 15 bit 格式里，<code>MASK_0</code> 对应的低 5 位和 <code>MASK_1</code> 对应的最低位恒为 0；<code>m_rate</code> 也可以由 4 bit <code>shiftIdx</code> 现场推导。RTL 如果照搬软件数据结构，上下文存储会多出约 **36%**（38&#x2F;28）。上下文存储往往是 CABAC 面积的大头，按规范有效位宽打包几乎是“零代价”的面积优化；前提是 cmodel 比对时在接口处做好格式转换。</p>
+<hr>
+<h2 id="5-算术编码引擎：Range、Low-与进位"><a href="#5-算术编码引擎：Range、Low-与进位" class="headerlink" title="5. 算术编码引擎：Range、Low 与进位"></a>5. 算术编码引擎：Range、Low 与进位</h2><h3 id="5-1-状态变量"><a href="#5-1-状态变量" class="headerlink" title="5.1 状态变量"></a>5.1 状态变量</h3><table>
+<thead>
+<tr>
+<th>变量</th>
+<th>位宽（VTM）</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Range</code></td>
+<td>9 bit，归一化后 ∈ [256, 510]</td>
+<td>当前区间宽度，初值 510</td>
+</tr>
+<tr>
+<td><code>Low</code></td>
+<td>32 bit</td>
+<td>当前区间下界，高位逐步“推出”为码流</td>
+</tr>
+<tr>
+<td><code>bitsLeft</code></td>
+<td>初值 23</td>
+<td><code>Low</code> 中还能容纳多少位才需要输出一个字节</td>
+</tr>
+<tr>
+<td><code>bufferedByte</code> &#x2F; <code>numBufferedBytes</code></td>
+<td>8 bit &#x2F; 计数器</td>
+<td>处理进位传播的延迟输出缓冲</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-LPS-区间计算"><a href="#5-2-LPS-区间计算" class="headerlink" title="5.2 LPS 区间计算"></a>5.2 LPS 区间计算</h3><p><strong>HEVC</strong>：二维查表 <code>rangeTabLps[pStateIdx][qRangeIdx]</code>，<code>qRangeIdx = (Range &gt;&gt; 6) &amp; 3</code>，表大小 64×4×8 bit。</p>
+<p><strong>VVC</strong>：去掉查表，改为一个小乘法（<code>Contexts.h:131-137</code>）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">uint8_t</span> <span class="hljs-title">getLPS</span><span class="hljs-params">(<span class="hljs-type">unsigned</span> range)</span> <span class="hljs-type">const</span> </span>&#123;<br>  <span class="hljs-type">uint16_t</span> q = <span class="hljs-built_in">state</span>();            <span class="hljs-comment">// (m_state[0] + m_state[1]) &gt;&gt; 8，8 bit</span><br>  <span class="hljs-keyword">if</span> (q &amp; <span class="hljs-number">0x80</span>) q = q ^ <span class="hljs-number">0xff</span>;      <span class="hljs-comment">// 折叠到 LPS 一侧，MSB 即 MPS</span><br>  <span class="hljs-keyword">return</span> ((q &gt;&gt; <span class="hljs-number">2</span>) * (range &gt;&gt; <span class="hljs-number">5</span>) &gt;&gt; <span class="hljs-number">1</span>) + <span class="hljs-number">4</span>;   <span class="hljs-comment">// 6bit × 4bit 乘法</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>最小 LPS 值决定了重归一化的最大移位量：HEVC 常规上下文的 <code>rangeTabLps</code> 最小值为 6，VVC 的 LPS 最小值为 4。由于 6&lt;&lt;6 &#x3D; 384 ≥ 256、4&lt;&lt;6 &#x3D; 256 ≥ 256，<strong>两种协议 LPS 路径最多都只需左移 6 位</strong>；MPS 路径最多左移 1 位。一个 0~6 位的移位器即可同时服务两种协议。</p>
+<blockquote>
+<p>不少资料写“HEVC LPS 最多移位 7 位”，是把 Terminate 专用的 <code>pStateIdx=63</code>（LPS&#x3D;2）也算进去了，常规上下文不会进入该状态。</p>
+</blockquote>
+<h3 id="5-3-常规-bin-编码（VTM-BinEncoder-cpp-354-391）"><a href="#5-3-常规-bin-编码（VTM-BinEncoder-cpp-354-391）" class="headerlink" title="5.3 常规 bin 编码（VTM BinEncoder.cpp:354-391）"></a>5.3 常规 bin 编码（VTM <code>BinEncoder.cpp:354-391</code>）</h3><p>下面这段代码就是上图中“区间分裂 → 重归一化”的实现：</p>
+<p><img src="/images/posts/vvc-cabac/interval-split.svg" alt="区间分裂与重归一化"></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">uint32_t</span> LPS = rcProbModel.<span class="hljs-built_in">getLPS</span>(m_Range);<br>m_Range -= LPS;<br><span class="hljs-keyword">if</span> (bin != rcProbModel.<span class="hljs-built_in">mps</span>()) &#123;              <span class="hljs-comment">// 编码 LPS：取上半区间</span><br>  <span class="hljs-type">int</span> numBits = <span class="hljs-built_in">getRenormBitsLPS</span>(LPS);       <span class="hljs-comment">// 查表得到移位量</span><br>  m_bitsLeft -= numBits;<br>  m_Low  += m_Range;<br>  m_Low   = m_Low &lt;&lt; numBits;<br>  m_Range = LPS   &lt;&lt; numBits;<br>&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (m_Range &lt; <span class="hljs-number">256</span>) &#123;                  <span class="hljs-comment">// 编码 MPS：最多移 1 位</span><br>  m_bitsLeft--;  m_Low &lt;&lt;= <span class="hljs-number">1</span>;  m_Range &lt;&lt;= <span class="hljs-number">1</span>;<br>&#125;<br><span class="hljs-keyword">if</span> (m_bitsLeft &lt; <span class="hljs-number">12</span>) <span class="hljs-built_in">writeOut</span>();             <span class="hljs-comment">// 攒够 8 位就输出一个字节</span><br>rcProbModel.<span class="hljs-built_in">update</span>(bin);                     <span class="hljs-comment">// 概率写回</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="5-4-Bypass-与-Terminate"><a href="#5-4-Bypass-与-Terminate" class="headerlink" title="5.4 Bypass 与 Terminate"></a>5.4 Bypass 与 Terminate</h3><p>Bypass 时 0&#x2F;1 各占一半区间，等价于 <code>Low = (Low &lt;&lt; 1) + bin * Range</code>（<code>BinEncoder.cpp:156-168</code>），<code>Range</code> 不变。由于不依赖上下文、不改变 <code>Range</code>，<strong>N 个连续 bypass bin 可以合并为一次操作</strong>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Low = (Low &lt;&lt; N) + (bins[N-1:0] * Range)<br></code></pre></td></tr></table></figure>
+
+<p>这是硬件 multi-bin bypass 的理论基础：一次“移位 + 9bit×Nbit 乘加”即可在一拍内完成 N 个 bin。</p>
+<p>Terminate 固定 <code>Range -= 2</code>，bin&#x3D;1 时直接左移 7 位并准备 flush（<code>BinEncoder.cpp:246-268</code>）。</p>
+<h3 id="5-5-进位：最容易被忽略的一环"><a href="#5-5-进位：最容易被忽略的一环" class="headerlink" title="5.5 进位：最容易被忽略的一环"></a>5.5 进位：最容易被忽略的一环</h3><p><code>Low += Range</code> 可能向已经“推出”的高位产生进位。规范的参考编码过程用 <code>bitsOutstanding</code> 计数器处理；VTM 采用<strong>字节级</strong>等价方案（<code>BinEncoder.cpp:313-343</code>）：</p>
+<p><img src="/images/posts/vvc-cabac/carry-buffer.svg" alt="进位传播与 0xFF 缓冲"></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">leadByte = Low &gt;&gt; (24 - bitsLeft)        // 取出最高 8 位（第 9 位即进位）<br>if leadByte == 0xFF:                     // 0xFF 可能被后续进位改写，先不输出，只计数<br>    numBufferedBytes++<br>else:<br>    carry = leadByte &gt;&gt; 8<br>    输出 bufferedByte + carry<br>    输出 (numBufferedBytes-1) 个 (0xFF + carry) &amp; 0xFF   // 有进位时 0xFF 全部变 0x00<br>    bufferedByte = leadByte &amp; 0xFF<br></code></pre></td></tr></table></figure>
+
+<p>要点：</p>
+<ol>
+<li>只有连续的 <code>0xFF</code> 会被进位“击穿”，所以只需缓存<strong>一个普通字节 + 一个 0xFF 计数器</strong>，不必缓存任意长的码流；</li>
+<li>硬件上这一步可以完全从 bin 编码环路中<strong>剥离</strong>，作为独立的字节输出级，用 FIFO 解耦；</li>
+<li>计数器位宽与输出级吞吐要按最坏情况（长串 0xFF）评估，否则极端码流下会反压整个编码环路。</li>
+</ol>
+<hr>
+<h2 id="6-硬件实现：难点与常用解法"><a href="#6-硬件实现：难点与常用解法" class="headerlink" title="6. 硬件实现：难点与常用解法"></a>6. 硬件实现：难点与常用解法</h2><h3 id="6-1-关键环路：为什么-1-bin-cycle-很难"><a href="#6-1-关键环路：为什么-1-bin-cycle-很难" class="headerlink" title="6.1 关键环路：为什么 1 bin&#x2F;cycle 很难"></a>6.1 关键环路：为什么 1 bin&#x2F;cycle 很难</h3><p>把常规 bin 编码展开成数据依赖链：</p>
+<p><img src="/images/posts/vvc-cabac/critical-loop.svg" alt="常规 bin 编码的串行依赖环"></p>
+<p>这里有<strong>两个</strong>环：</p>
+<ul>
+<li><strong>Range 环</strong>：<code>Range_next</code> 是下一个 bin 计算 LPS 的输入，必须在一拍内闭合，否则吞吐直接减半；</li>
+<li><strong>上下文环</strong>：连续两个 bin 使用同一个 <code>ctxIdx</code> 时（非常常见，如连续的 <code>sig_coeff_flag</code>），后一个 bin 必须拿到前一个 bin 更新后的状态。</li>
+</ul>
+<h3 id="6-2-Range-环的常用优化"><a href="#6-2-Range-环的常用优化" class="headerlink" title="6.2 Range 环的常用优化"></a>6.2 Range 环的常用优化</h3><table>
+<thead>
+<tr>
+<th>手段</th>
+<th>做法</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LPS 预计算</td>
+<td><code>Range&gt;&gt;5</code> 只有 8 种取值（8~15），提前对 ctx 状态算出全部候选 LPS，环路内只剩一级 MUX</td>
+<td>8 份乘法&#x2F;查表结果</td>
+</tr>
+<tr>
+<td>MPS&#x2F;LPS 双路并行</td>
+<td>同时算出两种情况的 <code>Range_next</code> 与移位量，用比较结果做最终选择</td>
+<td>两套减法与移位器</td>
+</tr>
+<tr>
+<td>移位量查表</td>
+<td>用 <code>LPS&gt;&gt;3</code> 查 32 项小表得到移位量（VTM 的 <code>m_RenormTable_32</code>），替代前导零检测</td>
+<td>一张小 ROM</td>
+</tr>
+<tr>
+<td>Low 更新后置</td>
+<td><code>Low</code> 的加法与移位不在 Range 环上，可以晚一拍做</td>
+<td>一级流水寄存</td>
+</tr>
+</tbody></table>
+<h3 id="6-3-上下文环：forwarding-与读写冲突"><a href="#6-3-上下文环：forwarding-与读写冲突" class="headerlink" title="6.3 上下文环：forwarding 与读写冲突"></a>6.3 上下文环：forwarding 与读写冲突</h3><p>上下文存储一般是 SRAM 或寄存器堆，读出至少 1 拍。典型做法：</p>
+<ol>
+<li><strong>ctx 读与 bin 编码分属两级流水</strong>，提前一拍发起读；</li>
+<li><strong>写后读 forwarding</strong>：比较“本拍写回的 ctxIdx”与“正在读的 ctxIdx”，相等则旁路新值；</li>
+<li><strong>多 bank 交织</strong>：按 ctxIdx 低位或语法元素类别分 bank，降低同拍读写冲突，也便于初始化并行。</li>
+</ol>
+<p>下面是一个最小化的 forwarding 示意（教学代码，省略了握手与初始化）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs systemverilog">// stage-1: 读上下文；stage-2: 编码并写回<br>always_ff @(posedge clk) begin<br>  if (s1_valid) begin<br>    // 写后读冒险：同一 ctx 在下一拍被再次使用时，直接旁路刚更新的状态<br>    s2_ctx_state &lt;= (s2_wr_en &amp;&amp; s2_wr_idx == s1_ctx_idx) ? s2_wr_state<br>                                                          : ctx_ram[s1_ctx_idx];<br>    s2_ctx_idx   &lt;= s1_ctx_idx;<br>  end<br>  if (s2_wr_en) ctx_ram[s2_wr_idx] &lt;= s2_wr_state;<br>end<br></code></pre></td></tr></table></figure>
+
+<h3 id="6-4-Bypass-多-bin-并行"><a href="#6-4-Bypass-多-bin-并行" class="headerlink" title="6.4 Bypass 多 bin 并行"></a>6.4 Bypass 多 bin 并行</h3><p>按 5.4 节的公式，multi-bin bypass 引擎通常做到每拍 2~4 个 bin，主要服务于系数符号位和 <code>abs_remainder</code>&#x2F;<code>dec_abs_level</code> 的后缀。高码率场景下 bypass bin 占比很高，这条路径的并行度直接决定高码率吞吐。</p>
+<h3 id="6-5-HEVC-VVC-双协议：哪些能共享"><a href="#6-5-HEVC-VVC-双协议：哪些能共享" class="headerlink" title="6.5 HEVC&#x2F;VVC 双协议：哪些能共享"></a>6.5 HEVC&#x2F;VVC 双协议：哪些能共享</h3><table>
+<thead>
+<tr>
+<th>子模块</th>
+<th>HEVC</th>
+<th>VVC</th>
+<th>能否共享</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>上下文存储</td>
+<td>7 bit&#x2F;ctx</td>
+<td>28 bit&#x2F;ctx</td>
+<td>物理存储可共享，需要打包&#x2F;拆包逻辑</td>
+</tr>
+<tr>
+<td>概率更新</td>
+<td>查表</td>
+<td>移位加减</td>
+<td>不共享，MUX 选择</td>
+</tr>
+<tr>
+<td>LPS 计算</td>
+<td>64×4 查表</td>
+<td>6×4 乘法</td>
+<td>不共享，MUX 选择</td>
+</tr>
+<tr>
+<td>Range&#x2F;Low 更新、重归一化</td>
+<td>相同</td>
+<td>相同</td>
+<td><strong>完全共享</strong></td>
+</tr>
+<tr>
+<td>进位与字节输出</td>
+<td>相同</td>
+<td>相同</td>
+<td><strong>完全共享</strong></td>
+</tr>
+<tr>
+<td>二值化与 ctxInc 推导</td>
+<td>语法元素差异大</td>
+<td>语法元素差异大</td>
+<td>部分共享，按语法元素分治</td>
+</tr>
+</tbody></table>
+<p>结论是“<strong>引擎共享、模型分治</strong>”：算术编码引擎和输出级与协议无关，差异集中在概率模型和语法元素层。</p>
+<blockquote>
+<p>这是理论上的最大共享方案。实际项目中，由于概率模型处在 1 bin&#x2F;cycle 的关键环路内，并且需要复用已验证的 HEVC 模块，最终也可能选择“共享缓冲、调度与码流组织，协议核分两套”。真实案例见<a href="/2026/04/18/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AVVC-CABAC-%E7%86%B5%E7%BC%96%E7%A0%81%E6%A0%B8%E5%BF%83-IP-%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/">项目复盘</a>第 4 节。</p>
+</blockquote>
+<h3 id="6-6-WPP：并行带来的上下文同步"><a href="#6-6-WPP：并行带来的上下文同步" class="headerlink" title="6.6 WPP：并行带来的上下文同步"></a>6.6 WPP：并行带来的上下文同步</h3><p>WPP（波前并行）允许多个 CTU 行同时编码，代价是每行起点的上下文要从上一行“继承”：</p>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>上下文同步点</th>
+<th>CTU 行间最小错位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HEVC</td>
+<td>上一行<strong>第 2 个</strong> CTU 编完后的上下文</td>
+<td>2 CTU</td>
+</tr>
+<tr>
+<td>VVC</td>
+<td>上一行<strong>第 1 个</strong> CTU 编完后的上下文</td>
+<td>1 CTU</td>
+</tr>
+</tbody></table>
+<p>硬件影响：</p>
+<ol>
+<li>需要额外的上下文<strong>快照存储</strong>，每个并行行一份，容量随并行度线性增长，这让 4.3 节的位宽优化收益被放大；</li>
+<li>快照的保存与恢复都是“整张上下文表”的搬运，要像初始化一样做并行化，否则行起点会出现停顿；</li>
+<li>VVC 错位更小，同等并行度下流水填充更快，但对快照时序更敏感。</li>
+</ol>
+<hr>
+<h2 id="7-HEVC-与-VVC-CABAC-对比速查"><a href="#7-HEVC-与-VVC-CABAC-对比速查" class="headerlink" title="7. HEVC 与 VVC CABAC 对比速查"></a>7. HEVC 与 VVC CABAC 对比速查</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>H.265&#x2F;HEVC</th>
+<th>H.266&#x2F;VVC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>概率表示</td>
+<td>6 bit 状态 + 1 bit MPS</td>
+<td>10 bit + 14 bit 双估计器 + 4 bit shiftIdx</td>
+</tr>
+<tr>
+<td>概率更新</td>
+<td>查表状态机（统一速率）</td>
+<td>移位加减（每个上下文速率可配）</td>
+</tr>
+<tr>
+<td>LPS 计算</td>
+<td>64×4 查表</td>
+<td>6bit×4bit 乘法 + 4</td>
+</tr>
+<tr>
+<td>LPS 最大重归一化移位</td>
+<td>6</td>
+<td>6</td>
+</tr>
+<tr>
+<td>上下文初始化</td>
+<td>8 bit initValue</td>
+<td>6 bit initValue + 4 bit shiftIdx</td>
+</tr>
+<tr>
+<td>系数常规 bin 约束</td>
+<td>无全局预算</td>
+<td><code>remBinsPass1</code>，平均 1.75 bin&#x2F;系数</td>
+</tr>
+<tr>
+<td>WPP 同步点</td>
+<td>上一行第 2 个 CTU</td>
+<td>上一行第 1 个 CTU</td>
+</tr>
+<tr>
+<td>算术引擎与进位处理</td>
+<td>相同</td>
+<td>相同</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-小结"><a href="#8-小结" class="headerlink" title="8. 小结"></a>8. 小结</h2><ol>
+<li><strong>CABAC &#x3D; 概率模型 + 区间运算</strong>。VVC 的改进几乎都在概率模型一侧（双速率估计、可配速率、常规 bin 预算），区间运算与 HEVC 一脉相承；</li>
+<li><strong>硬件难点是两个必须在一拍内闭合的反馈环</strong>：Range 环与上下文环。预计算、双路并行、forwarding、bank 交织等微架构技巧都是围绕它们展开的；</li>
+<li><strong>照搬软件数据结构是隐蔽的面积浪费</strong>：以上下文位宽为例，规范有效位宽比 VTM 表示少约 26%，在 WPP 多份快照下收益还会被放大；</li>
+<li><strong>吞吐规格要从规范约束反推</strong>：VVC 的常规 bin 预算让最坏情况可计算，这是做 PPA 折中的前提。</li>
+</ol>
+<h2 id="相关阅读"><a href="#相关阅读" class="headerlink" title="相关阅读"></a>相关阅读</h2><ul>
+<li><a href="/2026/04/18/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AVVC-CABAC-%E7%86%B5%E7%BC%96%E7%A0%81%E6%A0%B8%E5%BF%83-IP-%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/">项目复盘：VVC CABAC 熵编码核心 IP 设计实践</a>：本文第 6 节的问题在真实项目中是如何取舍的</li>
+<li><a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/">深度解析H.266&#x2F;VVC环路滤波</a>：ALF&#x2F;SAO 参数同样经过 CABAC 编码，是熵编码的上游之一</li>
+<li><a href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</a>：同一套熵编码引擎被用来压缩大模型权重与 KV Cache</li>
+</ul>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li>ITU-T H.266 (VVC)，9.3 节 CABAC 解析过程（9.3.2 初始化、9.3.4 算术解码引擎）</li>
+<li>ITU-T H.265 (HEVC)，9.3 节 CABAC 解析过程</li>
+<li>VTM 参考软件：<code>source/Lib/CommonLib/Contexts.h</code>、<code>Contexts.cpp</code>、<code>source/Lib/EncoderLib/BinEncoder.cpp</code></li>
+<li>V. Sze, M. Budagavi, “High Throughput CABAC Entropy Coding in HEVC”, IEEE TCSVT, 2012</li>
+<li>H. Schwarz et al., “Quantization and Entropy Coding in the Versatile Video Coding (VVC) Standard”, IEEE TCSVT, 2021</li>
+</ol>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>论文解读1-VcLLM：视频编解码器实际上是张量编解码器</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/HEVC/" class="post-tag">#HEVC</a><a href="/tags/CABAC/" class="post-tag">#CABAC</a><a href="/tags/%E7%86%B5%E7%BC%96%E7%A0%81/" class="post-tag">#熵编码</a>
+
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2026\04\18\项目复盘：VVC-CABAC-熵编码核心-IP-设计实践\" title="项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践" rel="bookmark">项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\29\深度解析H-266-环路滤波\" title="深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF" rel="bookmark">深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF</a></div></div></div>
+    
+  </div>
+</div>
+
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

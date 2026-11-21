@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        Hexo 搭建个人技术博客：从部署到踩坑记录 | 九天之遥
+      
+    </title>
+    <meta name="description" content="聚焦视频编码与数据压缩硬件架构，以及与 AI Infra 相关的系统思考与工程实践。" />
+    <meta name="keywords" content="编码与压缩硬件架构, 视频编解码后端, H.266, VVC, CABAC, ZSTD, ISP, 数据通路, AI Infra, 张量压缩, 技术博客" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner--toc">
+      <div class="post-content__head">
+        <div class="post-title">Hexo 搭建个人技术博客：从部署到踩坑记录</div>
+        <div class="post-info">
+          
+  
+  <a href="/tags/Hexo/" class="post-tag">#Hexo</a><a href="/tags/GitHub-Pages/" class="post-tag">#GitHub Pages</a><a href="/tags/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/" class="post-tag">#博客搭建</a>
+
+
+
+          <span class="post-date">2024-07-21</span>
+        </div>
+      </div>
+      
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89-Hexo-GitHub-Pages"><span class="post-toc-text">1. 为什么选 Hexo + GitHub Pages</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85"><span class="post-toc-text">2. 环境安装</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1-Git-%E4%B8%8E-Node-js"><span class="post-toc-text">2.1 Git 与 Node.js</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2-Hexo"><span class="post-toc-text">2.2 Hexo</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-%E9%83%A8%E7%BD%B2%E5%88%B0-GitHub-Pages"><span class="post-toc-text">3. 部署到 GitHub Pages</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-1-%E5%88%9B%E5%BB%BA%E4%BB%93%E5%BA%93"><span class="post-toc-text">3.1 创建仓库</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-2-%E9%85%8D%E7%BD%AE-SSH-%E5%AF%86%E9%92%A5"><span class="post-toc-text">3.2 配置 SSH 密钥</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-3-%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2"><span class="post-toc-text">3.3 一键部署</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E7%AB%99%E7%82%B9%E9%85%8D%E7%BD%AE%E8%A6%81%E7%82%B9"><span class="post-toc-text">4. 站点配置要点</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-%E6%BA%90%E7%A0%81%E4%B8%8E%E7%AB%99%E7%82%B9%E5%88%86%E4%BB%93%E7%AE%A1%E7%90%86"><span class="post-toc-text">5. 源码与站点分仓管理</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95%EF%BC%9A%E7%9C%9F%E5%AE%9E%E8%B8%A9%E8%BF%87%E7%9A%84%E5%9D%91"><span class="post-toc-text">6. 问题记录：真实踩过的坑</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-1-%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E6%B8%B2%E6%9F%93%E5%87%BA%E9%94%99"><span class="post-toc-text">6.1 数学公式渲染出错</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-2-%E5%9B%BE%E7%89%87%E5%A4%96%E9%93%BE%E5%A4%A7%E9%9D%A2%E7%A7%AF%E5%A4%B1%E6%95%88"><span class="post-toc-text">6.2 图片外链大面积失效</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-3-package-json-%E8%A2%AB%E8%A6%86%E7%9B%96%EF%BC%8Chexo-%E5%91%BD%E4%BB%A4%E5%A4%B1%E6%95%88"><span class="post-toc-text">6.3 package.json 被覆盖，hexo 命令失效</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-4-%E6%9C%AC%E5%9C%B0%E6%AD%A3%E5%B8%B8%E3%80%81%E7%BA%BF%E4%B8%8A%E5%B0%81%E9%9D%A2-404"><span class="post-toc-text">6.4 本地正常、线上封面 404</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6-5-%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88%E7%AB%AF%E5%8F%A3%E8%A2%AB%E5%8D%A0%E7%94%A8"><span class="post-toc-text">6.5 本地预览端口被占用</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5"><span class="post-toc-text">7. 常用命令速查</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <blockquote>
+<p>本站就是用 Hexo + GitHub Pages 搭建的：<a href="https://seusunz.github.io/">九天之遥</a>。这篇记录完整的搭建流程，以及两年多维护中实际踩过的坑。</p>
+<p><strong>2026-11 更新</strong>：初版只写到“部署成功”，后半部分一直是空标题。本次按本站的实际做法重写，并补上“问题记录”一节，这部分比搭建步骤本身更有用。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="1-为什么选-Hexo-GitHub-Pages"><a href="#1-为什么选-Hexo-GitHub-Pages" class="headerlink" title="1. 为什么选 Hexo + GitHub Pages"></a>1. 为什么选 Hexo + GitHub Pages</h2><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>公共博客平台</td>
+<td>零维护，搜索引擎收录好</td>
+<td>排版受限、广告多，内容迁移难</td>
+</tr>
+<tr>
+<td>自购服务器 + 域名</td>
+<td>完全自由</td>
+<td>成本与运维负担高</td>
+</tr>
+<tr>
+<td><strong>Hexo + GitHub Pages</strong></td>
+<td>免费托管、Markdown 写作、源文件完全自己掌握</td>
+<td>需要一点命令行基础</td>
+</tr>
+</tbody></table>
+<p>Hexo 是基于 Node.js 的静态博客框架，由中国台湾的开发者创建，中文文档完善。它把 Markdown 渲染成静态 HTML，再推送到 GitHub Pages 托管。</p>
+<h2 id="2-环境安装"><a href="#2-环境安装" class="headerlink" title="2. 环境安装"></a>2. 环境安装</h2><h3 id="2-1-Git-与-Node-js"><a href="#2-1-Git-与-Node-js" class="headerlink" title="2.1 Git 与 Node.js"></a>2.1 Git 与 Node.js</h3><ul>
+<li><strong>Windows</strong>：安装 <a target="_blank" rel="noopener" href="https://gitforwindows.org/">Git for Windows</a>（自带 Git Bash，后续命令都在其中执行），以及 <a target="_blank" rel="noopener" href="https://nodejs.org/">Node.js</a> 的 LTS 版本；</li>
+<li><strong>Linux</strong>：</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> apt-get install git nodejs npm<br></code></pre></td></tr></table></figure>
+
+<p>检查是否安装成功：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">git --version<br>node -v<br>npm -v<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-Hexo"><a href="#2-2-Hexo" class="headerlink" title="2.2 Hexo"></a>2.2 Hexo</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">npm install -g hexo-cli      <span class="hljs-comment"># 全局安装命令行工具</span><br>hexo init myblog             <span class="hljs-comment"># 初始化站点</span><br><span class="hljs-built_in">cd</span> myblog<br>npm install                  <span class="hljs-comment"># 安装站点依赖</span><br>hexo server                  <span class="hljs-comment"># 本地预览，默认 http://localhost:4000</span><br></code></pre></td></tr></table></figure>
+
+<p>初始化后的目录结构：</p>
+<table>
+<thead>
+<tr>
+<th>目录 &#x2F; 文件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>_config.yml</code></td>
+<td><strong>站点配置</strong>（标题、URL、部署方式等）</td>
+</tr>
+<tr>
+<td><code>source/_posts/</code></td>
+<td>文章 Markdown 源文件</td>
+</tr>
+<tr>
+<td><code>themes/</code></td>
+<td>主题</td>
+</tr>
+<tr>
+<td><code>scaffolds/</code></td>
+<td>新建文章的模板</td>
+</tr>
+<tr>
+<td><code>public/</code></td>
+<td>生成的静态网页（不需要纳入版本管理）</td>
+</tr>
+<tr>
+<td><code>package.json</code></td>
+<td>站点依赖清单，<strong>不要手动覆盖</strong>，原因见 6.3 节</td>
+</tr>
+</tbody></table>
+<h2 id="3-部署到-GitHub-Pages"><a href="#3-部署到-GitHub-Pages" class="headerlink" title="3. 部署到 GitHub Pages"></a>3. 部署到 GitHub Pages</h2><h3 id="3-1-创建仓库"><a href="#3-1-创建仓库" class="headerlink" title="3.1 创建仓库"></a>3.1 创建仓库</h3><p>在 GitHub 新建一个名为 <code>用户名.github.io</code> 的仓库，GitHub Pages 会自动把它识别为个人主页。</p>
+<h3 id="3-2-配置-SSH-密钥"><a href="#3-2-配置-SSH-密钥" class="headerlink" title="3.2 配置 SSH 密钥"></a>3.2 配置 SSH 密钥</h3><p>GitHub 已不再支持用账户密码推送代码，推荐使用 SSH 密钥：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">git config --global user.name  <span class="hljs-string">&quot;你的 GitHub 用户名&quot;</span><br>git config --global user.email <span class="hljs-string">&quot;你的 GitHub 邮箱&quot;</span><br>ssh-keygen -t ed25519 -C <span class="hljs-string">&quot;你的 GitHub 邮箱&quot;</span>   <span class="hljs-comment"># 生成密钥对，一路回车即可</span><br><span class="hljs-built_in">cat</span> ~/.ssh/id_ed25519.pub                     <span class="hljs-comment"># 复制公钥内容</span><br></code></pre></td></tr></table></figure>
+
+<p>在 GitHub 的 Settings → SSH and GPG keys 中新建一个 key，粘贴公钥。然后验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">ssh -T git@github.com    <span class="hljs-comment"># 看到 &quot;Hi 用户名! You&#x27;ve successfully authenticated&quot; 即成功</span><br></code></pre></td></tr></table></figure>
+
+<p>私钥（不带 <code>.pub</code> 的那个文件）只保存在本机，不要提交到任何仓库。</p>
+<h3 id="3-3-一键部署"><a href="#3-3-一键部署" class="headerlink" title="3.3 一键部署"></a>3.3 一键部署</h3><p>先安装部署插件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">npm install hexo-deployer-git --save<br></code></pre></td></tr></table></figure>
+
+<p>再修改 <code>_config.yml</code> 末尾的部署配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">deploy:</span><br>  <span class="hljs-attr">type:</span> <span class="hljs-string">git</span><br>  <span class="hljs-attr">repo:</span> <span class="hljs-string">git@github.com:用户名/用户名.github.io.git</span><br>  <span class="hljs-attr">branch:</span> <span class="hljs-string">master</span><br></code></pre></td></tr></table></figure>
+
+<p>之后每次发布只需：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">hexo clean      <span class="hljs-comment"># 清理旧的生成结果和缓存</span><br>hexo generate   <span class="hljs-comment"># 生成静态网页，可简写为 hexo g</span><br>hexo deploy     <span class="hljs-comment"># 推送到 GitHub Pages，可简写为 hexo d</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="4-站点配置要点"><a href="#4-站点配置要点" class="headerlink" title="4. 站点配置要点"></a>4. 站点配置要点</h2><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>title</code> &#x2F; <code>subtitle</code> &#x2F; <code>description</code> &#x2F; <code>keywords</code></td>
+<td>站点标题与描述，也是搜索引擎收录时展示的内容，值得认真写</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td>站点地址，如 <code>https://用户名.github.io</code></td>
+</tr>
+<tr>
+<td><code>permalink</code></td>
+<td>文章链接格式。本站用 <code>:year/:month/:day/:title/</code>，其中 <code>:title</code> 取自<strong>文件名</strong>而不是 front-matter 中的 title，所以修改文章标题不会改变链接，但重命名文件会</td>
+</tr>
+<tr>
+<td><code>theme</code></td>
+<td>当前使用的主题目录名</td>
+</tr>
+</tbody></table>
+<p>每篇文章开头的 front-matter 用于设置该文的元信息，例如：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-meta">---</span><br><span class="hljs-attr">title:</span> <span class="hljs-string">文章标题</span><br><span class="hljs-attr">date:</span> <span class="hljs-number">2024-07-21 10:51:53</span><br><span class="hljs-attr">updated:</span> <span class="hljs-number">2026-11-19 23:00:00</span>   <span class="hljs-comment"># 重大修订时更新</span><br><span class="hljs-attr">category:</span> <span class="hljs-string">developer</span><br><span class="hljs-attr">tags:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">Hexo</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">GitHub</span> <span class="hljs-string">Pages</span><br><span class="hljs-meta">---</span><br></code></pre></td></tr></table></figure>
+
+<p>YAML 的缩进<strong>只能用空格，不能用 Tab</strong>，否则标签等字段会解析失败。</p>
+<h2 id="5-源码与站点分仓管理"><a href="#5-源码与站点分仓管理" class="headerlink" title="5. 源码与站点分仓管理"></a>5. 源码与站点分仓管理</h2><p><code>hexo deploy</code> 推送的只是生成后的 HTML。Markdown 源文件、配置和主题需要另外备份，否则换一台电脑就无法继续写作。本站的做法是两个仓库：</p>
+<p><img src="/images/posts/hexo/workflow.svg" alt="Hexo 双仓库工作流"></p>
+<table>
+<thead>
+<tr>
+<th>仓库</th>
+<th>内容</th>
+<th>推送方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>用户名.github.io</code></td>
+<td>生成的静态网页</td>
+<td><code>hexo deploy</code> 自动推送</td>
+</tr>
+<tr>
+<td>源码仓库（如 <code>blog</code>）</td>
+<td><code>source/</code>、<code>_config*.yml</code>、<code>themes/</code>、<code>package.json</code> 等</td>
+<td>手动 <code>git push</code></td>
+</tr>
+</tbody></table>
+<p>换电脑时，克隆源码仓库后执行 <code>npm install</code> 即可恢复写作环境。源码仓库的 <code>.gitignore</code> 至少应包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">node_modules/<br>public/<br>.deploy*/<br>db.json<br></code></pre></td></tr></table></figure>
+
+<p>**如果站点目录里还放了个人资料、工作文档等非公开文件，一定要把这些目录也加进 <code>.gitignore</code>**。源码仓库通常是公开的，一次 <code>git add .</code> 就可能把它们推上去。</p>
+<h2 id="6-问题记录：真实踩过的坑"><a href="#6-问题记录：真实踩过的坑" class="headerlink" title="6. 问题记录：真实踩过的坑"></a>6. 问题记录：真实踩过的坑</h2><h3 id="6-1-数学公式渲染出错"><a href="#6-1-数学公式渲染出错" class="headerlink" title="6.1 数学公式渲染出错"></a>6.1 数学公式渲染出错</h3><p>本站开启了 MathJax 3。有两个容易忽略的细节：</p>
+<ol>
+<li>MathJax 3 默认**只识别 <code>$$…$$</code> 和 <code>\(…\)</code>**，不识别单个 <code>$…$</code> 的行内公式；</li>
+<li>默认的 <code>hexo-renderer-marked</code> 会把公式里的 <code>_</code> 当成斜体标记，并吞掉反斜杠。</li>
+</ol>
+<p>可靠的写法是把块公式包在 HTML 块里，让 marked 原样透传：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><br>$$H(X) = -\sum_i p_i \log_2 p_i$$<br><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p><code>&lt;div&gt;</code> 内部不要留空行，否则 HTML 块会提前结束。</p>
+<h3 id="6-2-图片外链大面积失效"><a href="#6-2-图片外链大面积失效" class="headerlink" title="6.2 图片外链大面积失效"></a>6.2 图片外链大面积失效</h3><p>从其他平台迁移过来的文章，图片常常是外链。很多平台有防盗链，或者会清理旧图片，一旦失效就是整篇裂图。另一类问题是 Typora 等编辑器默认插入<strong>本机绝对路径</strong>（如 <code>C:\Users\...\image.png</code>），本地预览正常，上线后必然裂图。</p>
+<p>做法：把图片统一下载到 <code>source/images/posts/&lt;文章短名&gt;/</code>，在文章中用 <code>/images/posts/...</code> 的绝对路径引用，并给每张图写有意义的 alt 文字。</p>
+<h3 id="6-3-package-json-被覆盖，hexo-命令失效"><a href="#6-3-package-json-被覆盖，hexo-命令失效" class="headerlink" title="6.3 package.json 被覆盖，hexo 命令失效"></a>6.3 <code>package.json</code> 被覆盖，hexo 命令失效</h3><p>在站点目录里执行 <code>npm install 某个包</code>，如果当时的 <code>package.json</code> 已损坏或缺失，npm 可能生成一个只含这个包的新 <code>package.json</code>。Hexo 的命令行是靠 <code>package.json</code> 中的 <code>&quot;hexo&quot;</code> 字段识别站点目录的，字段一丢，<code>hexo generate</code>、<code>hexo server</code> 等站点命令就无法使用；换一台电脑 <code>npm install</code> 时，所有 Hexo 插件也都不会被安装。</p>
+<p>做法：把 <code>package.json</code> 纳入源码仓库管理，出问题时从 git 历史中恢复，再把新增的依赖合并回去。</p>
+<h3 id="6-4-本地正常、线上封面-404"><a href="#6-4-本地正常、线上封面-404" class="headerlink" title="6.4 本地正常、线上封面 404"></a>6.4 本地正常、线上封面 404</h3><p>Windows 的文件系统不区分大小写，GitHub Pages 区分。front-matter 里写 <code>bing471.jpg</code>，实际文件名是 <code>Bing471.jpg</code>，本地预览一切正常，上线后封面就是 404。</p>
+<p>做法：引用文件时严格按实际文件名的大小写书写，或者统一使用小写文件名。</p>
+<h3 id="6-5-本地预览端口被占用"><a href="#6-5-本地预览端口被占用" class="headerlink" title="6.5 本地预览端口被占用"></a>6.5 本地预览端口被占用</h3><p><code>hexo server</code> 报 <code>Port 4000 has been used</code>，多半是之前的预览进程还没退出。换一个端口即可：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">hexo server -p 4001<br></code></pre></td></tr></table></figure>
+
+<h2 id="7-常用命令速查"><a href="#7-常用命令速查" class="headerlink" title="7. 常用命令速查"></a>7. 常用命令速查</h2><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>hexo new &quot;标题&quot;</code></td>
+<td>用模板新建文章</td>
+</tr>
+<tr>
+<td><code>hexo server -p 4001</code></td>
+<td>本地预览，可指定端口</td>
+</tr>
+<tr>
+<td><code>hexo clean</code></td>
+<td>清理缓存与生成结果，修改配置或主题后建议执行</td>
+</tr>
+<tr>
+<td><code>hexo generate</code> &#x2F; <code>hexo g</code></td>
+<td>生成静态网页</td>
+</tr>
+<tr>
+<td><code>hexo deploy</code> &#x2F; <code>hexo d</code></td>
+<td>部署到 GitHub Pages</td>
+</tr>
+<tr>
+<td><code>hexo g -d</code></td>
+<td>生成并部署</td>
+</tr>
+</tbody></table>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2024/07/21/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E5%B8%A7%E9%97%B4%E7%BC%96%E7%A0%81/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  
+  <a href="/tags/Hexo/" class="post-tag">#Hexo</a><a href="/tags/GitHub-Pages/" class="post-tag">#GitHub Pages</a><a href="/tags/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/" class="post-tag">#博客搭建</a>
+
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div></div>
+    
+  </div>
+</div>
+
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

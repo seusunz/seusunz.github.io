@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        论文解读2-Nested Learning：The Illusion of Deep Learning Architectures | 九天之遥
+      
+    </title>
+    <meta name="description" content="聚焦视频编码与数据压缩硬件架构，以及与 AI Infra 相关的系统思考与工程实践。" />
+    <meta name="keywords" content="编码与压缩硬件架构, 视频编解码后端, H.266, VVC, CABAC, ZSTD, ISP, 数据通路, AI Infra, 张量压缩, 技术博客" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner--toc">
+      <div class="post-content__head">
+        <div class="post-title">论文解读2-Nested Learning：The Illusion of Deep Learning Architectures</div>
+        <div class="post-info">
+          
+  
+  <a href="/tags/Nested-Learning/" class="post-tag">#Nested Learning</a><a href="/tags/Deep-Learning/" class="post-tag">#Deep Learning</a><a href="/tags/Optimizer/" class="post-tag">#Optimizer</a>
+
+
+
+          <span class="post-date">2025-11-25</span>
+        </div>
+      </div>
+      
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E6%91%98%E8%A6%81"><span class="post-toc-text">摘要</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E6%A0%B8%E5%BF%83%E8%B4%A1%E7%8C%AE"><span class="post-toc-text">核心贡献</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%9C%E8%80%85%E8%AF%B4%E2%80%9C%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%B7%B1%E2%80%9D%E5%8F%AF%E8%83%BD%E6%98%AF%E4%B8%80%E7%A7%8D%E5%B9%BB%E8%A7%89"><span class="post-toc-text">1. 为什么作者说“深度学习的深”可能是一种幻觉</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-Nested-Learning-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%AE%9A%E4%B9%89"><span class="post-toc-text">2. Nested Learning 的核心定义</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1-%E6%8A%8A%E5%AD%A6%E4%B9%A0%E7%9C%8B%E6%88%90%E8%81%94%E6%83%B3%E8%AE%B0%E5%BF%86"><span class="post-toc-text">2.1 把学习看成联想记忆</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2-%E6%9B%B4%E6%96%B0%E9%A2%91%E7%8E%87%E6%89%8D%E6%98%AF%E6%9B%B4%E6%9C%AC%E8%B4%A8%E7%9A%84%E7%BB%84%E7%BB%87%E7%BB%B4%E5%BA%A6"><span class="post-toc-text">2.2 更新频率才是更本质的组织维度</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-3-%E4%BB%8E%E2%80%9C%E6%89%81%E5%B9%B3%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E2%80%9D%E5%88%B0%E2%80%9C%E5%B5%8C%E5%A5%97%E4%BC%98%E5%8C%96%E2%80%9D"><span class="post-toc-text">2.3 从“扁平深度学习”到“嵌套优化”</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-NL-%E6%A1%86%E6%9E%B6%E4%B8%8B%E7%9A%84%E4%B8%89%E9%A1%B9%E6%A0%B8%E5%BF%83%E8%90%BD%E5%9C%B0"><span class="post-toc-text">3. NL 框架下的三项核心落地</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-1-Deep-Optimizers%EF%BC%9A%E6%8A%8A%E4%BC%98%E5%8C%96%E5%99%A8%E4%BB%8E%E5%85%AC%E5%BC%8F%E5%8F%98%E6%88%90%E5%8F%AF%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9D%97"><span class="post-toc-text">3.1 Deep Optimizers：把优化器从公式变成可学习模块</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-2-Self-Modifying-Titans%EF%BC%9A%E6%A8%A1%E5%9E%8B%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9%E8%87%AA%E5%B7%B1"><span class="post-toc-text">3.2 Self-Modifying Titans：模型开始学习如何修改自己</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-3-CMS-%E4%B8%8E-HOPE%EF%BC%9A%E6%8A%8A%E8%AE%B0%E5%BF%86%E4%BB%8E%E4%BA%8C%E5%88%86%E6%B3%95%E5%8F%98%E6%88%90%E8%BF%9E%E7%BB%AD%E8%B0%B1"><span class="post-toc-text">3.3 CMS 与 HOPE：把记忆从二分法变成连续谱</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%E8%AF%B4%E6%98%8E%E4%BA%86%E4%BB%80%E4%B9%88"><span class="post-toc-text">4. 实验结果说明了什么</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-%E6%88%91%E5%AF%B9%E8%BF%99%E7%AF%87%E8%AE%BA%E6%96%87%E7%9A%84%E7%90%86%E8%A7%A3"><span class="post-toc-text">5. 我对这篇论文的理解</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-%E4%BC%98%E7%82%B9%E4%B8%8E%E5%B1%80%E9%99%90"><span class="post-toc-text">6. 优点与局限</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E4%BC%98%E7%82%B9"><span class="post-toc-text">优点</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#%E5%B1%80%E9%99%90"><span class="post-toc-text">局限</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-%E5%89%8D%E6%99%AF%E5%B1%95%E6%9C%9B"><span class="post-toc-text">7. 前景展望</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#8-%E8%8A%AF%E7%89%87%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%A7%86%E8%A7%92%EF%BC%9A%E5%A6%82%E6%9E%9C%E6%9D%83%E9%87%8D%E5%9C%A8%E6%8E%A8%E7%90%86%E6%97%B6%E4%B9%9F%E8%A6%81%E6%9B%B4%E6%96%B0"><span class="post-toc-text">8. 芯片与系统视角：如果权重在推理时也要更新</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E9%93%BE%E6%8E%A5"><span class="post-toc-text">链接</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%B3%BB%E5%88%97"><span class="post-toc-text">论文解读系列</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>论文</td>
+<td>Nested Learning: The Illusion of Deep Learning Architectures</td>
+</tr>
+<tr>
+<td>作者</td>
+<td>Ali Behrouz, Meisam Razaviyayn, Peilin Zhong, Vahab Mirrokni（Google Research）</td>
+</tr>
+<tr>
+<td>发表</td>
+<td>NeurIPS 2025；完整版见 arXiv 2512.24695</td>
+</tr>
+<tr>
+<td>一句话</td>
+<td>把模型、优化器与注意力统一看作“不同更新频率的嵌套优化问题”，并据此提出 Deep Optimizers、Self-Modifying Titans 与连续记忆系统 CMS，集成为 HOPE</td>
+</tr>
+<tr>
+<td>为什么读</td>
+<td>“推理时权重也要更新”会直接改写 AI 芯片存储层次的设计前提 —— 与视频编解码芯片“参数在 slice 边界才切换”的准静态假设恰好是两个极端</td>
+</tr>
+</tbody></table>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>这篇论文最有意思的地方，不是再提出一个更大的模型，而是试图重新解释“为什么深度学习有效”。作者认为，我们平常看到的“层数更深、参数更多、模型更强”只是表面现象；真正决定模型表达力和学习能力的，可能是模型内部存在多少层<strong>嵌套的优化问题</strong>，以及这些优化问题如何在不同时间尺度上协同工作。</p>
+<p>论文据此提出了 <strong>Nested Learning（NL）</strong> 范式：把模型理解成一组彼此嵌套、更新频率不同、上下文流不同的学习模块。这个视角不仅重新解释了注意力、FFN、优化器和上下文学习，也进一步推出了三条落地路径：更强的优化器、更能自我修改的序列模型，以及一个连续记忆系统。作者最终用 HOPE 架构对这些想法做了集成验证。</p>
+<span id="more"></span>
+
+<h2 id="核心贡献"><a href="#核心贡献" class="headerlink" title="核心贡献"></a>核心贡献</h2><ul>
+<li>提出了 <strong>Nested Learning</strong> 统一视角：把深度学习模型表示为多层次嵌套的优化问题，而不是单纯的层堆叠。</li>
+<li>把 <strong>优化器</strong> 重新解释为一种联想记忆模块，并据此提出更具表达能力的 <strong>Deep Optimizers</strong>。</li>
+<li>提出 <strong>Self-Modifying Titans</strong>，让序列模型不仅学习数据，还学习“如何更新自己”。</li>
+<li>用 <strong>Continuum Memory System（CMS）</strong> 替代传统“短期 &#x2F; 长期记忆”二分法，并通过 <strong>HOPE</strong> 给出一个统一实现。</li>
+<li>在语言建模、常识推理、长上下文处理和持续学习任务上展示了这一范式的潜力。</li>
+</ul>
+<h2 id="1-为什么作者说“深度学习的深”可能是一种幻觉"><a href="#1-为什么作者说“深度学习的深”可能是一种幻觉" class="headerlink" title="1. 为什么作者说“深度学习的深”可能是一种幻觉"></a>1. 为什么作者说“深度学习的深”可能是一种幻觉</h2><p>传统观点往往把能力提升归因于更深的网络层数、更大的参数规模和更复杂的模块组合。但这篇论文认为，这种解释过于“表层化”：</p>
+<ul>
+<li>我们看见的是层与层的堆叠；</li>
+<li>真正起作用的可能是这些层内部隐含的<strong>优化层次</strong>；</li>
+<li>模型的学习行为，本质上不是一次单一优化，而是多个不同频率、不同职责的优化过程共同完成的结果。</li>
+</ul>
+<p>换句话说，<strong>深度学习的“深”未必主要是空间意义上的层数，而更可能是时间 &#x2F; 频率意义上的嵌套优化深度</strong>。这也是标题里 “The Illusion of Deep Learning Architectures” 的含义：我们以为模型强是因为“架构看起来更深”，但这可能只是内部更深层学习机制在外部形成的投影。</p>
+<h2 id="2-Nested-Learning-的核心定义"><a href="#2-Nested-Learning-的核心定义" class="headerlink" title="2. Nested Learning 的核心定义"></a>2. Nested Learning 的核心定义</h2><h3 id="2-1-把学习看成联想记忆"><a href="#2-1-把学习看成联想记忆" class="headerlink" title="2.1 把学习看成联想记忆"></a>2.1 把学习看成联想记忆</h3><p>论文从一个非常基础的对象出发：联想记忆。若给定键和值，联想记忆可以写成：</p>
+<p><strong>M: K → V</strong></p>
+<p>作者的关键洞察是：许多机器学习组件都可以被重新理解为“从上下文中压缩信息并形成映射”的联想记忆过程。例如：</p>
+<ul>
+<li>训练过程是在学习“输入数据 → 梯度 &#x2F; 更新方向”的映射；</li>
+<li>注意力机制是在学习“查询 → 上下文信息”的映射；</li>
+<li>优化器状态是在学习“历史梯度 → 当前更新策略”的映射。</li>
+</ul>
+<p>这样一来，<strong>模型、注意力、优化器</strong> 不再是彼此割裂的模块，而都被统一进“联想记忆 + 上下文压缩”的框架里。</p>
+<h3 id="2-2-更新频率才是更本质的组织维度"><a href="#2-2-更新频率才是更本质的组织维度" class="headerlink" title="2.2 更新频率才是更本质的组织维度"></a>2.2 更新频率才是更本质的组织维度</h3><p><img src="/images/posts/paper-nl/timescales.svg" alt="Nested Learning 的多时间尺度"></p>
+<p>在 NL 看来，模型内部最重要的不是“谁在第几层”，而是谁<strong>以什么频率更新</strong>：</p>
+<ul>
+<li>高频模块：每一步都快速响应新输入，像即时工作记忆；</li>
+<li>中频模块：在较长区间内整合局部模式；</li>
+<li>低频模块：缓慢积累稳定知识，更像长期知识库。</li>
+</ul>
+<p>这使得模型不再是一个统一时钟驱动的静态网络，而是一个<strong>多时间尺度的学习系统</strong>。作者认为，这种结构才更接近生物神经系统，也更有希望解释上下文学习、长期记忆和持续学习现象。</p>
+<h3 id="2-3-从“扁平深度学习”到“嵌套优化”"><a href="#2-3-从“扁平深度学习”到“嵌套优化”" class="headerlink" title="2.3 从“扁平深度学习”到“嵌套优化”"></a>2.3 从“扁平深度学习”到“嵌套优化”</h3><p>论文举了一个很直观的例子：</p>
+<ul>
+<li>外层优化负责更新主模型参数 W；</li>
+<li>内层优化负责组织梯度历史、动量状态、二阶统计等信息；</li>
+<li>注意力也可以看成快速在线优化；</li>
+<li>FFN 参数则更像慢速稳定更新的长期知识载体。</li>
+</ul>
+<p>于是，Adam 不再只是一个固定公式，而是一个已经隐含多层记忆与优化状态的系统。NL 只是把这种事实显式化，并进一步推动它走向更深、更强、更可学习的版本。</p>
+<p><img src="/images/posts/paper-nl/nested-levels.svg" alt="Nested Learning 的多层嵌套优化视图"></p>
+<h2 id="3-NL-框架下的三项核心落地"><a href="#3-NL-框架下的三项核心落地" class="headerlink" title="3. NL 框架下的三项核心落地"></a>3. NL 框架下的三项核心落地</h2><h3 id="3-1-Deep-Optimizers：把优化器从公式变成可学习模块"><a href="#3-1-Deep-Optimizers：把优化器从公式变成可学习模块" class="headerlink" title="3.1 Deep Optimizers：把优化器从公式变成可学习模块"></a>3.1 Deep Optimizers：把优化器从公式变成可学习模块</h3><p>论文首先对优化器做了重新解释：像 Adam、Momentum SGD 这样的优化器，本质上是在用有限状态压缩历史梯度信息。既然如此，就没有必要把优化器限制在人工设计的线性更新规则里。</p>
+<p>作者提出 <strong>Deep Optimizers</strong> 的思路：</p>
+<ul>
+<li>用更具表达力的小网络替代简单的动量记忆机制；</li>
+<li>让优化器能够学习更复杂的梯度模式；</li>
+<li>让“如何更新参数”本身也变成一个可学习问题。</li>
+</ul>
+<p>这背后的意义很大：它把“模型学任务”进一步推进为“模型和优化器一起学如何更好地学习任务”。</p>
+<h3 id="3-2-Self-Modifying-Titans：模型开始学习如何修改自己"><a href="#3-2-Self-Modifying-Titans：模型开始学习如何修改自己" class="headerlink" title="3.2 Self-Modifying Titans：模型开始学习如何修改自己"></a>3.2 Self-Modifying Titans：模型开始学习如何修改自己</h3><p>第二个方向更激进。作者把 NL 的思想应用到序列模型，提出 <strong>Self-Modifying Titans</strong>：模型不仅对输入做推理，还会基于误差信号和上下文，动态调整自己的更新规则。</p>
+<p>这相当于让模型拥有某种“元学习”能力：</p>
+<ul>
+<li>不只是记住输入；</li>
+<li>不只是更新参数；</li>
+<li>而是学习“应该如何更新这些参数”。</li>
+</ul>
+<p>如果这条路线继续走深，模型就更接近真正的在线适应系统，而不是只能离线训练后冻结使用的静态大模型。</p>
+<h3 id="3-3-CMS-与-HOPE：把记忆从二分法变成连续谱"><a href="#3-3-CMS-与-HOPE：把记忆从二分法变成连续谱" class="headerlink" title="3.3 CMS 与 HOPE：把记忆从二分法变成连续谱"></a>3.3 CMS 与 HOPE：把记忆从二分法变成连续谱</h3><p>论文第三个落点是 <strong>Continuum Memory System（CMS）</strong>。作者认为，“短期记忆 &#x2F; 长期记忆”这种二分法太粗糙，实际系统中的记忆应该是一条连续频谱。</p>
+<p>CMS 的做法是：</p>
+<ul>
+<li>用多个不同更新频率的模块表示不同时间尺度的记忆；</li>
+<li>高频模块捕捉短时变化；</li>
+<li>低频模块存储更稳定、更抽象的知识；</li>
+<li>中间频率模块承担平滑过渡与知识蒸馏的作用。</li>
+</ul>
+<p>在此基础上，作者提出 <strong>HOPE</strong> 架构，把自修改序列模型和 CMS 结合起来，形成一个具有多时间尺度记忆与自适应更新能力的统一学习系统。HOPE 不是论文里唯一重要的东西，但它证明了 NL 不只是概念，而是能落到可训练、可评估的模型上。</p>
+<p><img src="/images/posts/paper-nl/hope-arch.svg" alt="HOPE 架构：自修改 Titans 与连续记忆系统 CMS"></p>
+<h2 id="4-实验结果说明了什么"><a href="#4-实验结果说明了什么" class="headerlink" title="4. 实验结果说明了什么"></a>4. 实验结果说明了什么</h2><p>论文在语言建模、常识推理、长上下文检索与持续学习几类任务上验证了 HOPE，对比对象包括 Transformer，以及 Titans、Samba、TTT、Mamba2 等近期的循环&#x2F;线性注意力类序列模型：</p>
+<table>
+<thead>
+<tr>
+<th>任务类别</th>
+<th>观察</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>语言建模</td>
+<td>HOPE 的困惑度低于同规模的对比模型</td>
+</tr>
+<tr>
+<td>常识推理</td>
+<td>平均准确率优于同规模对比模型</td>
+</tr>
+<tr>
+<td>长上下文检索（Needle-in-a-Haystack 类）</td>
+<td>在长上下文中表现出更强的记忆检索能力</td>
+</tr>
+<tr>
+<td>持续学习</td>
+<td>遗忘更少，且不依赖经验回放等额外机制</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>论文的会议版篇幅受限，作者在正文中说明部分实验与细节移到了附录，建议以 arXiv 完整版（2512.24695）为准查阅具体数值。</p>
+</blockquote>
+<p>这些结果最重要的意义，不是“HOPE 绝对 SOTA”，而是它支持了一个更关键的论点：<strong>如果把模型设计成显式的多时间尺度嵌套优化系统，持续学习和长程记忆问题就有可能从结构层面得到改善。</strong></p>
+<h2 id="5-我对这篇论文的理解"><a href="#5-我对这篇论文的理解" class="headerlink" title="5. 我对这篇论文的理解"></a>5. 我对这篇论文的理解</h2><p>我觉得这篇论文真正重要的地方，不是某个具体模块，而是它提供了一个<strong>重新理解深度学习的视角</strong>：</p>
+<ul>
+<li>过去我们把模型看成“函数逼近器”；</li>
+<li>这篇论文更像是把模型看成“分层学习系统”；</li>
+<li>过去我们强调参数规模和层数；</li>
+<li>它更强调记忆层次、更新频率和学习规则本身的表达力。</li>
+</ul>
+<p>这会带来两个变化。</p>
+<p>第一，<strong>架构设计和优化器设计不再是两条平行路线</strong>。如果优化器本身也是模型的一部分，那么未来模型设计就不只是“堆 Transformer block”，而是要一起设计：哪些状态高速更新、哪些状态低速更新、哪些部分负责在线适应、哪些部分负责长期巩固。</p>
+<p>第二，<strong>持续学习问题有了更结构化的解法</strong>。传统做法往往是靠 replay、正则项、参数隔离等补丁缓解灾难性遗忘；NL 提供的思路则更接近“系统一开始就应具备不同时间尺度的记忆层”。</p>
+<h2 id="6-优点与局限"><a href="#6-优点与局限" class="headerlink" title="6. 优点与局限"></a>6. 优点与局限</h2><h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><ul>
+<li><strong>解释力强</strong>：它不是只给出一个工程技巧，而是试图统一模型、优化器、注意力和记忆系统的理解框架。</li>
+<li><strong>方向感明确</strong>：它把“从堆层到堆学习层次”的设计路线讲得很清楚。</li>
+<li><strong>持续学习导向鲜明</strong>：相比很多只关注离线 benchmark 的工作，这篇论文直接瞄准长期记忆和低遗忘率问题。</li>
+<li><strong>与神经科学有呼应</strong>：多时间尺度记忆与更新频率的设定具有较强的生物学直觉。</li>
+</ul>
+<h3 id="局限"><a href="#局限" class="headerlink" title="局限"></a>局限</h3><ul>
+<li><strong>概念密度高</strong>：论文提出了 NL、Deep Optimizers、Self-Modifying Titans、CMS、HOPE 多个概念，阅读门槛较高。</li>
+<li><strong>工程复杂度不低</strong>：显式地设计多时间尺度与自修改机制，会显著增加训练和实现复杂度。</li>
+<li><strong>仍需更大规模验证</strong>：这一范式是否能在更大模型、更长训练周期、更复杂真实任务上稳定复现，还需要更多证据。</li>
+<li><strong>理论到产品还有距离</strong>：它很有启发性，但短期内更像研究框架，而不是可直接替换主流大模型训练范式的工业方案。</li>
+</ul>
+<h2 id="7-前景展望"><a href="#7-前景展望" class="headerlink" title="7. 前景展望"></a>7. 前景展望</h2><p>如果 NL 这条路线继续发展，我觉得它最可能影响以下几个方向：</p>
+<ul>
+<li><strong>长期在线学习的大模型</strong>：让模型在部署后持续吸收新知识，而不是“训练完就冻结”；</li>
+<li><strong>智能体系统</strong>：Agent 需要跨任务、跨时间保留记忆，NL 的多时间尺度结构天然契合；</li>
+<li><strong>机器人与自动驾驶</strong>：这类系统高度依赖连续感知、持续适应与长期经验积累；</li>
+<li><strong>个性化 AI</strong>：未来的助手类模型如果要真正理解“你是谁”，就必须有更稳定、更低遗忘的长期记忆机制。</li>
+</ul>
+<p>从这个意义上说，这篇论文也许不会直接定义下一代主流模型，但它很可能会影响下一代模型设计语言。</p>
+<h2 id="8-芯片与系统视角：如果权重在推理时也要更新"><a href="#8-芯片与系统视角：如果权重在推理时也要更新" class="headerlink" title="8. 芯片与系统视角：如果权重在推理时也要更新"></a>8. 芯片与系统视角：如果权重在推理时也要更新</h2><blockquote>
+<p>本节为 2026-11 新增，是我从硬件角度的推演，不是论文本身的内容。</p>
+</blockquote>
+<p>今天的推理芯片有一个默认前提：<strong>推理时权重只读</strong>。所以权重可以放在 HBM 里批量读取、做激进的量化，计算单元只需要前向通路。Nested Learning 和 HOPE 让这个前提开始松动：模型的一部分状态要在推理过程中以较高频率更新。</p>
+<table>
+<thead>
+<tr>
+<th>更新频率</th>
+<th>NL 中的角色</th>
+<th>对硬件的含义（我的理解）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>高频（每个 token）</td>
+<td>快速记忆、在线适应</td>
+<td>需要靠近计算单元的可写存储（SRAM &#x2F; 寄存器堆），读写带宽与计算同量级</td>
+</tr>
+<tr>
+<td>中频（每段上下文）</td>
+<td>局部模式整合</td>
+<td>适合放在片上缓存，按块写回</td>
+</tr>
+<tr>
+<td>低频（离线训练）</td>
+<td>长期知识</td>
+<td>仍可放在 HBM 中只读，继续量化压缩</td>
+</tr>
+</tbody></table>
+<p>这和存储层次的设计思路天然对应：<strong>更新越频繁的状态，越应该离计算越近</strong>。如果这类模型走向主流，推理芯片可能需要三个变化：</p>
+<p><img src="/images/posts/paper-nl/memory-hw-map.svg" alt="更新频率到存储层次的映射"></p>
+<ol>
+<li><strong>推理通路里出现“小规模训练”</strong>：至少要支持快速记忆部分的梯度或更新规则计算，而不只是矩阵乘；</li>
+<li><strong>可写片上存储的比例上升</strong>：快速状态的容量和读写带宽会成为新的设计指标，类似今天的 KV 缓存；</li>
+<li><strong>量化策略要分层</strong>：低频权重可以继续激进量化，高频状态需要足够精度来累积更新。</li>
+</ol>
+<p>这也让它和本系列前两篇形成呼应：VcLLM、CoPE 关注的是“数据怎么压得更小、搬得更少”，Nested Learning 则在问“哪些状态需要被频繁地写”。两者合在一起，才是未来 AI 芯片存储系统需要回答的完整问题。</p>
+<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2512.24695">arXiv 完整版：2512.24695</a></li>
+<li><a target="_blank" rel="noopener" href="https://abehrouz.github.io/files/NL.pdf">作者主页上的 PDF</a></li>
+<li><a target="_blank" rel="noopener" href="https://research.google/blog/introducing-nested-learning-a-new-ml-paradigm-for-continual-learning/">Google Research 博客介绍</a></li>
+</ul>
+<h2 id="论文解读系列"><a href="#论文解读系列" class="headerlink" title="论文解读系列"></a>论文解读系列</h2><ul>
+<li><a href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/">论文解读1-VcLLM：视频编解码器实际上是张量编解码器</a></li>
+<li><a href="/2026/03/15/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB3-CoPE-VideoLM%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%AB%98%E6%95%88%E8%A7%86%E9%A2%91%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%BC%96%E8%A7%A3%E7%A0%81%E5%9F%BA%E5%85%83/">论文解读3-CoPE-VideoLM：用于高效视频语言模型的编解码基元</a></li>
+</ul>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2026/03/15/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB3-CoPE-VideoLM%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%AB%98%E6%95%88%E8%A7%86%E9%A2%91%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%BC%96%E8%A7%A3%E7%A0%81%E5%9F%BA%E5%85%83/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>论文解读3-CoPE-VideoLM：用于高效视频语言模型的编解码基元</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2025/10/27/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB1-VcLLM%EF%BC%9A%E8%A7%86%E9%A2%91%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8%E5%AE%9E%E9%99%85%E4%B8%8A%E6%98%AF%E5%BC%A0%E9%87%8F%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      论文解读1-VcLLM：视频编解码器实际上是张量编解码器
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  
+  <a href="/tags/Nested-Learning/" class="post-tag">#Nested Learning</a><a href="/tags/Deep-Learning/" class="post-tag">#Deep Learning</a><a href="/tags/Optimizer/" class="post-tag">#Optimizer</a>
+
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\07\21\hexo搭建个人博客网站记录\" title="Hexo 搭建个人技术博客：从部署到踩坑记录" rel="bookmark">Hexo 搭建个人技术博客：从部署到踩坑记录</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div></div>
+    
+  </div>
+</div>
+
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>

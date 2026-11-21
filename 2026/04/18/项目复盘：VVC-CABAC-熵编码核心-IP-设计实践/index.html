@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践 | 九天之遥
+      
+    </title>
+    <meta name="description" content="聚焦视频编码与数据压缩硬件架构，以及与 AI Infra 相关的系统思考与工程实践。" />
+    <meta name="keywords" content="编码与压缩硬件架构, 视频编解码后端, H.266, VVC, CABAC, ZSTD, ISP, 数据通路, AI Infra, 张量压缩, 技术博客" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href='/blog/'>全部文章</a>
+              
+              
+                <a class="nav-menu-item" href="/code">技术笔记</a>
+              
+                <a class="nav-menu-item" href="/pro">项目开发</a>
+              
+                <a class="nav-menu-item" href="/life">生活</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner--toc">
+      <div class="post-content__head">
+        <div class="post-title">项目复盘：VVC/HEVC 双协议 CABAC 熵编码 IP 设计实践</div>
+        <div class="post-info">
+          
+  
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/HEVC/" class="post-tag">#HEVC</a><a href="/tags/CABAC/" class="post-tag">#CABAC</a><a href="/tags/PPA%E4%BC%98%E5%8C%96/" class="post-tag">#PPA优化</a>
+
+
+
+          <span class="post-date">2026-04-18</span>
+        </div>
+      </div>
+      
+        <aside class="toc-outer">
+          <div class="toc-title">目录</div>
+          <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#1-%E9%A1%B9%E7%9B%AE%E7%94%BB%E5%83%8F"><span class="post-toc-text">1. 项目画像</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#2-%E4%BB%8E%E8%A7%84%E6%A0%BC%E5%80%92%E6%8E%A8%EF%BC%9ACTU-%E5%91%A8%E6%9C%9F%E9%A2%84%E7%AE%97"><span class="post-toc-text">2. 从规格倒推：CTU 周期预算</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-1-%E4%B8%A4%E7%A7%8D%E5%8D%8F%E8%AE%AE%E6%8C%89%E5%90%8C%E4%B8%80%E5%83%8F%E7%B4%A0%E5%90%9E%E5%90%90%E5%81%9A%E9%A2%84%E7%AE%97"><span class="post-toc-text">2.1 两种协议按同一像素吞吐做预算</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-2-%E7%94%A8%E8%A7%84%E8%8C%83%E7%BA%A6%E6%9D%9F%E6%A0%A1%E6%A0%B8%EF%BC%9A1-bin-cycle-%E5%A4%9F%E4%B8%8D%E5%A4%9F"><span class="post-toc-text">2.2 用规范约束校核：1 bin&#x2F;cycle 够不够</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2-3-%E6%8E%A5%E5%8F%A3%E6%90%AC%E8%BF%90%E4%B8%8D%E8%83%BD%E5%90%83%E6%8E%89%E9%A2%84%E7%AE%97"><span class="post-toc-text">2.3 接口搬运不能吃掉预算</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#3-%E9%A1%B6%E5%B1%82%E6%9E%B6%E6%9E%84%EF%BC%9A%E6%8E%A7%E5%88%B6%E9%AA%A8%E6%9E%B6-%E5%9B%9B%E7%BA%A7%E5%90%8E%E7%AB%AF"><span class="post-toc-text">3. 顶层架构：控制骨架 + 四级后端</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3-1-%E4%B8%89%E7%A7%8D%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="post-toc-text">3.1 三种工作模式</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#4-%E5%8F%8C%E5%8D%8F%E8%AE%AE%E5%A4%8D%E7%94%A8%EF%BC%9A%E5%85%B1%E4%BA%AB%E4%BB%80%E4%B9%88%E3%80%81%E5%88%86%E5%BC%80%E4%BB%80%E4%B9%88"><span class="post-toc-text">4. 双协议复用：共享什么、分开什么</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-1-%E9%A1%B9%E7%9B%AE%E9%87%8C%E7%9A%84%E5%AE%9E%E9%99%85%E5%81%9A%E6%B3%95"><span class="post-toc-text">4.1 项目里的实际做法</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%AE%97%E6%9C%AF%E7%BC%96%E7%A0%81%E4%B8%8D%E5%85%B1%E4%BA%AB%EF%BC%88%E6%88%91%E7%9A%84%E7%90%86%E8%A7%A3%EF%BC%89"><span class="post-toc-text">4.2 为什么算术编码不共享（我的理解）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4-3-ALF-on-off%EF%BC%9AVVC-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%80%E4%B8%AA-CTU-%E7%BC%96%E4%B8%A4%E9%81%8D"><span class="post-toc-text">4.3 ALF on &#x2F; off：VVC 为什么一个 CTU 编两遍</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#5-pack-%E4%B8%8E-aenc-%E7%9A%84%E5%88%86%E5%B7%A5%EF%BC%9Abin-%E4%BB%BB%E5%8A%A1%E6%8E%A5%E5%8F%A3"><span class="post-toc-text">5. pack 与 aenc 的分工：bin 任务接口</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-1-%E4%BA%8C%E5%80%BC%E5%8C%96%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="post-toc-text">5.1 二值化放在哪里</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5-2-%E4%B8%80%E4%B8%AA%E7%BA%A6-30-bit-%E7%9A%84%E4%BB%BB%E5%8A%A1%E5%AD%97"><span class="post-toc-text">5.2 一个约 30 bit 的任务字</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#6-WPP%E3%80%81%E5%A4%9A%E6%A0%B8%E4%B8%8E%E7%A0%81%E6%B5%81%E6%8B%BC%E6%8E%A5"><span class="post-toc-text">6. WPP、多核与码流拼接</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#7-%E7%BB%BC%E5%90%88%E9%98%B6%E6%AE%B5%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%89%E4%B8%AA%E7%9C%9F%E5%AE%9E%E9%97%AE%E9%A2%98"><span class="post-toc-text">7. 综合阶段遇到的三个真实问题</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#7-1-%E9%9D%A2%E7%A7%AF%EF%BC%9A%E4%B8%80%E4%B8%AA%E6%96%B0%E5%8A%9F%E8%83%BD%E8%AE%A9%E7%BC%96%E7%A0%81%E6%A0%B8%E9%9D%A2%E7%A7%AF%E7%BF%BB%E5%80%8D"><span class="post-toc-text">7.1 面积：一个新功能让编码核面积翻倍</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#7-2-%E6%97%B6%E5%BA%8F%EF%BC%9A%E8%BF%9D%E4%BE%8B%E8%B7%AF%E5%BE%84%E5%9C%A8-DDR-%E5%9C%B0%E5%9D%80%E7%94%9F%E6%88%90%E9%87%8C"><span class="post-toc-text">7.2 时序：违例路径在 DDR 地址生成里</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#7-3-%E6%89%87%E5%87%BA%EF%BC%9A%E4%B8%80%E4%B8%AA%E5%AF%84%E5%AD%98%E5%99%A8-FIFO-%E7%9A%84%E5%86%99%E6%8C%87%E9%92%88%E6%89%87%E5%87%BA-3-7-%E4%B8%87"><span class="post-toc-text">7.3 扇出：一个寄存器 FIFO 的写指针扇出 3.7 万</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#8-%E9%AA%8C%E8%AF%81%E4%B8%8E%E7%AD%BE%E6%A0%B8"><span class="post-toc-text">8. 验证与签核</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#9-%E6%BC%94%E8%BF%9B%EF%BC%9A%E4%B8%8B%E4%B8%80%E4%BB%A3%E4%B8%AD%E7%9A%84%E4%B8%8A%E6%B8%B8%E4%BF%A1%E6%81%AF%E9%80%9A%E8%B7%AF%E6%94%B9%E9%80%A0"><span class="post-toc-text">9. 演进：下一代中的上游信息通路改造</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#10-%E5%A4%8D%E7%9B%98%EF%BC%9A%E5%9B%9B%E6%9D%A1%E5%8E%9F%E5%88%99"><span class="post-toc-text">10. 复盘：四条原则</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#11-%E5%B8%B8%E8%A2%AB%E9%97%AE%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="post-toc-text">11. 常被问到的问题</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#%E7%9B%B8%E5%85%B3%E9%98%85%E8%AF%BB"><span class="post-toc-text">相关阅读</span></a></li></ol>
+          <a href="#" class="toc-top">回到顶部</a>
+        </aside>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <blockquote>
+<p><strong>写在前面</strong>：本文是 <a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/">深度解析H.266&#x2F;VVC 熵编码CABAC</a> 的工程续篇。那篇讲“规范是什么、硬件难在哪”，这篇讲“一个真实项目里是怎么取舍的”。</p>
+<p><strong>口径说明</strong>：本文依据项目期间的个人工作记录与架构文档整理。不涉及具体产品、工艺与内部代码，面积数据只给相对比例。凡是“我的理解 &#x2F; 取舍分析”，文中会单独标注，与项目事实区分开。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="1-项目画像"><a href="#1-项目画像" class="headerlink" title="1. 项目画像"></a>1. 项目画像</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>协议</td>
+<td>H.265&#x2F;HEVC 与 H.266&#x2F;VVC <strong>双协议</strong>；VVC 系数编码同时支持常规残差编码（RRC）与变换跳过残差编码（TSRC）</td>
+</tr>
+<tr>
+<td>位置</td>
+<td>编码器 CTU 级主流水的最后一级，接收环路滤波级送来的 CTU 信息</td>
+</tr>
+<tr>
+<td>目标频率</td>
+<td>1.2 GHz</td>
+</tr>
+<tr>
+<td>算术编码吞吐</td>
+<td>常规 bin <strong>1 bin&#x2F;cycle</strong>；bypass <strong>4 bin&#x2F;cycle</strong></td>
+</tr>
+<tr>
+<td>CTU 周期预算</td>
+<td>HEVC 64×64：<strong>15000 cycle</strong>；VVC 128×128：<strong>60000 cycle</strong></td>
+</tr>
+<tr>
+<td>输出</td>
+<td>HEVC 每 CTU 1 路码流；VVC 每 CTU 最多 <strong>2 路</strong>（ALF on &#x2F; ALF off）</td>
+</tr>
+<tr>
+<td>工作模式</td>
+<td>online（片上直连）&#x2F; offline（经 DDR 解耦）&#x2F; bypass（交由软件）&#x2F; 多核 &#x2F; low-delay</td>
+</tr>
+<tr>
+<td>规模</td>
+<td>RTL 160+ 个 HDL 文件、7 万行量级；配套 C cmodel 约 1.3 万行</td>
+</tr>
+<tr>
+<td>状态</td>
+<td>已随芯片流片</td>
+</tr>
+<tr>
+<td>我的角色</td>
+<td>整体架构由团队确定。我负责<strong>双协议兼容改造中的接口与数据通路</strong>部分，并参与<strong>综合阶段时序、面积、扇出问题的分析与收敛</strong>（第 7 节）；下一代演进中主导上游信息通路改造（第 9 节）</td>
+</tr>
+</tbody></table>
+<h2 id="2-从规格倒推：CTU-周期预算"><a href="#2-从规格倒推：CTU-周期预算" class="headerlink" title="2. 从规格倒推：CTU 周期预算"></a>2. 从规格倒推：CTU 周期预算</h2><p>CABAC 处在 CTU 级流水里，它的规格本质上是一个问题：<strong>每个 CTU 给多少拍，够不够把这个 CTU 的所有 bin 编完？</strong></p>
+<h3 id="2-1-两种协议按同一像素吞吐做预算"><a href="#2-1-两种协议按同一像素吞吐做预算" class="headerlink" title="2.1 两种协议按同一像素吞吐做预算"></a>2.1 两种协议按同一像素吞吐做预算</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">HEVC :  64 ×  64 = 4096  pixel / 15000 cycle ≈ 0.273 pixel/cycle<br>VVC  : 128 × 128 = 16384 pixel / 60000 cycle ≈ 0.273 pixel/cycle<br></code></pre></td></tr></table></figure>
+
+<p>两种协议的 CTU 尺寸差 4 倍，周期预算也正好差 4 倍。这说明预算是<strong>按同一像素吞吐</strong>定的：上游流水按像素率推进，CABAC 不能因为协议不同而成为瓶颈。在 1.2 GHz 下，单路约 327 Mpixel&#x2F;s。</p>
+<h3 id="2-2-用规范约束校核：1-bin-cycle-够不够"><a href="#2-2-用规范约束校核：1-bin-cycle-够不够" class="headerlink" title="2.2 用规范约束校核：1 bin&#x2F;cycle 够不够"></a>2.2 用规范约束校核：1 bin&#x2F;cycle 够不够</h3><p>最坏情况下，常规 bin 主要来自系数编码。用规范给出的上界校核：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>HEVC（64×64）</th>
+<th>VVC（128×128）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>每 CTU 系数数（4:2:0）</td>
+<td>6144</td>
+<td>24576</td>
+</tr>
+<tr>
+<td>系数常规 bin 上界</td>
+<td>每 4×4 子块最多 16 个 sig、8 个 gt1、1 个 gt2，平均约 1.56 bin&#x2F;系数 → 约 <strong>9600</strong></td>
+<td><code>remBinsPass1</code> 限制为 1.75 bin&#x2F;系数 → <strong>43008</strong></td>
+</tr>
+<tr>
+<td>占 CTU 周期预算</td>
+<td>约 <strong>64%</strong></td>
+<td>约 <strong>72%</strong></td>
+</tr>
+</tbody></table>
+<p>在 1 bin&#x2F;cycle 下，系数部分的常规 bin 最坏情况落在预算之内，并给划分、预测模式、MVD 等其他语法留出约三成余量。VVC 的常规 bin 预算机制（原理见深度解析 2.3 节）正是让这笔账<strong>能算清楚</strong>的前提。</p>
+<h3 id="2-3-接口搬运不能吃掉预算"><a href="#2-3-接口搬运不能吃掉预算" class="headerlink" title="2.3 接口搬运不能吃掉预算"></a>2.3 接口搬运不能吃掉预算</h3><p>环路滤波级送给 CABAC 的数据以 128 bit 位宽、valid&#x2F;ready 握手传输，每个 CTU 以 start&#x2F;end 标记首尾。按每拍的有效载荷计算：</p>
+<table>
+<thead>
+<tr>
+<th>数据</th>
+<th>VVC（每 CTU）</th>
+<th>HEVC（每 CTU）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系数</td>
+<td>3072 cycle</td>
+<td>768 cycle</td>
+<td>16 bit&#x2F;系数，一拍 8 个，按 Y→U→V、4×4 CG 内 raster 顺序</td>
+</tr>
+<tr>
+<td>块信息</td>
+<td>3584 cycle</td>
+<td>896 cycle</td>
+<td>每个 4×4 块一份，约 3.5 cycle&#x2F;块</td>
+</tr>
+<tr>
+<td>上方邻块信息</td>
+<td>48 cycle</td>
+<td>24 cycle</td>
+<td>CTU 上边界的 4×4 块</td>
+</tr>
+<tr>
+<td><strong>合计占预算</strong></td>
+<td><strong>约 11%</strong></td>
+<td><strong>约 11%</strong></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>输入搬运只占预算的十分之一左右，并且和编码过程以 FIFO 解耦，不会成为瓶颈。两种协议的占比也几乎一致，说明接口位宽是和周期预算一起设计的。</p>
+<h2 id="3-顶层架构：控制骨架-四级后端"><a href="#3-顶层架构：控制骨架-四级后端" class="headerlink" title="3. 顶层架构：控制骨架 + 四级后端"></a>3. 顶层架构：控制骨架 + 四级后端</h2><p><img src="/images/posts/proj-cabac/top-arch.svg" alt="熵编码 IP 顶层架构"></p>
+<p>图中 DDR 的三类交互：(1) offline&#x2F;bypass 模式下语法信息的写出与读回；(2) 多核协同时加载上下文表；(3) CTU 码流写出与帧级拼接。</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>prepare</strong></td>
+<td>统一数据来源：online 时把 LF 数据直接透传给后级；bypass 时把数据写入 DDR；offline 时先写 DDR 再读回送往后级</td>
+</tr>
+<tr>
+<td><strong>pack</strong></td>
+<td>按协议的编码顺序打包语法元素，完成大部分二值化，把 bin 任务压入 FIFO</td>
+</tr>
+<tr>
+<td><strong>aenc</strong></td>
+<td>剩余语法的二值化 + 上下文读写 + 二进制算术编码；VVC 有两个编码实例</td>
+</tr>
+<tr>
+<td><strong>frame bs gen</strong></td>
+<td>把 CTU 级码流片段组织成 WPP 行级、帧级码流</td>
+</tr>
+<tr>
+<td><strong>regbank + top ctrl</strong></td>
+<td>读取配置，向各级下发协议选择、工作模式、ALF 编码路径、帧尾拼接等控制</td>
+</tr>
+</tbody></table>
+<p>把控制骨架单独抽出来，是这个设计里很关键的一点：模式、协议、ALF on&#x2F;off、多核与帧尾拼接的组合非常多，如果分散在各子模块里隐式判断，验证会失控。</p>
+<h3 id="3-1-三种工作模式"><a href="#3-1-三种工作模式" class="headerlink" title="3.1 三种工作模式"></a>3.1 三种工作模式</h3><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>数据路径</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>online</td>
+<td>LF → prepare 透传 → pack → aenc</td>
+<td>正常 WPP 编码，片上直连，延迟最低</td>
+</tr>
+<tr>
+<td>offline</td>
+<td>LF → prepare → DDR → 读回 → pack → aenc</td>
+<td>上下游解耦，CTU 信息经 DDR 缓冲</td>
+</tr>
+<tr>
+<td>bypass</td>
+<td>LF → prepare → DDR</td>
+<td>硬件只落盘 CTU 信息，熵编码交由软件完成</td>
+</tr>
+</tbody></table>
+<p>bypass 模式的存在有一个具体原因：<strong>HEVC 硬件 CABAC 只支持 WPP 编码</strong>，状态机里没有非 WPP 的跳转逻辑。非 WPP 的 HEVC 码流由软件完成熵编码，硬件只负责把信息写出来。这是用“软件兜底”换取硬件状态机简化的一个取舍。</p>
+<h2 id="4-双协议复用：共享什么、分开什么"><a href="#4-双协议复用：共享什么、分开什么" class="headerlink" title="4. 双协议复用：共享什么、分开什么"></a>4. 双协议复用：共享什么、分开什么</h2><p>这是复盘里最想讲清楚的一点，因为它和“直觉答案”不一样。</p>
+<h3 id="4-1-项目里的实际做法"><a href="#4-1-项目里的实际做法" class="headerlink" title="4.1 项目里的实际做法"></a>4.1 项目里的实际做法</h3><table>
+<thead>
+<tr>
+<th>层次</th>
+<th>共享还是分开</th>
+<th>具体做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LF→CABAC 接口</td>
+<td><strong>共享</strong></td>
+<td>两种协议共用同一套接口数据类型；HEVC 模式下 pack 从中挑出 HEVC 需要的字段</td>
+</tr>
+<tr>
+<td>输入 info buffer</td>
+<td><strong>共享</strong></td>
+<td>只保留一套缓冲，经“协议选择”路由到两个 pack；HEVC 的信息复用 VVC 的存储空间</td>
+</tr>
+<tr>
+<td>pack</td>
+<td><strong>两套电路</strong></td>
+<td>HEVC pack 复用上一代编码器中成熟的模块；VVC pack 新开发</td>
+</tr>
+<tr>
+<td>算术编码</td>
+<td><strong>两套硬件</strong></td>
+<td>两种协议的概率模型不同，分别实现</td>
+</tr>
+<tr>
+<td>帧级码流组织、DMA、控制骨架</td>
+<td><strong>共享</strong></td>
+<td>与协议无关</td>
+</tr>
+</tbody></table>
+<p>共享 info buffer 的直接收益，是省掉了一份输入缓冲，以及 pack→aenc 之间的一部分 FIFO。HEVC 的信息格式是上一代设计定义的（每个 8×8 块占 256 bit），因此做了一层格式适配，让它落在 VVC 定义的存储空间里，而不是让旧模块去理解全部新字段。</p>
+<h3 id="4-2-为什么算术编码不共享（我的理解）"><a href="#4-2-为什么算术编码不共享（我的理解）" class="headerlink" title="4.2 为什么算术编码不共享（我的理解）"></a>4.2 为什么算术编码不共享（我的理解）</h3><p>深度解析 6.5 节从理论上讲过“算术编码引擎与协议无关，可以共享”。项目最终选择了两套，我认为有三个原因：</p>
+<ol>
+<li><strong>概率模型就在 1 bin&#x2F;cycle 的关键环路里</strong>。HEVC 是查表状态机，VVC 是双速率估计器加乘法求 LPS，两者的关键路径形态不同。合成一套电路，就要在 Range 环里多插一级选择，并让两种协议的最坏路径叠加；</li>
+<li><strong>HEVC 侧可以直接复用成熟模块</strong>。已经流片验证过的 HEVC 编码通路，比为了共享而重写的新电路风险低得多；</li>
+<li><strong>VVC 本来就要两个编码实例</strong>（见 4.3 节），“共享”的收益被进一步稀释。</li>
+</ol>
+<p>代价是协议间的空闲硬件：VVC 模式下 HEVC 的算术编码器不工作，反之亦然。这部分可以靠门控降低动态功耗，但面积省不下来。<strong>这是一个用面积换时序收敛与交付风险的有意识取舍。</strong></p>
+<h3 id="4-3-ALF-on-off：VVC-为什么一个-CTU-编两遍"><a href="#4-3-ALF-on-off：VVC-为什么一个-CTU-编两遍" class="headerlink" title="4.3 ALF on &#x2F; off：VVC 为什么一个 CTU 编两遍"></a>4.3 ALF on &#x2F; off：VVC 为什么一个 CTU 编两遍</h3><p>VVC 模式下，aenc 有两个编码实例，分别对应 <strong>ALF on</strong> 和 <strong>ALF off</strong> 两种情况，每个 CTU 同时产生两路码流并写入 DDR；是否启用这两条路径，由序列级的 ALF 使能开关决定。</p>
+<p>原因在于数据依赖的时序：ALF 的滤波参数要在<strong>帧级</strong>统计之后才能确定，而 CABAC 作为 CTU 流水的一级，必须在帧级决策出来之前就把 CTU 编完。与其让 CABAC 等待（这会打断整条流水），不如两种可能都编一遍，等帧级决策确定后再选用。这是一个典型的<strong>用冗余计算换掉流水停顿</strong>的设计。</p>
+<h2 id="5-pack-与-aenc-的分工：bin-任务接口"><a href="#5-pack-与-aenc-的分工：bin-任务接口" class="headerlink" title="5. pack 与 aenc 的分工：bin 任务接口"></a>5. pack 与 aenc 的分工：bin 任务接口</h2><h3 id="5-1-二值化放在哪里"><a href="#5-1-二值化放在哪里" class="headerlink" title="5.1 二值化放在哪里"></a>5.1 二值化放在哪里</h3><p>二值化不是只在一个地方做的，而是按语法元素的性质拆在两级：</p>
+<table>
+<thead>
+<tr>
+<th>在 pack 中二值化</th>
+<th>在 aenc 中二值化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>二值化后<strong>全部是常规 bin</strong> 的语法元素</td>
+<td><strong>全部走 bypass</strong> 的语法元素</td>
+</tr>
+<tr>
+<td>二值化后<strong>部分常规、部分 bypass</strong> 的语法元素</td>
+<td>需要先拆成 prefix + suffix 的特殊语法元素，如 <code>last_sig_coeff_x/y</code> 的前后缀、<code>cu_qp_delta_abs</code>：pack 只负责拆分，prefix 的 TR、suffix 的 EG0 在 aenc 中完成</td>
+</tr>
+</tbody></table>
+<p>pack 把二值化结果连同每个 bin 的 <code>ctxInc</code> 和类型（常规 &#x2F; bypass）一起压入 FIFO，供 aenc 消费。</p>
+<p><strong>这样分工的一个直接好处（我的理解）</strong>：全 bypass 语法元素以“值”的形式穿过 FIFO，在 aenc 内部紧贴 bypass 引擎展开成 bin。FIFO 上传递的是一个值而不是一串 bin，bypass 4 bin&#x2F;cycle 的吞吐才不会被级间接口的带宽卡住。</p>
+<h3 id="5-2-一个约-30-bit-的任务字"><a href="#5-2-一个约-30-bit-的任务字" class="headerlink" title="5.2 一个约 30 bit 的任务字"></a>5.2 一个约 30 bit 的任务字</h3><p>pack 送给 aenc 的不是裸 bin，而是一个约 30 bit 的<strong>任务描述字</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>值（16 bit）</td>
+<td>待编码的单 bin 或多 bit 值</td>
+</tr>
+<tr>
+<td>联合字段</td>
+<td>随编码方式复用：单 bin 时为 ctx 索引；TR 时为 cMax 与 cRiceParam；定长时为 cMax；EGk 时为阶数 k</td>
+</tr>
+<tr>
+<td>编码方式</td>
+<td>ONE（单 bin）&#x2F; TR（截断 Rice）&#x2F; FLEN（定长）&#x2F; VLEN（k 阶指数哥伦布）</td>
+</tr>
+<tr>
+<td>语法类别</td>
+<td>用于在 aenc 中确定该语法元素上下文表的基地址</td>
+</tr>
+</tbody></table>
+<p>这个接口的设计思路是：<strong>pack 只描述“编什么、怎么二值化”，aenc 自己展开并定位上下文</strong>。字段按编码方式复用，用一个窄接口覆盖了全部语法元素。</p>
+<h2 id="6-WPP、多核与码流拼接"><a href="#6-WPP、多核与码流拼接" class="headerlink" title="6. WPP、多核与码流拼接"></a>6. WPP、多核与码流拼接</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单核 WPP</td>
+<td>CTU 码流按 WPP 行的顺序写入 DDR；一帧结束时（非多核、非 low-delay），CABAC 把每个 WPP 行的码流读回，拼接成整帧码流后写回 DDR</td>
+</tr>
+<tr>
+<td>多核</td>
+<td>帧级拼接由 core 外部专门的 DMA 模块完成；跨核协同编码时，aenc 从 DDR 加载上下文表</td>
+</tr>
+<tr>
+<td>low-delay</td>
+<td>不做帧尾的整帧拼接</td>
+</tr>
+<tr>
+<td>HEVC WPP 上下文同步</td>
+<td>在 CTU 行的第 2 个 CTU（<code>ctu_x == 1</code>）完成后保存上下文，供下一行起点继承，与规范一致</td>
+</tr>
+</tbody></table>
+<p>这里体现的是一个边界划分：<strong>“CTU 编得对”和“整帧码流组织得对”是两件事</strong>。前者在 aenc 里解决，后者交给独立的码流组织模块和 DMA。多核场景下上下文要跨核传递，走 DDR 是最直接的办法，代价是行起点要等待上下文加载。</p>
+<h2 id="7-综合阶段遇到的三个真实问题"><a href="#7-综合阶段遇到的三个真实问题" class="headerlink" title="7. 综合阶段遇到的三个真实问题"></a>7. 综合阶段遇到的三个真实问题</h2><p>这一节是工作记录里最有价值的部分。三个问题有一个共同点：<strong>都不在大家最先想到的“算术编码关键环路”上</strong>。</p>
+<h3 id="7-1-面积：一个新功能让编码核面积翻倍"><a href="#7-1-面积：一个新功能让编码核面积翻倍" class="headerlink" title="7.1 面积：一个新功能让编码核面积翻倍"></a>7.1 面积：一个新功能让编码核面积翻倍</h3><p><strong>背景</strong>：项目中期，CABAC 新增了一个功能：在编码过程中估算不同帧类型下的码率，用于帧类型（slice type）决策。</p>
+<p><strong>现象</strong>：重新综合后，</p>
+<table>
+<thead>
+<tr>
+<th>范围</th>
+<th>面积变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CABAC 整体</td>
+<td><strong>+5.9%</strong></td>
+</tr>
+<tr>
+<td>VVC 算术编码部分</td>
+<td><strong>+65.6%</strong></td>
+</tr>
+<tr>
+<td>单个 VVC 编码实例</td>
+<td><strong>约 ×2</strong></td>
+</tr>
+<tr>
+<td>其中帧类型更新逻辑本身</td>
+<td>增量的一小部分</td>
+</tr>
+</tbody></table>
+<p><strong>根因</strong>：膨胀集中在编码实例的前级。为了做码率估算，实现中例化了 <strong>3 份上下文表</strong>（可以理解为对应 VVC 的 3 种上下文初始化类型），每份是 <strong>379 个上下文 × 38 bit 的寄存器</strong>，再加上一个较大的统计累加逻辑，并且修改了部分存储位宽。由于 VVC 有 ALF on&#x2F;off 两个编码实例，这些开销又被乘了 2。</p>
+<p><strong>优化方案</strong>（记录中的分析结论）：合并码率统计所用的上下文表，并收窄一个标志信号的寄存器位宽，预计可收回本次新增面积的<strong>约七成</strong>。</p>
+<p><strong>复盘延伸（我的理解）</strong>：38 bit&#x2F;ctx 正是参考软件 VTM 的数据表示；按 VVC 规范的有效位宽只需 28 bit&#x2F;ctx（推导见深度解析 4.3 节）。对于“码率估算”这类只需要近似状态的辅助功能，还可以考虑更低精度的状态表示。<strong>这个案例让我意识到：新功能的面积评估要在写 RTL 之前做，而不是综合之后才发现。</strong></p>
+<h3 id="7-2-时序：违例路径在-DDR-地址生成里"><a href="#7-2-时序：违例路径在-DDR-地址生成里" class="headerlink" title="7.2 时序：违例路径在 DDR 地址生成里"></a>7.2 时序：违例路径在 DDR 地址生成里</h3><p><strong>现象</strong>：时序违例的路径不在 Range 环，而在 prepare 的语法写出通路中：<strong>offline &#x2F; bypass 模式下计算 DDR 写地址的乘法器</strong>。路径是一长串全加器进位链，即使综合工具已经做了 retiming，依然违例。</p>
+<p><strong>根因分析</strong>：DDR 地址形如 <code>base + index × stride</code>，乘法和进位链在 1.2 GHz 下放不进一拍。这类路径在架构评审时很容易被忽视，因为它“只是地址计算”，不在算法核心里。</p>
+<p><strong>常见的处理方式</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>思路</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>增量地址</td>
+<td>地址按 CTU &#x2F; 行顺序递增，用 <code>addr += stride</code> 替代乘法</td>
+</tr>
+<tr>
+<td>预计算</td>
+<td><code>index × stride</code> 中的不变部分在帧起始时由配置计算好</td>
+</tr>
+<tr>
+<td>多拍乘法</td>
+<td>地址不是每拍都变化，允许多拍完成，并对时序工具声明多周期路径</td>
+</tr>
+</tbody></table>
+<p><strong>教训</strong>：高频设计做时序预算时，要把“控制面”的算术也列进去。地址、计数器、阈值比较这类逻辑数量多、位宽宽，往往比算法核心更早撞上时序墙。</p>
+<h3 id="7-3-扇出：一个寄存器-FIFO-的写指针扇出-3-7-万"><a href="#7-3-扇出：一个寄存器-FIFO-的写指针扇出-3-7-万" class="headerlink" title="7.3 扇出：一个寄存器 FIFO 的写指针扇出 3.7 万"></a>7.3 扇出：一个寄存器 FIFO 的写指针扇出 3.7 万</h3><p><strong>现象</strong>：综合报告提示，prepare 中一个与 WPP 相关的 FIFO，其 <strong>7 bit 写指针的每一位扇出约 36870，超出 20000 的上限</strong>；对应的门控时钟单元也同样超限。</p>
+<p><strong>根因</strong>：这个 FIFO 用寄存器堆实现，深 128 × 宽 288 bit（36864 &#x3D; 128 × 288，与扇出数一致）。写指针要译码成每一个存储位的写使能，于是每一位指针都要驱动全部 36864 个存储单元。</p>
+<p><strong>常见的处理方式</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>适用条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>改用 SRAM 宏</td>
+<td>容量达到这个量级时，SRAM 的面积与功耗通常都更优，扇出问题自然消失</td>
+</tr>
+<tr>
+<td>分 bank + 指针复制</td>
+<td>必须用寄存器时，按宽度或深度切分，每个 bank 配一份指针寄存器</td>
+</tr>
+<tr>
+<td>重新评估深度</td>
+<td>确认 128 深是否是最坏情况的真实需求，还是“保守取大”</td>
+</tr>
+</tbody></table>
+<p><strong>教训</strong>：FIFO 的“深 × 宽”不只是存储容量问题，也是扇出与布线问题。超过几千 bit 的缓冲，在架构阶段就应该决定用寄存器还是 SRAM。</p>
+<h2 id="8-验证与签核"><a href="#8-验证与签核" class="headerlink" title="8. 验证与签核"></a>8. 验证与签核</h2><table>
+<thead>
+<tr>
+<th>环节</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>参考模型</td>
+<td>与 C cmodel 做 bit-true 比对，覆盖 HEVC&#x2F;VVC 双协议、多种工作模式</td>
+</tr>
+<tr>
+<td>签核</td>
+<td>综合、功耗分析、覆盖率收敛（code 98% &#x2F; functional 100%）</td>
+</tr>
+</tbody></table>
+<p>CABAC 的错误会<strong>向后传播</strong>：一个 bin 错了，后面的码流全部错位，往往要很久之后才在解码端暴露。所以比对粒度越细越好，在 bin 级、上下文级定位“第一个错误”，比只做码流级比对高效得多。模式越多（3 种工作模式 × 2 种协议 × ALF on&#x2F;off × 单核&#x2F;多核），控制骨架越需要单独的定向用例覆盖。</p>
+<h2 id="9-演进：下一代中的上游信息通路改造"><a href="#9-演进：下一代中的上游信息通路改造" class="headerlink" title="9. 演进：下一代中的上游信息通路改造"></a>9. 演进：下一代中的上游信息通路改造</h2><p>在下一代演进中，我主导了 CABAC 上游信息通路与接口的改造。核心问题是：<strong>offline 模式下，上游信息要经 DDR 往返，周期预算够不够？</strong></p>
+<p>方法上，我坚持用“<strong>格式上界</strong>”而不是“典型场景”做预算：按语法上可能出现的最大信息量构造每个 CTU 的输入，要求最坏情况下的处理周期仍小于 CTU 周期预算。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>处理周期 &#x2F; 周期预算</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>格式最坏上界</td>
+<td>约 90%（保留约 10% 余量）</td>
+</tr>
+<tr>
+<td>稠密场景</td>
+<td>约 78%</td>
+</tr>
+<tr>
+<td>真实码流</td>
+<td>不足 10%</td>
+</tr>
+</tbody></table>
+<p>真实码流和最坏情况相差一个数量级，<strong>只用真实码流评估会严重高估余量</strong>。早期“每拍输出 1 字节”的方案在最坏上界下会超出预算，改为每拍最多 2 字节后才满足判据；这个结论只有用格式上界测才能得出。配套地，我用 Python 实现了与 RTL bit-true 对齐的参考模型作为 golden 生成器，并让 golden 数据头带上协议标志，读侧与寄存器配置交叉校验，防止 HEVC&#x2F;VVC 数据混用。</p>
+<h2 id="10-复盘：四条原则"><a href="#10-复盘：四条原则" class="headerlink" title="10. 复盘：四条原则"></a>10. 复盘：四条原则</h2><ol>
+<li><strong>规格从预算反推</strong>：CTU 周期预算、1 bin&#x2F;cycle、接口位宽是一起定的。用规范的常规 bin 上界校核，两种协议都留有约三成余量；</li>
+<li><strong>复用要分清“壳”和“核”</strong>：缓冲、调度、码流组织这些“壳”共享；处在关键环路上、协议差异大的“核”分开做。省面积不是唯一目标；</li>
+<li><strong>用冗余换掉停顿</strong>：ALF on&#x2F;off 两路同时编码，用面积换来不等待帧级决策的流水；</li>
+<li><strong>收敛问题常常不在算法核心</strong>：面积膨胀出在辅助功能，时序违例出在地址乘法，扇出超限出在 FIFO 实现方式。架构评审时要把“非核心”逻辑同样列进 PPA 预算。</li>
+</ol>
+<h2 id="11-常被问到的问题"><a href="#11-常被问到的问题" class="headerlink" title="11. 常被问到的问题"></a>11. 常被问到的问题</h2><p><strong>Q1：CABAC 为什么能做到 1 bin&#x2F;cycle？够用吗？</strong><br>关键路径是 Range 环（原理见深度解析第 6 节）。是否够用要看 CTU 周期预算：VVC 系数常规 bin 的上界（1.75 bin&#x2F;系数）约占 60000 cycle 预算的 72%，HEVC 约占 64%，在 1 bin&#x2F;cycle 下都有余量。</p>
+<p><strong>Q2：双协议是怎么复用的？</strong><br>共享接口、输入缓冲、控制骨架、码流组织与 DMA；pack 和算术编码按协议各做一套，HEVC 复用上一代成熟模块，VVC 新开发，通过协议选择信号选通。</p>
+<p><strong>Q3：为什么不把两种协议的算术编码合成一套？</strong><br>概率模型位于 1 bin&#x2F;cycle 的关键环路内，合并会让两种协议的最坏路径叠加；HEVC 侧复用已验证的模块风险更低；VVC 本身已需要两个编码实例。用面积换时序收敛与交付风险。</p>
+<p><strong>Q4：VVC 为什么每个 CTU 输出两路码流？</strong><br>ALF 参数要在帧级统计后才能确定，而 CABAC 在 CTU 流水里不能等待。两种情况都编一遍，等帧级决策确定后选用其中一路。</p>
+<p><strong>Q5：bypass 为什么能做到 4 bin&#x2F;cycle？</strong><br>算法上，连续 bypass bin 不改变 Range，可以合并为一次移位加；接口上，全 bypass 语法以“值”的形式穿过 FIFO，在 aenc 内部展开，不受级间 FIFO 带宽限制。</p>
+<p><strong>Q6：多核时上下文怎么传递？</strong><br>跨核协同编码时，编码核从 DDR 加载上下文表；帧级码流拼接由 core 外的 DMA 完成。</p>
+<h2 id="相关阅读"><a href="#相关阅读" class="headerlink" title="相关阅读"></a>相关阅读</h2><ul>
+<li><a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/">深度解析H.266&#x2F;VVC 熵编码CABAC：从规范公式到RTL实现</a></li>
+<li><a href="/2026/11/19/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AVVC-ALF-%E8%87%AA%E9%80%82%E5%BA%94%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2-IP-%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/">项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</a>：为什么 ALF 只做帧级 on&#x2F;off 判决，以及它对熵编码双路码流的影响</li>
+<li><a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/">深度解析H.266&#x2F;VVC环路滤波</a>：ALF 的帧级参数为什么要等整帧统计完成，可以对照 ALF 的编码端统计流程</li>
+<li><a href="/2026/04/18/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AISP-%E5%9B%BE%E5%83%8F%E5%A2%9E%E5%BC%BA-IP-%E7%9A%84%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E4%BC%98%E5%8C%96/">项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化</a></li>
+</ul>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize(null);
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/images/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/images/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2026/04/18/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AISP-%E5%9B%BE%E5%83%8F%E5%A2%9E%E5%BC%BA-IP-%E7%9A%84%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E4%BC%98%E5%8C%96/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>项目复盘：ISP 局部色调映射（LTM）IP 的架构设计与优化</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2026/03/15/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB3-CoPE-VideoLM%EF%BC%9A%E7%94%A8%E4%BA%8E%E9%AB%98%E6%95%88%E8%A7%86%E9%A2%91%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E7%9A%84%E7%BC%96%E8%A7%A3%E7%A0%81%E5%9F%BA%E5%85%83/">
+      <div class="text-align">
+        <span class="text-small">下一篇</span>
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+      </div>
+      论文解读3-CoPE-VideoLM：用于高效视频语言模型的编解码基元
+    </a>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  
+  <a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/HEVC/" class="post-tag">#HEVC</a><a href="/tags/CABAC/" class="post-tag">#CABAC</a><a href="/tags/PPA%E4%BC%98%E5%8C%96/" class="post-tag">#PPA优化</a>
+
+
+</div>
+  <div class="realated__body">
+    
+      <div class="null"><div class="null-item"><div class="null-title"><a href="\2024\08\14\深度解析H-266-熵编码CABAC\" title="深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现" rel="bookmark">深度解析H.266/VVC 熵编码CABAC：从规范公式到RTL实现</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\20\深度解析H-266-帧内编码\" title="深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路" rel="bookmark">深度解析H.266/VVC帧内编码：从参考像素到硬件重建环路</a></div></div><div class="null-item"><div class="null-title"><a href="\2024\07\21\深度解析H-266-帧间编码\" title="深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽" rel="bookmark">深度解析H.266/VVC帧间编码：从 MV 预测到运动补偿与带宽</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\11\21\工程实践：基于-Verilator-搭建可自检的验证平台\" title="工程实践：基于 Verilator 搭建"设计可自检"的验证平台——以 zcle_aenc_wrapper 为例" rel="bookmark">工程实践：基于 Verilator 搭建"设计可自检"的验证平台——以 zcle_aenc_wrapper 为例</a></div></div><div class="null-item"><div class="null-title"><a href="\2026\11\19\项目复盘：VVC-ALF-自适应环路滤波-IP-设计实践\" title="项目复盘：VVC ALF 自适应环路滤波 IP 设计实践" rel="bookmark">项目复盘：VVC ALF 自适应环路滤波 IP 设计实践</a></div></div></div>
+    
+  </div>
+</div>
+
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">书</div><div class="matts">到</div><div class="matts">用</div><div class="matts">时</div><div class="matts">方</div><div class="matts">恨</div><div class="matts">少</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">事</div><div class="matts">非</div><div class="matts">经</div><div class="matts">过</div><div class="matts">不</div><div class="matts">知</div><div class="matts">难</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" href="https://seusunz.github.io/">九天之遥</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:1217249582@qq.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/seusunz">github</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/seusun">知乎</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:1217249582@qq.com">1217249582@qq.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="https://seusunz.github.io">九天之遥</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+      <script src="https://unpkg.com/js-polyfills@0.1.43/es6.js"></script>
+      <script id="MathJax-script"
+              async
+              src="https://www.unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>
