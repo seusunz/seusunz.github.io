@@ -168,6 +168,34 @@
   <div class="post-card">
     <div class="post__head">
       <div class="post-meta">
+        <span class="post-date">2026-11-21</span>
+        
+      </div>
+      <a href="/2026/11/21/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AZSTD-%E7%AE%97%E6%9C%AF%E7%BC%96%E8%A7%A3%E7%A0%81%E5%B9%B6%E8%A1%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" class="post-title hover-line">项目复盘：ZSTD 算术编解码的完整算法与流式后端架构</a>
+    </div>
+    <div class="post__body">
+      
+        <a href="/2026/11/21/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AZSTD-%E7%AE%97%E6%9C%AF%E7%BC%96%E8%A7%A3%E7%A0%81%E5%B9%B6%E8%A1%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/"
+           class="post-cover"
+           style="background-image: url(/images/image/Bing474.jpg)"></a>
+      
+      <div class="post-excerpt">一个全新的通用压缩项目：把 ZSTD 的熵编码后端从算法到硬件完整拆一遍。先沿参考实现走通「序列生成 → 字面量 Huffman → 序列 FSE/tANS → 帧块组装」的全链路，给出 tANS 状态更新的精确公式；再逐层分析硬件架构——三层分治的顶层、编解码数据通路的流水切分、流式接口与回压、块边界与片内缓存，并配上架构图。</div>
+    </div>
+    <div class="post__foot">
+      <div class="post-tags">
+  
+  <a href="/tags/ZSTD/" class="post-tag">#ZSTD</a><a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/FSE/" class="post-tag">#FSE</a><a href="/tags/tANS/" class="post-tag">#tANS</a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%8E%8B%E7%BC%A9/" class="post-tag">#数据压缩</a><a href="/tags/%E6%B5%81%E5%BC%8F%E6%8E%A5%E5%8F%A3/" class="post-tag">#流式接口</a>
+
+
+</div>
+      <a href="/2026/11/21/%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%EF%BC%9AZSTD-%E7%AE%97%E6%9C%AF%E7%BC%96%E8%A7%A3%E7%A0%81%E5%B9%B6%E8%A1%8C%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" class="post-more text-link">继续阅读</a>
+    </div>
+  </div>
+
+  
+  <div class="post-card">
+    <div class="post__head">
+      <div class="post-meta">
         <span class="post-date">2026-03-15</span>
         
       </div>
@@ -273,34 +301,6 @@
 
 </div>
       <a href="/2024/08/14/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%86%B5%E7%BC%96%E7%A0%81CABAC/" class="post-more text-link">继续阅读</a>
-    </div>
-  </div>
-
-  
-  <div class="post-card">
-    <div class="post__head">
-      <div class="post-meta">
-        <span class="post-date">2024-07-29</span>
-        
-      </div>
-      <a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-title hover-line">深度解析H.266/VVC环路滤波：LMCS、去块、SAO、ALF 与 CCALF</a>
-    </div>
-    <div class="post__body">
-      
-        <a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/"
-           class="post-cover"
-           style="background-image: url(/images/image/bing_07.jpg)"></a>
-      
-      <div class="post-excerpt">按重建图像的处理顺序拆解 VVC 环路滤波：LMCS 的分段线性映射与色度缩放，去块滤波的边界强度、决策与长滤波器，SAO 的边缘/边带补偿，ALF 的分类、维纳滤波推导与非线性 clipping，以及 CCALF；规则均与 VTM 9.3 源码核对，最后讨论行缓存、虚拟边界与编码端统计等硬件问题。</div>
-    </div>
-    <div class="post__foot">
-      <div class="post-tags">
-  
-  <a href="/tags/%E6%95%B0%E5%AD%97%E8%8A%AF%E7%89%87/" class="post-tag">#数字芯片</a><a href="/tags/VVC/" class="post-tag">#VVC</a><a href="/tags/%E8%A7%86%E9%A2%91%E7%BC%96%E7%A0%81/" class="post-tag">#视频编码</a><a href="/tags/%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-tag">#环路滤波</a><a href="/tags/ALF/" class="post-tag">#ALF</a>
-
-
-</div>
-      <a href="/2024/07/29/%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90H-266-%E7%8E%AF%E8%B7%AF%E6%BB%A4%E6%B3%A2/" class="post-more text-link">继续阅读</a>
     </div>
   </div>
 
