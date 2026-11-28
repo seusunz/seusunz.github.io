@@ -527,5 +527,28 @@
     
   
 
-  </body>
+  <!-- hexo injector body_end start --><link rel="stylesheet" href="/vendor/aplayer/APlayer.min.css">
+<div id="blog-music-player"></div>
+<style>
+  .aplayer.aplayer-fixed{z-index:1000;}
+  .aplayer .aplayer-info{border-color:transparent;}
+</style>
+<script src="/vendor/aplayer/APlayer.min.js" defer></script>
+<script>
+window.addEventListener("DOMContentLoaded", function () {
+  if (typeof APlayer === "undefined") return;
+  var el = document.getElementById("blog-music-player");
+  if (!el) return;
+  new APlayer({
+    container: el,
+    fixed: true,
+    mini: true,
+    autoplay: false,
+    loop: "all",
+    order: "list",
+    volume: 0.5,
+    audio: [{"title":"卡农","artist":"jentlemo（钢琴版）","url":"/music/canon-piano.mp3","cover":"/images/image/bing_09.jpg"}]
+  });
+});
+</script><!-- hexo injector body_end end --></body>
 </html>
